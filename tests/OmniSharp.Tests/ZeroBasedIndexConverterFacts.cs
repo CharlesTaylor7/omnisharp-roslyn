@@ -16,11 +16,7 @@ namespace OmniSharp.Tests
         {
             Configuration.ZeroBasedIndices = true;
 
-            var request = new Request()
-            {
-                Line = 1,
-                Column = 1,
-            };
+            var request = new Request() { Line = 1, Column = 1 };
 
             var output = JsonConvert.SerializeObject(request);
 
@@ -38,11 +34,7 @@ namespace OmniSharp.Tests
         {
             Configuration.ZeroBasedIndices = true;
 
-            var request = new Request()
-            {
-                Line = 0,
-                Column = 0,
-            };
+            var request = new Request() { Line = 0, Column = 0 };
 
             var output = JsonConvert.SerializeObject(request);
             var input = JsonConvert.DeserializeObject<Request>(output);
@@ -56,11 +48,7 @@ namespace OmniSharp.Tests
         {
             Configuration.ZeroBasedIndices = false;
 
-            var request = new Request()
-            {
-                Line = 1,
-                Column = 1,
-            };
+            var request = new Request() { Line = 1, Column = 1 };
 
             var output = JsonConvert.SerializeObject(request);
             var input = JsonConvert.DeserializeObject<Request>(output);
@@ -74,7 +62,8 @@ namespace OmniSharp.Tests
         {
             Configuration.ZeroBasedIndices = false;
 
-            const string input = @"
+            const string input =
+                @"
 {
   ""line"": 1,
   ""column"": 1
@@ -92,7 +81,8 @@ namespace OmniSharp.Tests
         {
             Configuration.ZeroBasedIndices = true;
 
-            const string input = @"
+            const string input =
+                @"
 {
   ""line"": 1,
   ""column"": 1
@@ -110,7 +100,8 @@ namespace OmniSharp.Tests
         {
             Configuration.ZeroBasedIndices = false;
 
-            const string input = @"
+            const string input =
+                @"
 {
   ""start"": {
     ""line"": 1,
@@ -136,7 +127,8 @@ namespace OmniSharp.Tests
         {
             Configuration.ZeroBasedIndices = true;
 
-            const string input = @"
+            const string input =
+                @"
 {
   ""start"": {
     ""line"": 1,
@@ -162,7 +154,8 @@ namespace OmniSharp.Tests
         {
             Configuration.ZeroBasedIndices = false;
 
-            const string input = @"
+            const string input =
+                @"
 {
   ""startLine"": 1,
   ""startColumn"": 1,
@@ -184,7 +177,8 @@ namespace OmniSharp.Tests
         {
             Configuration.ZeroBasedIndices = true;
 
-            const string input = @"
+            const string input =
+                @"
 {
   ""startLine"": 1,
   ""startColumn"": 1,
@@ -206,7 +200,8 @@ namespace OmniSharp.Tests
         {
             Configuration.ZeroBasedIndices = false;
 
-            const string input = @"
+            const string input =
+                @"
 {
   ""startLine"": 1,
   ""startColumn"": 1,
@@ -228,7 +223,8 @@ namespace OmniSharp.Tests
         {
             Configuration.ZeroBasedIndices = true;
 
-            const string input = @"
+            const string input =
+                @"
 {
   ""startLine"": 1,
   ""startColumn"": 1,
@@ -250,7 +246,8 @@ namespace OmniSharp.Tests
         {
             Configuration.ZeroBasedIndices = false;
 
-            const string input = @"
+            const string input =
+                @"
 {
   ""selectionStartLine"": 1,
   ""selectionStartColumn"": 1,
@@ -272,7 +269,8 @@ namespace OmniSharp.Tests
         {
             Configuration.ZeroBasedIndices = true;
 
-            const string input = @"
+            const string input =
+                @"
 {
   ""selectionStartLine"": 1,
   ""selectionStartColumn"": 1,
@@ -294,15 +292,12 @@ namespace OmniSharp.Tests
         {
             Configuration.ZeroBasedIndices = false;
 
-            var input = new NavigateResponse()
-            {
-                Line = 0,
-                Column = 0
-            };
+            var input = new NavigateResponse() { Line = 0, Column = 0 };
 
             var json = JsonConvert.SerializeObject(input, Formatting.Indented);
 
-            const string output = @"
+            const string output =
+                @"
 {
   ""Line"": 1,
   ""Column"": 1
@@ -317,11 +312,7 @@ namespace OmniSharp.Tests
         {
             Configuration.ZeroBasedIndices = true;
 
-            var input = new NavigateResponse()
-            {
-                Line = 0,
-                Column = 0
-            };
+            var input = new NavigateResponse() { Line = 0, Column = 0 };
 
             var json = JsonConvert.SerializeObject(input, Formatting.Indented);
 
@@ -340,7 +331,8 @@ namespace OmniSharp.Tests
         {
             Configuration.ZeroBasedIndices = false;
 
-            const string input = @"
+            const string input =
+                @"
 {
   ""startLine"": 1,
   ""startColumn"": 1,
@@ -349,7 +341,8 @@ namespace OmniSharp.Tests
 }
 ";
 
-            var linePositionSpanTextChange = JsonConvert.DeserializeObject<LinePositionSpanTextChange>(input);
+            var linePositionSpanTextChange =
+                JsonConvert.DeserializeObject<LinePositionSpanTextChange>(input);
 
             Assert.Equal(0, linePositionSpanTextChange.StartLine);
             Assert.Equal(0, linePositionSpanTextChange.StartColumn);
@@ -362,7 +355,8 @@ namespace OmniSharp.Tests
         {
             Configuration.ZeroBasedIndices = true;
 
-            const string input = @"
+            const string input =
+                @"
 {
   ""startLine"": 1,
   ""startColumn"": 1,
@@ -371,7 +365,8 @@ namespace OmniSharp.Tests
 }
 ";
 
-            var linePositionSpanTextChange = JsonConvert.DeserializeObject<LinePositionSpanTextChange>(input);
+            var linePositionSpanTextChange =
+                JsonConvert.DeserializeObject<LinePositionSpanTextChange>(input);
 
             Assert.Equal(1, linePositionSpanTextChange.StartLine);
             Assert.Equal(1, linePositionSpanTextChange.StartColumn);
@@ -389,12 +384,13 @@ namespace OmniSharp.Tests
                 Line = 0,
                 Column = 0,
                 EndLine = 19,
-                EndColumn = 23
+                EndColumn = 23,
             };
 
             var json = JsonConvert.SerializeObject(input, Formatting.Indented);
 
-            const string output = @"
+            const string output =
+                @"
 {
   ""FileName"": null,
   ""Line"": 1,
@@ -419,12 +415,13 @@ namespace OmniSharp.Tests
                 Line = 0,
                 Column = 0,
                 EndLine = 19,
-                EndColumn = 23
+                EndColumn = 23,
             };
 
             var json = JsonConvert.SerializeObject(input, Formatting.Indented);
 
-            const string output = @"
+            const string output =
+                @"
 {
   ""FileName"": null,
   ""Line"": 0,

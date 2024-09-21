@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Immutable;
 using System.Globalization;
 using Microsoft.CodeAnalysis;
@@ -42,7 +42,10 @@ namespace OmniSharp.MSBuild.ProjectFile
             }
 
             var builder = ImmutableArray.CreateBuilder<string>();
-            var values = propertyValue.Split(new[] { separator }, StringSplitOptions.RemoveEmptyEntries);
+            var values = propertyValue.Split(
+                new[] { separator },
+                StringSplitOptions.RemoveEmptyEntries
+            );
 
             foreach (var value in values)
             {
@@ -59,7 +62,10 @@ namespace OmniSharp.MSBuild.ProjectFile
                 return ImmutableArray<string>.Empty;
             }
 
-            var values = propertyValue.Split(new[] { ';', ',' }, StringSplitOptions.RemoveEmptyEntries);
+            var values = propertyValue.Split(
+                new[] { ';', ',' },
+                StringSplitOptions.RemoveEmptyEntries
+            );
 
             return ImmutableArray.CreateRange(values);
         }
@@ -75,11 +81,21 @@ namespace OmniSharp.MSBuild.ProjectFile
 
             // Remove quotes
             propertyValue = propertyValue.Trim('"');
-            var values = propertyValue.Split(new[] { ',', ';', ' ' }, StringSplitOptions.RemoveEmptyEntries);
+            var values = propertyValue.Split(
+                new[] { ',', ';', ' ' },
+                StringSplitOptions.RemoveEmptyEntries
+            );
 
             foreach (var id in values)
             {
-                if (ushort.TryParse(id, NumberStyles.Integer, CultureInfo.InvariantCulture, out var number))
+                if (
+                    ushort.TryParse(
+                        id,
+                        NumberStyles.Integer,
+                        CultureInfo.InvariantCulture,
+                        out var number
+                    )
+                )
                 {
                     builder.Add("CS" + number.ToString("0000"));
                 }
@@ -106,10 +122,14 @@ namespace OmniSharp.MSBuild.ProjectFile
         {
             switch (propertyValue)
             {
-                case "Library": return OutputKind.DynamicallyLinkedLibrary;
-                case "WinExe": return OutputKind.WindowsApplication;
-                case "Exe": return OutputKind.ConsoleApplication;
-                default: return OutputKind.ConsoleApplication;
+                case "Library":
+                    return OutputKind.DynamicallyLinkedLibrary;
+                case "WinExe":
+                    return OutputKind.WindowsApplication;
+                case "Exe":
+                    return OutputKind.ConsoleApplication;
+                default:
+                    return OutputKind.ConsoleApplication;
             }
         }
 
@@ -117,11 +137,16 @@ namespace OmniSharp.MSBuild.ProjectFile
         {
             switch (propertyValue?.ToLowerInvariant())
             {
-                case "disable": return NullableContextOptions.Disable;
-                case "enable": return NullableContextOptions.Enable;
-                case "warnings": return NullableContextOptions.Warnings;
-                case "annotations": return NullableContextOptions.Annotations;
-                default: return NullableContextOptions.Disable;
+                case "disable":
+                    return NullableContextOptions.Disable;
+                case "enable":
+                    return NullableContextOptions.Enable;
+                case "warnings":
+                    return NullableContextOptions.Warnings;
+                case "annotations":
+                    return NullableContextOptions.Annotations;
+                default:
+                    return NullableContextOptions.Disable;
             }
         }
 

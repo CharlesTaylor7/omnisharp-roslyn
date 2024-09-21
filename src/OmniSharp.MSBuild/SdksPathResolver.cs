@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Composition;
 using System.IO;
 using Microsoft.Extensions.Logging;
@@ -56,8 +56,10 @@ namespace OmniSharp.MSBuild
             }
 
             var sdksPath = OverridePath;
-            if (string.IsNullOrWhiteSpace(sdksPath) &&
-                !TryGetSdksPath(projectFilePath, out sdksPath))
+            if (
+                string.IsNullOrWhiteSpace(sdksPath)
+                && !TryGetSdksPath(projectFilePath, out sdksPath)
+            )
             {
                 return NullDisposable.Instance;
             }

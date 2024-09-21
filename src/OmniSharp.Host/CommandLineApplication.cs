@@ -26,17 +26,45 @@ namespace OmniSharp
         {
             Application = new McMaster.Extensions.CommandLineUtils.CommandLineApplication
             {
-                UnrecognizedArgumentHandling = UnrecognizedArgumentHandling.StopParsingAndCollect
+                UnrecognizedArgumentHandling = UnrecognizedArgumentHandling.StopParsingAndCollect,
             };
             Application.HelpOption("-? | -h | --help");
 
-            _applicationRoot = Application.Option("-s | --source", "Solution or directory for OmniSharp to point at (defaults to current directory).", CommandOptionType.SingleValue);
-            _logLevel = Application.Option("-l | --loglevel", "Level of logging (defaults to 'Information').", CommandOptionType.SingleValue);
-            _verbose = Application.Option("-v | --verbose", "Explicitly set 'Debug' log level.", CommandOptionType.NoValue);
-            _hostPid = Application.Option("-hpid | --hostPID", "Host process ID.", CommandOptionType.SingleValue);
-            _zeroBasedIndices = Application.Option("-z | --zero-based-indices", "Use zero based indices in request/responses (defaults to 'false').", CommandOptionType.NoValue);
-            _plugin = Application.Option("-pl | --plugin", "Plugin name(s).", CommandOptionType.MultipleValue);
-            _debug = Application.Option("-d | --debug", "Wait for debugger to attach", CommandOptionType.NoValue);
+            _applicationRoot = Application.Option(
+                "-s | --source",
+                "Solution or directory for OmniSharp to point at (defaults to current directory).",
+                CommandOptionType.SingleValue
+            );
+            _logLevel = Application.Option(
+                "-l | --loglevel",
+                "Level of logging (defaults to 'Information').",
+                CommandOptionType.SingleValue
+            );
+            _verbose = Application.Option(
+                "-v | --verbose",
+                "Explicitly set 'Debug' log level.",
+                CommandOptionType.NoValue
+            );
+            _hostPid = Application.Option(
+                "-hpid | --hostPID",
+                "Host process ID.",
+                CommandOptionType.SingleValue
+            );
+            _zeroBasedIndices = Application.Option(
+                "-z | --zero-based-indices",
+                "Use zero based indices in request/responses (defaults to 'false').",
+                CommandOptionType.NoValue
+            );
+            _plugin = Application.Option(
+                "-pl | --plugin",
+                "Plugin name(s).",
+                CommandOptionType.MultipleValue
+            );
+            _debug = Application.Option(
+                "-d | --debug",
+                "Wait for debugger to attach",
+                CommandOptionType.NoValue
+            );
         }
 
         public int Execute(string[] args)
@@ -54,7 +82,10 @@ namespace OmniSharp
                     {
                         extraArgs.Add(args[i]);
                     }
-                    else if (!args[i - 1].Equals("-s", StringComparison.OrdinalIgnoreCase) && !args[i - 1].Equals("--source", StringComparison.OrdinalIgnoreCase))
+                    else if (
+                        !args[i - 1].Equals("-s", StringComparison.OrdinalIgnoreCase)
+                        && !args[i - 1].Equals("--source", StringComparison.OrdinalIgnoreCase)
+                    )
                     {
                         extraArgs.Add(args[i]);
                     }
@@ -68,20 +99,24 @@ namespace OmniSharp
         [Obsolete("Please use OnExecuteAsync instead")]
         public void OnExecute(Func<Task<int>> func)
         {
-            Application.OnExecuteAsync((_) =>
-            {
-                DebugAttach();
-                return func();
-            });
+            Application.OnExecuteAsync(
+                (_) =>
+                {
+                    DebugAttach();
+                    return func();
+                }
+            );
         }
 
         public void OnExecuteAsync(Func<CancellationToken, Task<int>> func)
         {
-            Application.OnExecuteAsync((token) =>
-            {
-                DebugAttach();
-                return func(token);
-            });
+            Application.OnExecuteAsync(
+                (token) =>
+                {
+                    DebugAttach();
+                    return func(token);
+                }
+            );
         }
 
         public void OnExecute(Func<int> func)
@@ -101,9 +136,16 @@ namespace OmniSharp
 
         public IEnumerable<string> Plugin => _plugin.Values;
 
-        public LogLevel LogLevel => _verbose.HasValue() ? LogLevel.Debug : CommandOptionExtensions.GetValueOrDefault(_logLevel, LogLevel.Information);
+        public LogLevel LogLevel =>
+            _verbose.HasValue()
+                ? LogLevel.Debug
+                : CommandOptionExtensions.GetValueOrDefault(_logLevel, LogLevel.Information);
 
-        public string ApplicationRoot => CommandOptionExtensions.GetValueOrDefault(_applicationRoot, Directory.GetCurrentDirectory());
+        public string ApplicationRoot =>
+            CommandOptionExtensions.GetValueOrDefault(
+                _applicationRoot,
+                Directory.GetCurrentDirectory()
+            );
 
         public bool Debug => _debug.HasValue();
 

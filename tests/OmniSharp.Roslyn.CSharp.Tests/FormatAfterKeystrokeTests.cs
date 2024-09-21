@@ -16,22 +16,25 @@ namespace OmniSharp.Roslyn.CSharp.Tests
 {
     public class FormatAfterKeystrokeTests : AbstractTestFixture
     {
-        public FormatAfterKeystrokeTests(ITestOutputHelper output, SharedOmniSharpHostFixture sharedOmniSharpHostFixture)
-            : base(output, sharedOmniSharpHostFixture)
-        {
-        }
+        public FormatAfterKeystrokeTests(
+            ITestOutputHelper output,
+            SharedOmniSharpHostFixture sharedOmniSharpHostFixture
+        )
+            : base(output, sharedOmniSharpHostFixture) { }
 
         [Theory]
         [InlineData("file.cs")]
         [InlineData("file.csx")]
         public async Task NoComment_OnEnter(string fileName)
         {
-            await VerifyNoChange(fileName, "\n",
-@"class C
+            await VerifyNoChange(
+                fileName,
+                "\n",
+                @"class C
 {
 $$
-}");
-
+}"
+            );
         }
 
         [Theory]
@@ -39,12 +42,15 @@ $$
         [InlineData("file.csx")]
         public async Task NoComment_OnSingleForwardSlash(string fileName)
         {
-            await VerifyNoChange(fileName, "/",
-@"class C
+            await VerifyNoChange(
+                fileName,
+                "/",
+                @"class C
 {
     /$$
 }
-");
+"
+            );
         }
 
         [Theory]
@@ -52,12 +58,15 @@ $$
         [InlineData("file.csx")]
         public async Task NoComment_OnDoubleForwardSlash(string fileName)
         {
-            await VerifyNoChange(fileName, "/",
-@"class C
+            await VerifyNoChange(
+                fileName,
+                "/",
+                @"class C
 {
     //$$
 }
-");
+"
+            );
         }
 
         [Theory]
@@ -65,12 +74,15 @@ $$
         [InlineData("file.csx")]
         public async Task NoComment_OnTripleForwardSlash_NoMember(string fileName)
         {
-            await VerifyNoChange(fileName, "/",
-@"class C
+            await VerifyNoChange(
+                fileName,
+                "/",
+                @"class C
 {
     ///$$
 }
-");
+"
+            );
         }
 
         [Theory]
@@ -78,13 +90,15 @@ $$
         [InlineData("file.csx")]
         public async Task Comment_OnTripleForwardSlash_BeforeMethod(string fileName)
         {
-            await VerifyChange(fileName, "/",
-@"class C
+            await VerifyChange(
+                fileName,
+                "/",
+                @"class C
 {
     ///$$
     public string M<T>(string param1, int param2) { }
 }",
-@"class C
+                @"class C
 {
     /// <summary>
     /// 
@@ -94,7 +108,8 @@ $$
     /// <param name=""param2""></param>
     /// <returns></returns>
     public string M<T>(string param1, int param2) { }
-}");
+}"
+            );
         }
 
         [Theory]
@@ -102,19 +117,22 @@ $$
         [InlineData("file.csx")]
         public async Task Comment_OnTripleForwardSlash_BeforeType(string fileName)
         {
-            await VerifyChange(fileName, "/",
-@"///$$
+            await VerifyChange(
+                fileName,
+                "/",
+                @"///$$
 class C
 {
     public string M(string param1, int param2) { }
 }",
-@"/// <summary>
+                @"/// <summary>
 /// 
 /// </summary>
 class C
 {
     public string M(string param1, int param2) { }
-}");
+}"
+            );
         }
 
         [Theory]
@@ -122,19 +140,22 @@ class C
         [InlineData("file.csx")]
         public async Task Comment_OnTripleForwardSlash_BeforeProperty(string fileName)
         {
-            await VerifyChange(fileName, "/",
-@"class C
+            await VerifyChange(
+                fileName,
+                "/",
+                @"class C
 {
     ///$$
     public int Prop { get; set; }
 }",
-@"class C
+                @"class C
 {
     /// <summary>
     /// 
     /// </summary>
     public int Prop { get; set; }
-}");
+}"
+            );
         }
 
         [Theory]
@@ -142,13 +163,15 @@ class C
         [InlineData("file.csx")]
         public async Task Comment_OnTripleForwardSlash_BeforeIndexer(string fileName)
         {
-            await VerifyChange(fileName, "/",
-@"class C
+            await VerifyChange(
+                fileName,
+                "/",
+                @"class C
 {
     ///$$
     public int this[int i] { get; set; }
 }",
-@"class C
+                @"class C
 {
     /// <summary>
     /// 
@@ -156,7 +179,8 @@ class C
     /// <param name=""i""></param>
     /// <returns></returns>
     public int this[int i] { get; set; }
-}");
+}"
+            );
         }
 
         [Theory]
@@ -164,8 +188,10 @@ class C
         [InlineData("file.csx")]
         public async Task Comment_OnEnterInComment_BetweenTags_Newline(string fileName)
         {
-            await VerifyChange(fileName, "\n",
-@"class C
+            await VerifyChange(
+                fileName,
+                "\n",
+                @"class C
 {
     /// <summary>
     ///
@@ -176,7 +202,7 @@ $$
     /// <returns></returns>
     public string M(string param1, int param2) { }
 }",
-@"class C
+                @"class C
 {
     /// <summary>
     ///
@@ -186,7 +212,8 @@ $$
     /// <param name=""param2""></param>
     /// <returns></returns>
     public string M(string param1, int param2) { }
-}");
+}"
+            );
         }
 
         [Theory]
@@ -194,8 +221,10 @@ $$
         [InlineData("file.csx")]
         public async Task Comment_OnEnterInComment_BetweenTags_SameLine(string fileName)
         {
-            await VerifyChange(fileName, "\n",
-@"class C
+            await VerifyChange(
+                fileName,
+                "\n",
+                @"class C
 {
     /// <summary>
     ///
@@ -206,7 +235,7 @@ $$</param>
     /// <returns></returns>
     public string M(string param1, int param2) { }
 }",
-@"class C
+                @"class C
 {
     /// <summary>
     ///
@@ -216,7 +245,8 @@ $$</param>
     /// <param name=""param2""></param>
     /// <returns></returns>
     public string M(string param1, int param2) { }
-}");
+}"
+            );
         }
 
         [Theory]
@@ -224,8 +254,10 @@ $$</param>
         [InlineData("file.csx")]
         public async Task Comment_OnEnterInComment_AfterTags(string fileName)
         {
-            await VerifyChange(fileName, "\n",
-@"class C
+            await VerifyChange(
+                fileName,
+                "\n",
+                @"class C
 {
     /// <summary>
     ///
@@ -236,7 +268,7 @@ $$</param>
 $$
     public string M(string param1, int param2) { }
 }",
-@"class C
+                @"class C
 {
     /// <summary>
     ///
@@ -246,7 +278,8 @@ $$
     /// <returns></returns>
     /// 
     public string M(string param1, int param2) { }
-}");
+}"
+            );
         }
 
         [Theory]
@@ -254,13 +287,15 @@ $$
         [InlineData("file.csx")]
         public async Task Comment_OnTripleForwardSlash_VerbatimNames(string fileName)
         {
-            await VerifyChange(fileName, "/",
-@"class C
+            await VerifyChange(
+                fileName,
+                "/",
+                @"class C
 {
     ///$$
     public string M<@int>(string @float) { }
 }",
-@"class C
+                @"class C
 {
     /// <summary>
     /// 
@@ -269,7 +304,8 @@ $$
     /// <param name=""float""></param>
     /// <returns></returns>
     public string M<@int>(string @float) { }
-}");
+}"
+            );
         }
 
         [Theory]
@@ -277,19 +313,22 @@ $$
         [InlineData("file.csx")]
         public async Task Comment_OnTripleForwardSlash_VoidMethod(string fileName)
         {
-            await VerifyChange(fileName, "/",
-@"class C
+            await VerifyChange(
+                fileName,
+                "/",
+                @"class C
 {
     ///$$
     public void M() { }
 }",
-@"class C
+                @"class C
 {
     /// <summary>
     /// 
     /// </summary>
     public void M() { }
-}");
+}"
+            );
         }
 
         [Theory]
@@ -297,13 +336,16 @@ $$
         [InlineData("file.csx")]
         public async Task NoComment_OnTripleForwardSlash_ExistingLineAbove(string fileName)
         {
-            await VerifyNoChange(fileName, "/",
-@"class C
+            await VerifyNoChange(
+                fileName,
+                "/",
+                @"class C
 {
     ///
     ///$$
     public void M() { }
-}");
+}"
+            );
         }
 
         [Theory]
@@ -311,13 +353,16 @@ $$
         [InlineData("file.csx")]
         public async Task NoComment_OnTripleForwardSlash_ExistingLineBelow_01(string fileName)
         {
-            await VerifyNoChange(fileName, "/",
-@"class C
+            await VerifyNoChange(
+                fileName,
+                "/",
+                @"class C
 {
     ///$$
     ///
     public void M() { }
-}");
+}"
+            );
         }
 
         [Theory]
@@ -325,13 +370,16 @@ $$
         [InlineData("file.csx")]
         public async Task NoComment_OnTripleForwardSlash_ExistingLineBelow_02(string fileName)
         {
-            await VerifyNoChange(fileName, "/",
-@"class C
+            await VerifyNoChange(
+                fileName,
+                "/",
+                @"class C
 {
     ///$$
     /// <summary></summary>
     public void M() { }
-}");
+}"
+            );
         }
 
         [Theory]
@@ -339,14 +387,17 @@ $$
         [InlineData("file.csx")]
         public async Task NoComment_OnTripleForwardSlash_InsideMethodBody(string fileName)
         {
-            await VerifyNoChange(fileName, "/",
-@"class C
+            await VerifyNoChange(
+                fileName,
+                "/",
+                @"class C
 {
     public void M()
     {
         ///$$
     }
-}");
+}"
+            );
         }
 
         [Theory]
@@ -354,42 +405,59 @@ $$
         [InlineData("file.csx")]
         public async Task NoComment_OnNewLine_InsideMethodBody(string fileName)
         {
-            await VerifyNoChange(fileName, "/",
-@"class C
+            await VerifyNoChange(
+                fileName,
+                "/",
+                @"class C
 {
     public void M()
     {
         ///
 $$
     }
-}");
+}"
+            );
         }
 
-        protected override OmniSharpTestHost CreateSharedOmniSharpTestHost()
-            => CreateOmniSharpHost(configurationData: new Dictionary<string, string>()
-            {
-                ["FormattingOptions:NewLine"] = System.Environment.NewLine
-            });
+        protected override OmniSharpTestHost CreateSharedOmniSharpTestHost() =>
+            CreateOmniSharpHost(
+                configurationData: new Dictionary<string, string>()
+                {
+                    ["FormattingOptions:NewLine"] = System.Environment.NewLine,
+                }
+            );
 
-
-        private async Task VerifyNoChange(string fileName, string typedCharacter, string originalMarkup)
+        private async Task VerifyNoChange(
+            string fileName,
+            string typedCharacter,
+            string originalMarkup
+        )
         {
             var (response, _) = await GetResponse(originalMarkup, typedCharacter, fileName);
             Assert.Empty(response.Changes);
         }
 
-        private async Task VerifyChange(string fileName, string typedCharacter, string originalMarkup, string expected)
+        private async Task VerifyChange(
+            string fileName,
+            string typedCharacter,
+            string originalMarkup,
+            string expected
+        )
         {
             var (response, testFile) = await GetResponse(originalMarkup, typedCharacter, fileName);
             Assert.NotNull(response);
 
-            var fileChangedService = SharedOmniSharpTestHost.GetRequestHandler<UpdateBufferService>(OmniSharpEndpoints.UpdateBuffer);
-            _ = await fileChangedService.Handle(new UpdateBufferRequest()
-            {
-                FileName = testFile.FileName,
-                Changes = response.Changes,
-                ApplyChangesTogether = true,
-            });
+            var fileChangedService = SharedOmniSharpTestHost.GetRequestHandler<UpdateBufferService>(
+                OmniSharpEndpoints.UpdateBuffer
+            );
+            _ = await fileChangedService.Handle(
+                new UpdateBufferRequest()
+                {
+                    FileName = testFile.FileName,
+                    Changes = response.Changes,
+                    ApplyChangesTogether = true,
+                }
+            );
 
             var actualDoc = SharedOmniSharpTestHost.Workspace.GetDocument(testFile.FileName);
             Assert.NotNull(actualDoc);
@@ -397,7 +465,11 @@ $$
             AssertUtils.Equal(expected, actualText);
         }
 
-        private async Task<(FormatRangeResponse, TestFile)> GetResponse(string text, string character, string fileName)
+        private async Task<(FormatRangeResponse, TestFile)> GetResponse(
+            string text,
+            string character,
+            string fileName
+        )
         {
             var file = new TestFile(fileName, text);
             SharedOmniSharpTestHost.AddFilesToWorkspace(file);
@@ -411,7 +483,10 @@ $$
                 Character = character,
             };
 
-            var requestHandler = SharedOmniSharpTestHost.GetRequestHandler<FormatAfterKeystrokeService>(OmniSharpEndpoints.FormatAfterKeystroke);
+            var requestHandler =
+                SharedOmniSharpTestHost.GetRequestHandler<FormatAfterKeystrokeService>(
+                    OmniSharpEndpoints.FormatAfterKeystroke
+                );
             return (await requestHandler.Handle(request), file);
         }
     }

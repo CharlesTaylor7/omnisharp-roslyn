@@ -1,4 +1,4 @@
-﻿#if NET472_OR_GREATER
+#if NET472_OR_GREATER
 using System;
 using System.Diagnostics;
 using System.IO;
@@ -15,9 +15,15 @@ namespace OmniSharp.Cake.Services
         private readonly IOmniSharpEnvironment _environment;
         private Process _process;
 
-        public MonoScriptGenerationProcess(string serverExecutablePath, IOmniSharpEnvironment environment, ILoggerFactory loggerFactory)
+        public MonoScriptGenerationProcess(
+            string serverExecutablePath,
+            IOmniSharpEnvironment environment,
+            ILoggerFactory loggerFactory
+        )
         {
-            _logger = loggerFactory?.CreateLogger(typeof(MonoScriptGenerationProcess)) ?? NullLogger.Instance;
+            _logger =
+                loggerFactory?.CreateLogger(typeof(MonoScriptGenerationProcess))
+                ?? NullLogger.Instance;
             _environment = environment ?? throw new ArgumentNullException(nameof(environment));
             ServerExecutablePath = serverExecutablePath;
         }
@@ -61,7 +67,11 @@ namespace OmniSharp.Cake.Services
                 WorkingDirectory = workingDirectory,
             };
 
-            _logger.LogDebug("Starting \"{fileName}\" with arguments \"{arguments}\"", startInfo.FileName, startInfo.Arguments);
+            _logger.LogDebug(
+                "Starting \"{fileName}\" with arguments \"{arguments}\"",
+                startInfo.FileName,
+                startInfo.Arguments
+            );
             _process = Process.Start(startInfo);
             _process.ErrorDataReceived += (s, e) =>
             {
@@ -87,7 +97,8 @@ namespace OmniSharp.Cake.Services
             var startInfo = new ProcessStartInfo
             {
                 FileName = "sh",
-                Arguments = $"-c \"ps -fp {Process.GetCurrentProcess().Id} | tail -n1 | awk '{{print $8}}'\"",
+                Arguments =
+                    $"-c \"ps -fp {Process.GetCurrentProcess().Id} | tail -n1 | awk '{{print $8}}'\"",
                 RedirectStandardOutput = true,
                 UseShellExecute = false,
             };

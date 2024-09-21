@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using Microsoft.CodeAnalysis;
 using NuGet.Frameworks;
@@ -51,8 +51,9 @@ namespace OmniSharp.MSBuild.Models
             IntermediateOutputPath = projectFileInfo.IntermediateOutputPath;
             Configuration = projectFileInfo.Configuration;
             Platform = projectFileInfo.Platform;
-            IsExe = projectFileInfo.OutputKind == OutputKind.ConsoleApplication ||
-                projectFileInfo.OutputKind == OutputKind.WindowsApplication;
+            IsExe =
+                projectFileInfo.OutputKind == OutputKind.ConsoleApplication
+                || projectFileInfo.OutputKind == OutputKind.WindowsApplication;
             IsUnityProject = projectFileInfo.IsUnityProject();
         }
     }

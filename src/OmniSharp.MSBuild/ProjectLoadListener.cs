@@ -23,8 +23,10 @@ namespace OmniSharp.MSBuild
         private const string MSBuildProjectFullPath = nameof(MSBuildProjectFullPath);
         private readonly ILogger _logger;
         private readonly IEventEmitter _eventEmitter;
-        private static readonly VsTfmAndFileExtHashingAlgorithm _tfmAndFileHashingAlgorithm = new VsTfmAndFileExtHashingAlgorithm();
-        private static readonly VsReferenceHashingAlgorithm _referenceHashingAlgorithm = new VsReferenceHashingAlgorithm();
+        private static readonly VsTfmAndFileExtHashingAlgorithm _tfmAndFileHashingAlgorithm =
+            new VsTfmAndFileExtHashingAlgorithm();
+        private static readonly VsReferenceHashingAlgorithm _referenceHashingAlgorithm =
+            new VsReferenceHashingAlgorithm();
 
         [ImportingConstructor]
         public ProjectLoadListener(ILoggerFactory loggerFactory, IEventEmitter eventEmitter)
@@ -50,14 +52,29 @@ namespace OmniSharp.MSBuild
                 }
 
                 var hashedReferences = GetHashedReferences(args);
-                var (hashedFileExtensions, fileCounts) = GetUniqueHashedFileExtensionsAndCounts(args);
+                var (hashedFileExtensions, fileCounts) = GetUniqueHashedFileExtensionsAndCounts(
+                    args
+                );
 
                 var sdkStyleProject = IsSdkStyleProject(args);
-                _eventEmitter.ProjectInformation(projectId, sessionId, (int)outputKind, projectCapabilities, targetFrameworks, sdkVersion, hashedReferences, hashedFileExtensions, fileCounts, sdkStyleProject);
+                _eventEmitter.ProjectInformation(
+                    projectId,
+                    sessionId,
+                    (int)outputKind,
+                    projectCapabilities,
+                    targetFrameworks,
+                    sdkVersion,
+                    hashedReferences,
+                    hashedFileExtensions,
+                    fileCounts,
+                    sdkStyleProject
+                );
             }
             catch (Exception ex)
             {
-                _logger.LogError("Unexpected exception got thrown from project load listener: " + ex);
+                _logger.LogError(
+                    "Unexpected exception got thrown from project load listener: " + ex
+                );
             }
         }
 
@@ -68,18 +85,25 @@ namespace OmniSharp.MSBuild
             //       as this property could come from a different props file
             //   2.  If it imports an SDK.  This can be defined multiple ways in the project file, but
             //       we can look at the resolved imports after evaluation to see if any are SDK based.
-            bool hasTargetFrameworkProperty = args.Project.Properties.Any(property => property.Name is "TargetFramework" or "TargetFrameworks");
+            bool hasTargetFrameworkProperty = args.Project.Properties.Any(property =>
+                property.Name is "TargetFramework" or "TargetFrameworks"
+            );
             bool importsSdk = args.Project.Imports.Any(import => import.SdkResult != null);
             return hasTargetFrameworkProperty || importsSdk;
         }
 
-        private static (IEnumerable<HashedString> Extensions, IEnumerable<int> Counts) GetUniqueHashedFileExtensionsAndCounts(ProjectLoadedEventArgs args)
+        private static (
+            IEnumerable<HashedString> Extensions,
+            IEnumerable<int> Counts
+        ) GetUniqueHashedFileExtensionsAndCounts(ProjectLoadedEventArgs args)
         {
-            var contentFiles = args.ProjectInstance
-                .GetItems(ItemNames.Content)
+            var contentFiles = args
+                .ProjectInstance.GetItems(ItemNames.Content)
                 .Select(item => item.GetMetadataValue(MetadataNames.FullPath));
             var allFiles = args.SourceFiles.Concat(contentFiles);
-            var filesCounts = allFiles.GroupBy(file => Path.GetExtension(file)).ToDictionary(kvp => kvp.Key, kvp => kvp.Count());
+            var filesCounts = allFiles
+                .GroupBy(file => Path.GetExtension(file))
+                .ToDictionary(kvp => kvp.Key, kvp => kvp.Count());
             IEnumerable<string> fileExtensions = filesCounts.Select(kvp => kvp.Key);
             IEnumerable<int> fileCounts = filesCounts.Select(kvp => kvp.Value);
             return (fileExtensions.Select(_tfmAndFileHashingAlgorithm.HashInput), fileCounts);
@@ -96,7 +120,9 @@ namespace OmniSharp.MSBuild
             var projectFilePath = args.ProjectInstance.GetPropertyValue(MSBuildProjectFullPath);
             var content = File.ReadAllText(projectFilePath);
             //create a hash from the filename and the content
-            return _referenceHashingAlgorithm.HashInput($"Filename: {Path.GetFileName(projectFilePath)}\n{content}");
+            return _referenceHashingAlgorithm.HashInput(
+                $"Filename: {Path.GetFileName(projectFilePath)}\n{content}"
+            );
         }
 
         private static HashedString GetSdkVersion(ProjectLoadedEventArgs args)
@@ -111,19 +137,25 @@ namespace OmniSharp.MSBuild
 
         private static OutputKind GetOutputKind(ProjectLoadedEventArgs args)
         {
-            return PropertyConverter.ToOutputKind(args.ProjectInstance.GetPropertyValue(PropertyNames.OutputType));
+            return PropertyConverter.ToOutputKind(
+                args.ProjectInstance.GetPropertyValue(PropertyNames.OutputType)
+            );
         }
 
         private static IEnumerable<HashedString> GetHashedReferences(ProjectLoadedEventArgs args)
         {
-            var referenceNames = args.References.Select(reference => Path.GetFileNameWithoutExtension(reference).ToLower());
+            var referenceNames = args.References.Select(reference =>
+                Path.GetFileNameWithoutExtension(reference).ToLower()
+            );
             var hashed = referenceNames.Select(_referenceHashingAlgorithm.HashInput);
             return hashed;
         }
 
         private IEnumerable<string> GetProjectCapabilities(ProjectInstance projectInstance)
         {
-            return projectInstance.GetItems(ItemNames.ProjectCapability).Select(item => item.ToString());
+            return projectInstance
+                .GetItems(ItemNames.ProjectCapability)
+                .Select(item => item.ToString());
         }
 
         // Internal for testing
@@ -141,7 +173,8 @@ namespace OmniSharp.MSBuild
 
             if (!string.IsNullOrEmpty(targetFrameworks))
             {
-                return targetFrameworks.Split(';')
+                return targetFrameworks
+                    .Split(';')
                     .Where(tfm => !string.IsNullOrWhiteSpace(tfm))
                     .Select(tfm => tfm.ToLower());
             }

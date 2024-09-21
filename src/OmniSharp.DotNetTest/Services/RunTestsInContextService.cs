@@ -13,13 +13,18 @@ using OmniSharp.Services;
 namespace OmniSharp.DotNetTest.Services
 {
     [OmniSharpHandler(OmniSharpEndpoints.V2.RunTestsInContext, LanguageNames.CSharp)]
-    internal class RunTestsInContextService : BaseTestService, IRequestHandler<RunTestsInContextRequest, RunTestResponse>
+    internal class RunTestsInContextService
+        : BaseTestService,
+            IRequestHandler<RunTestsInContextRequest, RunTestResponse>
     {
         [ImportingConstructor]
-        public RunTestsInContextService(OmniSharpWorkspace workspace, IDotNetCliService dotNetCli, IEventEmitter eventEmitter, ILoggerFactory loggerFactory)
-            : base(workspace, dotNetCli, eventEmitter, loggerFactory)
-        {
-        }
+        public RunTestsInContextService(
+            OmniSharpWorkspace workspace,
+            IDotNetCliService dotNetCli,
+            IEventEmitter eventEmitter,
+            ILoggerFactory loggerFactory
+        )
+            : base(workspace, dotNetCli, eventEmitter, loggerFactory) { }
 
         public async Task<RunTestResponse> Handle(RunTestsInContextRequest request)
         {
@@ -30,13 +35,23 @@ namespace OmniSharp.DotNetTest.Services
                 {
                     Failure = "File is not part of a C# project in the loaded solution.",
                     Pass = false,
-                    ContextHadNoTests = true
+                    ContextHadNoTests = true,
                 };
             }
 
-            using var testManager = TestManager.Create(document.Project, DotNetCli, EventEmitter, LoggerFactory);
+            using var testManager = TestManager.Create(
+                document.Project,
+                DotNetCli,
+                EventEmitter,
+                LoggerFactory
+            );
 
-            var (methodNames, testFramework) = await testManager.GetContextTestMethodNames(request.Line, request.Column, document, CancellationToken.None);
+            var (methodNames, testFramework) = await testManager.GetContextTestMethodNames(
+                request.Line,
+                request.Column,
+                document,
+                CancellationToken.None
+            );
 
             if (methodNames is null)
             {
@@ -44,7 +59,7 @@ namespace OmniSharp.DotNetTest.Services
                 {
                     Pass = false,
                     Failure = "Could not find any tests to run",
-                    ContextHadNoTests = true
+                    ContextHadNoTests = true,
                 };
             }
 
@@ -52,14 +67,20 @@ namespace OmniSharp.DotNetTest.Services
 
             if (testManager.IsConnected)
             {
-                return await testManager.RunTestAsync(methodNames, request.RunSettings, testFramework, request.TargetFrameworkVersion, CancellationToken.None);
+                return await testManager.RunTestAsync(
+                    methodNames,
+                    request.RunSettings,
+                    testFramework,
+                    request.TargetFrameworkVersion,
+                    CancellationToken.None
+                );
             }
 
             var response = new RunTestResponse
             {
                 Failure = "Failed to connect to 'dotnet test' process",
                 Pass = false,
-                ContextHadNoTests = false
+                ContextHadNoTests = false,
             };
 
             return response;

@@ -1,26 +1,31 @@
-﻿#nullable enable
+#nullable enable
 
-using Microsoft.CodeAnalysis;
-using OmniSharp.Extensions;
-using OmniSharp.Mef;
-using OmniSharp.Models.GotoTypeDefinition;
-using OmniSharp.Options;
 using System.Composition;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.CodeAnalysis;
+using OmniSharp.Extensions;
+using OmniSharp.Mef;
 using OmniSharp.Models;
+using OmniSharp.Models.GotoTypeDefinition;
+using OmniSharp.Options;
 
 namespace OmniSharp.Roslyn.CSharp.Services.Navigation
 {
     [OmniSharpHandler(OmniSharpEndpoints.GotoTypeDefinition, LanguageNames.CSharp)]
-    public class GotoTypeDefinitionService : IRequestHandler<GotoTypeDefinitionRequest, GotoTypeDefinitionResponse>
+    public class GotoTypeDefinitionService
+        : IRequestHandler<GotoTypeDefinitionRequest, GotoTypeDefinitionResponse>
     {
         private readonly OmniSharpOptions _omnisharpOptions;
         private readonly OmniSharpWorkspace _workspace;
         private readonly ExternalSourceServiceFactory _externalSourceServiceFactory;
 
         [ImportingConstructor]
-        public GotoTypeDefinitionService(OmniSharpWorkspace workspace, ExternalSourceServiceFactory externalSourceServiceFactory, OmniSharpOptions omnisharpOptions)
+        public GotoTypeDefinitionService(
+            OmniSharpWorkspace workspace,
+            ExternalSourceServiceFactory externalSourceServiceFactory,
+            OmniSharpOptions omnisharpOptions
+        )
         {
             _workspace = workspace;
             _externalSourceServiceFactory = externalSourceServiceFactory;
@@ -29,17 +34,26 @@ namespace OmniSharp.Roslyn.CSharp.Services.Navigation
 
         public async Task<GotoTypeDefinitionResponse> Handle(GotoTypeDefinitionRequest request)
         {
-            var cancellationToken = _externalSourceServiceFactory.CreateCancellationToken(_omnisharpOptions, request.Timeout);
+            var cancellationToken = _externalSourceServiceFactory.CreateCancellationToken(
+                _omnisharpOptions,
+                request.Timeout
+            );
             var externalSourceService = _externalSourceServiceFactory.Create(_omnisharpOptions);
-            var document = externalSourceService.FindDocumentInCache(request.FileName) ??
-                _workspace.GetDocument(request.FileName);
+            var document =
+                externalSourceService.FindDocumentInCache(request.FileName)
+                ?? _workspace.GetDocument(request.FileName);
 
             if (document == null)
             {
                 return new GotoTypeDefinitionResponse();
             }
 
-            var typeSymbol = await GotoTypeDefinitionHelpers.GetTypeOfSymbol(document, request.Line, request.Column, cancellationToken);
+            var typeSymbol = await GotoTypeDefinitionHelpers.GetTypeOfSymbol(
+                document,
+                request.Line,
+                request.Column,
+                cancellationToken
+            );
             if (typeSymbol?.Locations.IsDefaultOrEmpty != false)
             {
                 return new GotoTypeDefinitionResponse();
@@ -49,18 +63,28 @@ namespace OmniSharp.Roslyn.CSharp.Services.Navigation
             {
                 return new GotoTypeDefinitionResponse()
                 {
-                    Definitions = typeSymbol.Locations
-                        .Select(location => new TypeDefinition
+                    Definitions = typeSymbol
+                        .Locations.Select(location => new TypeDefinition
                         {
-                            Location = location.GetMappedLineSpan().GetLocationFromFileLinePositionSpan(),
-                            SourceGeneratedFileInfo = SolutionExtensions.GetSourceGeneratedFileInfo(document.Project.Solution, location)
+                            Location = location
+                                .GetMappedLineSpan()
+                                .GetLocationFromFileLinePositionSpan(),
+                            SourceGeneratedFileInfo = SolutionExtensions.GetSourceGeneratedFileInfo(
+                                document.Project.Solution,
+                                location
+                            ),
                         })
-                        .ToList()
+                        .ToList(),
                 };
             }
             else
             {
-                var maybeSpan = await GoToDefinitionHelpers.GetMetadataMappedSpan(document, typeSymbol, externalSourceService, cancellationToken);
+                var maybeSpan = await GoToDefinitionHelpers.GetMetadataMappedSpan(
+                    document,
+                    typeSymbol,
+                    externalSourceService,
+                    cancellationToken
+                );
 
                 if (maybeSpan is FileLinePositionSpan lineSpan)
                 {
@@ -75,10 +99,10 @@ namespace OmniSharp.Roslyn.CSharp.Services.Navigation
                                 {
                                     AssemblyName = typeSymbol.ContainingAssembly.Name,
                                     ProjectName = document.Project.Name,
-                                    TypeName = typeSymbol.GetSymbolName()
-                                }
-                            }
-                        }
+                                    TypeName = typeSymbol.GetSymbolName(),
+                                },
+                            },
+                        },
                     };
                 }
 

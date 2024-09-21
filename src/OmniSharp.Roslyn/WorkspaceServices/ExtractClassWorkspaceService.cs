@@ -1,4 +1,4 @@
-﻿using System.Collections.Immutable;
+using System.Collections.Immutable;
 using System.Composition;
 using System.Linq;
 using System.Threading.Tasks;
@@ -12,24 +12,36 @@ namespace OmniSharp
     internal class ExtractClassWorkspaceService : IOmniSharpExtractClassOptionsService
     {
         [ImportingConstructor]
-        public ExtractClassWorkspaceService()
-        {
-        }
+        public ExtractClassWorkspaceService() { }
 
-        public Task<OmniSharpExtractClassOptions> GetExtractClassOptionsAsync(Document document, INamedTypeSymbol originalType, ImmutableArray<ISymbol> selectedMembers)
+        public Task<OmniSharpExtractClassOptions> GetExtractClassOptionsAsync(
+            Document document,
+            INamedTypeSymbol originalType,
+            ImmutableArray<ISymbol> selectedMembers
+        )
         {
             var symbolsToUse = selectedMembers.IsEmpty
-                ? originalType.GetMembers().Where(member => member switch
-                    {
-                        IMethodSymbol methodSymbol => methodSymbol.MethodKind == MethodKind.Ordinary,
-                        IFieldSymbol fieldSymbol => !fieldSymbol.IsImplicitlyDeclared,
-                        _ => member.Kind == SymbolKind.Property || member.Kind == SymbolKind.Event
-                    })
+                ? originalType
+                    .GetMembers()
+                    .Where(member =>
+                        member switch
+                        {
+                            IMethodSymbol methodSymbol => methodSymbol.MethodKind
+                                == MethodKind.Ordinary,
+                            IFieldSymbol fieldSymbol => !fieldSymbol.IsImplicitlyDeclared,
+                            _ => member.Kind == SymbolKind.Property
+                                || member.Kind == SymbolKind.Event,
+                        }
+                    )
                 : selectedMembers;
 
-            var memberAnalysisResults = symbolsToUse.Select(m => new OmniSharpExtractClassMemberAnalysisResult(m, makeAbstract: false)).ToImmutableArray();
+            var memberAnalysisResults = symbolsToUse
+                .Select(m => new OmniSharpExtractClassMemberAnalysisResult(m, makeAbstract: false))
+                .ToImmutableArray();
             const string name = "NewBaseType";
-            return Task.FromResult(new OmniSharpExtractClassOptions($"{name}.cs", name, true, memberAnalysisResults));
+            return Task.FromResult(
+                new OmniSharpExtractClassOptions($"{name}.cs", name, true, memberAnalysisResults)
+            );
         }
     }
 }

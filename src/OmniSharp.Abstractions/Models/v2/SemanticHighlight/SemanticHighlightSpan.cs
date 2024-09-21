@@ -8,10 +8,13 @@ namespace OmniSharp.Models.SemanticHighlight
     {
         [JsonConverter(typeof(ZeroBasedIndexConverter))]
         public int StartLine { get; set; }
+
         [JsonConverter(typeof(ZeroBasedIndexConverter))]
         public int StartColumn { get; set; }
+
         [JsonConverter(typeof(ZeroBasedIndexConverter))]
         public int EndLine { get; set; }
+
         [JsonConverter(typeof(ZeroBasedIndexConverter))]
         public int EndColumn { get; set; }
         public SemanticHighlightClassification Type { get; set; }
@@ -73,10 +76,7 @@ namespace OmniSharp.Models.SemanticHighlight
 
         public override int GetHashCode()
         {
-            return 13 * StartLine +
-                17 * StartColumn +
-                23 * EndLine +
-                31 * EndColumn;
+            return 13 * StartLine + 17 * StartColumn + 23 * EndLine + 31 * EndColumn;
         }
     }
 }

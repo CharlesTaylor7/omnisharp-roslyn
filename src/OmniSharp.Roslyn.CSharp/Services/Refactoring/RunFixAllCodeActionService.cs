@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Composition;
@@ -9,8 +9,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CodeActions;
-using Microsoft.CodeAnalysis.ExternalAccess.OmniSharp.CodeActions;
 using Microsoft.CodeAnalysis.CodeFixes;
+using Microsoft.CodeAnalysis.ExternalAccess.OmniSharp.CodeActions;
 using Microsoft.Extensions.Logging;
 using OmniSharp.Abstractions.Models.V1.FixAll;
 using OmniSharp.Mef;
@@ -25,44 +25,56 @@ using RoslynFixAllScope = Microsoft.CodeAnalysis.CodeFixes.FixAllScope;
 namespace OmniSharp.Roslyn.CSharp.Services.Refactoring
 {
     [OmniSharpHandler(OmniSharpEndpoints.RunFixAll, LanguageNames.CSharp)]
-    public class RunFixAllCodeActionService : BaseCodeActionService<RunFixAllRequest, RunFixAllResponse>
+    public class RunFixAllCodeActionService
+        : BaseCodeActionService<RunFixAllRequest, RunFixAllResponse>
     {
         private readonly ILogger<RunFixAllCodeActionService> _logger;
         private readonly FixAllDiagnosticProvider _fixAllDiagnosticProvider;
 
         [ImportingConstructor]
-        public RunFixAllCodeActionService(ICsDiagnosticWorker diagnosticWorker,
+        public RunFixAllCodeActionService(
+            ICsDiagnosticWorker diagnosticWorker,
             [ImportMany] IEnumerable<ICodeActionProvider> providers,
             CachingCodeFixProviderForProjects codeFixProvider,
             OmniSharpWorkspace workspace,
             OmniSharpOptions options,
-            ILoggerFactory loggerFactory) :
-            base(
+            ILoggerFactory loggerFactory
+        )
+            : base(
                 workspace,
                 providers,
                 loggerFactory.CreateLogger<RunFixAllCodeActionService>(),
                 diagnosticWorker,
                 codeFixProvider,
-                options)
+                options
+            )
         {
             _logger = loggerFactory.CreateLogger<RunFixAllCodeActionService>();
             _fixAllDiagnosticProvider = new FixAllDiagnosticProvider(diagnosticWorker);
         }
 
-        public async override Task<RunFixAllResponse> Handle(RunFixAllRequest request)
+        public override async Task<RunFixAllResponse> Handle(RunFixAllRequest request)
         {
             var solutionBeforeChanges = Workspace.CurrentSolution;
             if (!(Workspace.GetDocument(request.FileName) is Document document))
             {
-                _logger.LogWarning("Requested fix all for document {0} that does not exist!", request.FileName);
+                _logger.LogWarning(
+                    "Requested fix all for document {0} that does not exist!",
+                    request.FileName
+                );
                 return new RunFixAllResponse();
             }
 
-            var cancellationSource = new CancellationTokenSource(TimeSpan.FromMilliseconds(request.Timeout));
+            var cancellationSource = new CancellationTokenSource(
+                TimeSpan.FromMilliseconds(request.Timeout)
+            );
             switch (request)
             {
                 case { Scope: FixAllScope.Document, FixAllFilter: null }:
-                    var allDiagnosticsInFile = await GetDiagnosticsAsync(FixAllScope.Document, document);
+                    var allDiagnosticsInFile = await GetDiagnosticsAsync(
+                        FixAllScope.Document,
+                        document
+                    );
                     if (allDiagnosticsInFile.IsDefaultOrEmpty)
                     {
                         break;
@@ -74,10 +86,18 @@ namespace OmniSharp.Roslyn.CSharp.Services.Refactoring
                         break;
                     }
 
-                    _logger.LogInformation("Found {0} diagnostics to fix.", allDiagnosticsInFile[0].Diagnostics.Length);
+                    _logger.LogInformation(
+                        "Found {0} diagnostics to fix.",
+                        allDiagnosticsInFile[0].Diagnostics.Length
+                    );
                     foreach (var diagnostic in allDiagnosticsInFile[0].Diagnostics)
                     {
-                        document = await FixSpecificDiagnosticIdAsync(document, diagnostic.Id, FixAllScope.Document, CancellationToken.None);
+                        document = await FixSpecificDiagnosticIdAsync(
+                            document,
+                            diagnostic.Id,
+                            FixAllScope.Document,
+                            CancellationToken.None
+                        );
                     }
 
                     break;
@@ -85,13 +105,20 @@ namespace OmniSharp.Roslyn.CSharp.Services.Refactoring
                 case { FixAllFilter: { } filters }:
                     foreach (var filter in filters)
                     {
-                        document = await FixSpecificDiagnosticIdAsync(document, filter.Id, request.Scope, cancellationSource.Token);
+                        document = await FixSpecificDiagnosticIdAsync(
+                            document,
+                            filter.Id,
+                            request.Scope,
+                            cancellationSource.Token
+                        );
                     }
 
                     break;
 
                 default:
-                    throw new NotImplementedException($"Only scope '{nameof(FixAllScope.Document)}' is currently supported when filter '{nameof(request.FixAllFilter)}' is not set.");
+                    throw new NotImplementedException(
+                        $"Only scope '{nameof(FixAllScope.Document)}' is currently supported when filter '{nameof(request.FixAllFilter)}' is not set."
+                    );
             }
 
             var solutionAfterChanges = document.Project.Solution;
@@ -101,27 +128,45 @@ namespace OmniSharp.Roslyn.CSharp.Services.Refactoring
                 Workspace.TryApplyChanges(solutionAfterChanges);
             }
 
-            var changes = await GetFileChangesAsync(document.Project.Solution, solutionBeforeChanges, Path.GetDirectoryName(request.FileName), request.WantsTextChanges, request.WantsAllCodeActionOperations);
+            var changes = await GetFileChangesAsync(
+                document.Project.Solution,
+                solutionBeforeChanges,
+                Path.GetDirectoryName(request.FileName),
+                request.WantsTextChanges,
+                request.WantsAllCodeActionOperations
+            );
 
-            return new RunFixAllResponse
-            {
-                Changes = changes.FileChanges
-            };
+            return new RunFixAllResponse { Changes = changes.FileChanges };
         }
 
-        private async Task<Document> FixSpecificDiagnosticIdAsync(Document document, string diagnosticId, FixAllScope scope, CancellationToken cancellationToken)
+        private async Task<Document> FixSpecificDiagnosticIdAsync(
+            Document document,
+            string diagnosticId,
+            FixAllScope scope,
+            CancellationToken cancellationToken
+        )
         {
             _logger.LogInformation("Fixing {0}.", diagnosticId);
             var originalDoc = document;
             var codeFixProvider = GetCodeFixProviderForId(document, diagnosticId);
-            if (codeFixProvider is null || !(codeFixProvider.GetFixAllProvider() is FixAllProvider fixAllProvider))
+            if (
+                codeFixProvider is null
+                || !(codeFixProvider.GetFixAllProvider() is FixAllProvider fixAllProvider)
+            )
             {
-                _logger.LogInformation("Could not find a codefix provider or a fixall provider for {0}.", diagnosticId);
+                _logger.LogInformation(
+                    "Could not find a codefix provider or a fixall provider for {0}.",
+                    diagnosticId
+                );
                 return originalDoc;
             }
 
             _logger.LogTrace("Determing if {0} is still present in the document.", diagnosticId);
-            var (diagnosticDocId, primaryDiagnostic) = await GetDocumentIdAndDiagnosticForGivenId(scope, document, diagnosticId);
+            var (diagnosticDocId, primaryDiagnostic) = await GetDocumentIdAndDiagnosticForGivenId(
+                scope,
+                document,
+                diagnosticId
+            );
             cancellationToken.ThrowIfCancellationRequested();
             if (primaryDiagnostic is null)
             {
@@ -134,7 +179,9 @@ namespace OmniSharp.Roslyn.CSharp.Services.Refactoring
                 document = document.Project.Solution.GetDocument(diagnosticDocId);
                 if (document is null)
                 {
-                    throw new InvalidOperationException("Could not find the document with the diagnostic in the solution");
+                    throw new InvalidOperationException(
+                        "Could not find the document with the diagnostic in the solution"
+                    );
                 }
             }
 
@@ -155,7 +202,8 @@ namespace OmniSharp.Roslyn.CSharp.Services.Refactoring
                     }
                 },
                 codeActionOptions,
-                cancellationToken);
+                cancellationToken
+            );
 
             await codeFixProvider.RegisterCodeFixesAsync(context).ConfigureAwait(false);
 
@@ -164,7 +212,7 @@ namespace OmniSharp.Roslyn.CSharp.Services.Refactoring
                 FixAllScope.Document => RoslynFixAllScope.Document,
                 FixAllScope.Project => RoslynFixAllScope.Project,
                 FixAllScope.Solution => RoslynFixAllScope.Solution,
-                _ => throw new InvalidOperationException()
+                _ => throw new InvalidOperationException(),
             };
 
             var fixAllContext = OmniSharpCodeFixContextFactory.CreateFixAllContext(
@@ -177,7 +225,8 @@ namespace OmniSharp.Roslyn.CSharp.Services.Refactoring
                 ImmutableArray.Create(diagnosticId),
                 _fixAllDiagnosticProvider,
                 _ => codeActionOptions,
-                cancellationToken);
+                cancellationToken
+            );
 
             _logger.LogTrace("Finding FixAll fix for {0}.", diagnosticId);
             var fixes = await fixAllProvider.GetFixAsync(fixAllContext);
@@ -192,7 +241,10 @@ namespace OmniSharp.Roslyn.CSharp.Services.Refactoring
 
             // Currently, there are no roslyn changes that will result in multiple ApplyChangesOperations
             Debug.Assert(operations.OfType<ApplyChangesOperation>().Count() < 2);
-            if (operations.OfType<ApplyChangesOperation>().FirstOrDefault() is ApplyChangesOperation applyChangesOperation)
+            if (
+                operations.OfType<ApplyChangesOperation>().FirstOrDefault()
+                is ApplyChangesOperation applyChangesOperation
+            )
             {
                 _logger.LogTrace("Found apply changes operation for {0}.", diagnosticId);
                 return applyChangesOperation.ChangedSolution.GetDocument(originalDoc.Id);
@@ -213,14 +265,20 @@ namespace OmniSharp.Roslyn.CSharp.Services.Refactoring
                 _diagnosticWorker = diagnosticWorker;
             }
 
-            public override async Task<IEnumerable<Diagnostic>> GetAllDiagnosticsAsync(Project project, CancellationToken cancellationToken)
-                => await _diagnosticWorker.AnalyzeProjectsAsync(project, cancellationToken);
+            public override async Task<IEnumerable<Diagnostic>> GetAllDiagnosticsAsync(
+                Project project,
+                CancellationToken cancellationToken
+            ) => await _diagnosticWorker.AnalyzeProjectsAsync(project, cancellationToken);
 
-            public override async Task<IEnumerable<Diagnostic>> GetDocumentDiagnosticsAsync(Document document, CancellationToken cancellationToken)
-                => await _diagnosticWorker.AnalyzeDocumentAsync(document, cancellationToken);
+            public override async Task<IEnumerable<Diagnostic>> GetDocumentDiagnosticsAsync(
+                Document document,
+                CancellationToken cancellationToken
+            ) => await _diagnosticWorker.AnalyzeDocumentAsync(document, cancellationToken);
 
-            public override async Task<IEnumerable<Diagnostic>> GetProjectDiagnosticsAsync(Project project, CancellationToken cancellationToken)
-                => await _diagnosticWorker.AnalyzeProjectsAsync(project, cancellationToken);
+            public override async Task<IEnumerable<Diagnostic>> GetProjectDiagnosticsAsync(
+                Project project,
+                CancellationToken cancellationToken
+            ) => await _diagnosticWorker.AnalyzeProjectsAsync(project, cancellationToken);
         }
     }
 }

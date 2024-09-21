@@ -14,10 +14,15 @@ namespace OmniSharp
     /// <summary>
     /// An implementation of semantic versioning (https://semver.org)
     /// </summary>
-    public sealed class SemanticVersion : IComparable, IComparable<SemanticVersion>, IEquatable<SemanticVersion>
+    public sealed class SemanticVersion
+        : IComparable,
+            IComparable<SemanticVersion>,
+            IEquatable<SemanticVersion>
     {
-        private const string VersionSansRegEx = @"^(?<major>(0|[1-9]\d*))\.(?<minor>(0|[1-9]\d*))\.(?<patch>(0|[1-9]\d*))$";
-        private const string LabelRegEx = @"^((?<preLabel>[0-9A-Za-z][0-9A-Za-z\-\.]*))?(\+(?<buildLabel>[0-9A-Za-z][0-9A-Za-z\-\.]*))?$";
+        private const string VersionSansRegEx =
+            @"^(?<major>(0|[1-9]\d*))\.(?<minor>(0|[1-9]\d*))\.(?<patch>(0|[1-9]\d*))$";
+        private const string LabelRegEx =
+            @"^((?<preLabel>[0-9A-Za-z][0-9A-Za-z\-\.]*))?(\+(?<buildLabel>[0-9A-Za-z][0-9A-Za-z\-\.]*))?$";
         private const string LabelUnitRegEx = @"^[0-9A-Za-z][0-9A-Za-z\-\.]*$";
 
         private string versionString;
@@ -51,19 +56,27 @@ namespace OmniSharp
         /// If <paramref name="preReleaseLabel"/> don't match 'LabelUnitRegEx'.
         /// If <paramref name="buildLabel"/> don't match 'LabelUnitRegEx'.
         /// </exception>
-        public SemanticVersion(int major, int minor, int patch, string preReleaseLabel, string buildLabel)
+        public SemanticVersion(
+            int major,
+            int minor,
+            int patch,
+            string preReleaseLabel,
+            string buildLabel
+        )
             : this(major, minor, patch)
         {
             if (!string.IsNullOrEmpty(preReleaseLabel))
             {
-                if (!Regex.IsMatch(preReleaseLabel, LabelUnitRegEx)) throw new FormatException(nameof(preReleaseLabel));
+                if (!Regex.IsMatch(preReleaseLabel, LabelUnitRegEx))
+                    throw new FormatException(nameof(preReleaseLabel));
 
                 PreReleaseLabel = preReleaseLabel;
             }
 
             if (!string.IsNullOrEmpty(buildLabel))
             {
-                if (!Regex.IsMatch(buildLabel, LabelUnitRegEx)) throw new FormatException(nameof(buildLabel));
+                if (!Regex.IsMatch(buildLabel, LabelUnitRegEx))
+                    throw new FormatException(nameof(buildLabel));
 
                 BuildLabel = buildLabel;
             }
@@ -89,7 +102,8 @@ namespace OmniSharp
             if (!string.IsNullOrEmpty(label))
             {
                 var match = Regex.Match(label, LabelRegEx);
-                if (!match.Success) throw new FormatException(nameof(label));
+                if (!match.Success)
+                    throw new FormatException(nameof(label));
 
                 PreReleaseLabel = match.Groups["preLabel"].Value;
                 BuildLabel = match.Groups["buildLabel"].Value;
@@ -107,9 +121,12 @@ namespace OmniSharp
         /// </exception>
         public SemanticVersion(int major, int minor, int patch)
         {
-            if (major < 0) throw new ArgumentException("Major version cannot be less than 0", nameof(major));
-            if (minor < 0) throw new ArgumentException("Minor version cannot be less than 0", nameof(minor));
-            if (patch < 0) throw new ArgumentException("Patch version cannot be less than 0", nameof(patch));
+            if (major < 0)
+                throw new ArgumentException("Major version cannot be less than 0", nameof(major));
+            if (minor < 0)
+                throw new ArgumentException("Minor version cannot be less than 0", nameof(minor));
+            if (patch < 0)
+                throw new ArgumentException("Patch version cannot be less than 0", nameof(patch));
 
             Major = major;
             Minor = minor;
@@ -127,7 +144,8 @@ namespace OmniSharp
         /// <exception cref="PSArgumentException">
         /// If <paramref name="major"/> or <paramref name="minor"/> is less than 0.
         /// </exception>
-        public SemanticVersion(int major, int minor) : this(major, minor, 0) { }
+        public SemanticVersion(int major, int minor)
+            : this(major, minor, 0) { }
 
         /// <summary>
         /// Construct a SemanticVersion.
@@ -136,7 +154,8 @@ namespace OmniSharp
         /// <exception cref="PSArgumentException">
         /// If <paramref name="major"/> is less than 0.
         /// </exception>
-        public SemanticVersion(int major) : this(major, 0, 0) { }
+        public SemanticVersion(int major)
+            : this(major, 0, 0) { }
 
         /// <summary>
         /// The major version number, never negative.
@@ -173,8 +192,10 @@ namespace OmniSharp
         /// <exception cref="OverflowException"></exception>
         public static SemanticVersion Parse(string version)
         {
-            if (version == null) throw new ArgumentNullException(nameof(version));
-            if (version == string.Empty) throw new FormatException(nameof(version));
+            if (version == null)
+                throw new ArgumentNullException(nameof(version));
+            if (version == string.Empty)
+                throw new FormatException(nameof(version));
 
             var r = new VersionResult();
             r.Init(true);
@@ -271,9 +292,11 @@ namespace OmniSharp
                 }
             }
 
-            if ((dashIndex != -1 && string.IsNullOrEmpty(preLabel)) ||
-                (plusIndex != -1 && string.IsNullOrEmpty(buildLabel)) ||
-                string.IsNullOrEmpty(versionSansLabel))
+            if (
+                (dashIndex != -1 && string.IsNullOrEmpty(preLabel))
+                || (plusIndex != -1 && string.IsNullOrEmpty(buildLabel))
+                || string.IsNullOrEmpty(versionSansLabel)
+            )
             {
                 // We have dash and no preReleaseLabel  or
                 // we have plus and no buildLabel or
@@ -295,20 +318,28 @@ namespace OmniSharp
                 return false;
             }
 
-            if (match.Groups["minor"].Success && !int.TryParse(match.Groups["minor"].Value, out minor))
+            if (
+                match.Groups["minor"].Success
+                && !int.TryParse(match.Groups["minor"].Value, out minor)
+            )
             {
                 result.SetFailure(ParseFailureKind.FormatException);
                 return false;
             }
 
-            if (match.Groups["patch"].Success && !int.TryParse(match.Groups["patch"].Value, out patch))
+            if (
+                match.Groups["patch"].Success
+                && !int.TryParse(match.Groups["patch"].Value, out patch)
+            )
             {
                 result.SetFailure(ParseFailureKind.FormatException);
                 return false;
             }
 
-            if (preLabel != null && !Regex.IsMatch(preLabel, LabelUnitRegEx) ||
-               (buildLabel != null && !Regex.IsMatch(buildLabel, LabelUnitRegEx)))
+            if (
+                preLabel != null && !Regex.IsMatch(preLabel, LabelUnitRegEx)
+                || (buildLabel != null && !Regex.IsMatch(buildLabel, LabelUnitRegEx))
+            )
             {
                 result.SetFailure(ParseFailureKind.FormatException);
                 return false;
@@ -412,9 +443,11 @@ namespace OmniSharp
         public bool Equals(SemanticVersion other)
         {
             // SymVer 2.0 standard requires to ignore 'BuildLabel' (Build metadata).
-            return other != null &&
-                   (Major == other.Major) && (Minor == other.Minor) && (Patch == other.Patch) &&
-                   string.Equals(PreReleaseLabel, other.PreReleaseLabel, StringComparison.Ordinal);
+            return other != null
+                && (Major == other.Major)
+                && (Minor == other.Minor)
+                && (Patch == other.Patch)
+                && string.Equals(PreReleaseLabel, other.PreReleaseLabel, StringComparison.Ordinal);
         }
 
         /// <summary>
@@ -489,9 +522,15 @@ namespace OmniSharp
             // Numeric identifiers always have lower precedence than non-numeric identifiers.
             // A larger set of pre-release fields has a higher precedence than a smaller set,
             // if all of the preceding identifiers are equal.
-            if (string.IsNullOrEmpty(preLabel1)) { return string.IsNullOrEmpty(preLabel2) ? 0 : 1; }
+            if (string.IsNullOrEmpty(preLabel1))
+            {
+                return string.IsNullOrEmpty(preLabel2) ? 0 : 1;
+            }
 
-            if (string.IsNullOrEmpty(preLabel2)) { return -1; }
+            if (string.IsNullOrEmpty(preLabel2))
+            {
+                return -1;
+            }
 
             var units1 = preLabel1.Split('.');
             var units2 = preLabel2.Split('.');
@@ -502,22 +541,35 @@ namespace OmniSharp
             {
                 var ac = units1[i];
                 var bc = units2[i];
-                int number1, number2;
+                int number1,
+                    number2;
                 var isNumber1 = Int32.TryParse(ac, out number1);
                 var isNumber2 = Int32.TryParse(bc, out number2);
 
                 if (isNumber1 && isNumber2)
                 {
-                    if (number1 != number2) { return number1 < number2 ? -1 : 1; }
+                    if (number1 != number2)
+                    {
+                        return number1 < number2 ? -1 : 1;
+                    }
                 }
                 else
                 {
-                    if (isNumber1) { return -1; }
+                    if (isNumber1)
+                    {
+                        return -1;
+                    }
 
-                    if (isNumber2) { return 1; }
+                    if (isNumber2)
+                    {
+                        return 1;
+                    }
 
                     int result = string.CompareOrdinal(ac, bc);
-                    if (result != 0) { return result; }
+                    if (result != 0)
+                    {
+                        return result;
+                    }
                 }
             }
 
@@ -528,7 +580,7 @@ namespace OmniSharp
         {
             ArgumentException,
             ArgumentOutOfRangeException,
-            FormatException
+            FormatException,
         }
 
         internal struct VersionResult

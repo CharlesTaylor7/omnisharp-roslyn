@@ -1,15 +1,15 @@
 using System;
 using System.Diagnostics;
 using Microsoft.AspNetCore.Hosting;
-#if NETCOREAPP
-using Microsoft.Extensions.Hosting;
-#endif
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using OmniSharp.Eventing;
 using OmniSharp.Plugins;
 using OmniSharp.Services;
 using OmniSharp.Utilities;
+#if NETCOREAPP
+using Microsoft.Extensions.Hosting;
+#endif
 
 namespace OmniSharp.Http
 {
@@ -26,7 +26,8 @@ namespace OmniSharp.Http
             ISharedTextWriter sharedTextWriter,
             PluginAssemblies commandLinePlugins,
             int serverPort,
-            string serverInterface)
+            string serverInterface
+        )
         {
             _environment = environment;
             _sharedTextWriter = sharedTextWriter;
@@ -37,12 +38,15 @@ namespace OmniSharp.Http
 
         public void Start()
         {
-            var config = new Microsoft.Extensions.Configuration.ConfigurationBuilder()
-                .AddCommandLine(new[] { "--server.urls", $"http://{_serverInterface}:{_serverPort}" });
+            var config =
+                new Microsoft.Extensions.Configuration.ConfigurationBuilder().AddCommandLine(
+                    new[] { "--server.urls", $"http://{_serverInterface}:{_serverPort}" }
+                );
 
             var builder = new WebHostBuilder()
 #if NETCOREAPP
-                .UseKestrel(config => {
+                .UseKestrel(config =>
+                {
                     config.AllowSynchronousIO = true;
                 })
 #else

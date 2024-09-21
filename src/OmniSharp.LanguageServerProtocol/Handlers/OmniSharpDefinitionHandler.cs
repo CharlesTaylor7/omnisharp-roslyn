@@ -16,27 +16,41 @@ namespace OmniSharp.LanguageServerProtocol.Handlers
     {
         public static IEnumerable<IJsonRpcHandler> Enumerate(RequestHandlers handlers)
         {
-            foreach (var (selector, handler) in handlers.OfType<Mef.IRequestHandler<GotoDefinitionRequest, GotoDefinitionResponse>>())
+            foreach (
+                var (selector, handler) in handlers.OfType<Mef.IRequestHandler<
+                    GotoDefinitionRequest,
+                    GotoDefinitionResponse
+                >>()
+            )
                 if (handler != null)
                     yield return new OmniSharpDefinitionHandler(handler, selector);
         }
 
-        private readonly Mef.IRequestHandler<GotoDefinitionRequest, GotoDefinitionResponse> _definitionHandler;
+        private readonly Mef.IRequestHandler<
+            GotoDefinitionRequest,
+            GotoDefinitionResponse
+        > _definitionHandler;
         private readonly TextDocumentSelector _documentSelector;
 
-        public OmniSharpDefinitionHandler(Mef.IRequestHandler<GotoDefinitionRequest, GotoDefinitionResponse> definitionHandler, TextDocumentSelector documentSelector)
+        public OmniSharpDefinitionHandler(
+            Mef.IRequestHandler<GotoDefinitionRequest, GotoDefinitionResponse> definitionHandler,
+            TextDocumentSelector documentSelector
+        )
         {
             _definitionHandler = definitionHandler;
             _documentSelector = documentSelector;
         }
 
-        public override async Task<LocationOrLocationLinks> Handle(DefinitionParams request, CancellationToken token)
+        public override async Task<LocationOrLocationLinks> Handle(
+            DefinitionParams request,
+            CancellationToken token
+        )
         {
             var omnisharpRequest = new GotoDefinitionRequest()
             {
                 FileName = FromUri(request.TextDocument.Uri),
                 Column = Convert.ToInt32(request.Position.Character),
-                Line = Convert.ToInt32(request.Position.Line)
+                Line = Convert.ToInt32(request.Position.Line),
             };
 
             var omnisharpResponse = await _definitionHandler.Handle(omnisharpRequest);
@@ -46,19 +60,23 @@ namespace OmniSharp.LanguageServerProtocol.Handlers
                 return new LocationOrLocationLinks();
             }
 
-            return new LocationOrLocationLinks(omnisharpResponse.Definitions.Select<Definition, LocationOrLocationLink>(definition => new Location()
-            {
-                Uri = definition.Location.FileName,
-                Range = ToRange(definition.Location.Range)
-            }));
+            return new LocationOrLocationLinks(
+                omnisharpResponse.Definitions.Select<Definition, LocationOrLocationLink>(
+                    definition => new Location()
+                    {
+                        Uri = definition.Location.FileName,
+                        Range = ToRange(definition.Location.Range),
+                    }
+                )
+            );
         }
 
-        protected override DefinitionRegistrationOptions CreateRegistrationOptions(DefinitionCapability capability, ClientCapabilities clientCapabilities)
+        protected override DefinitionRegistrationOptions CreateRegistrationOptions(
+            DefinitionCapability capability,
+            ClientCapabilities clientCapabilities
+        )
         {
-            return new DefinitionRegistrationOptions()
-            {
-                DocumentSelector = _documentSelector,
-            };
+            return new DefinitionRegistrationOptions() { DocumentSelector = _documentSelector };
         }
     }
 }

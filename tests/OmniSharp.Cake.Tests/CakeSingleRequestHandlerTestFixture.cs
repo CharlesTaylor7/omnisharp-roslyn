@@ -9,20 +9,24 @@ namespace OmniSharp.Cake.Tests
         where TRequestHandler : IRequestHandler
     {
         protected CakeSingleRequestHandlerTestFixture(ITestOutputHelper testOutput)
-            : base(testOutput)
-        {
-        }
+            : base(testOutput) { }
 
         protected abstract string EndpointName { get; }
 
         protected TRequestHandler GetRequestHandler(OmniSharpTestHost host)
         {
-            return host.GetRequestHandler<TRequestHandler>(EndpointName, Constants.LanguageNames.Cake);
+            return host.GetRequestHandler<TRequestHandler>(
+                EndpointName,
+                Constants.LanguageNames.Cake
+            );
         }
 
         protected UpdateBufferHandler GetUpdateBufferHandler(OmniSharpTestHost host)
         {
-            return host.GetRequestHandler<UpdateBufferHandler>(OmniSharpEndpoints.UpdateBuffer, Constants.LanguageNames.Cake);
+            return host.GetRequestHandler<UpdateBufferHandler>(
+                OmniSharpEndpoints.UpdateBuffer,
+                Constants.LanguageNames.Cake
+            );
         }
     }
 }

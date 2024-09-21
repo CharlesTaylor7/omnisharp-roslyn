@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -11,7 +11,7 @@ namespace OmniSharp.Utilities
     {
         private partial class PollingFileChangeToken : DisposableObject, IChangeToken
         {
-            private readonly static TimeSpan s_pollingInterval = TimeSpan.FromSeconds(2);
+            private static readonly TimeSpan s_pollingInterval = TimeSpan.FromSeconds(2);
 
             private bool _polling;
 
@@ -43,9 +43,7 @@ namespace OmniSharp.Utilities
             }
 
             private DateTime GetLastWriteTimeUtc() =>
-                File.Exists(_filePath)
-                    ? File.GetLastWriteTimeUtc(_filePath)
-                    : DateTime.MinValue;
+                File.Exists(_filePath) ? File.GetLastWriteTimeUtc(_filePath) : DateTime.MinValue;
 
             private void StartPolling()
             {

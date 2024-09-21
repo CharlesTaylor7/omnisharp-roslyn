@@ -14,8 +14,6 @@ namespace TestUtility
         }
 
         public TestFile(string fileName, string content)
-            : this(fileName, TestContent.Parse(content))
-        {
-        }
+            : this(fileName, TestContent.Parse(content)) { }
     }
 }

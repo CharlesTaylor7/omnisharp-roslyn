@@ -11,17 +11,19 @@ namespace OmniSharp.Roslyn.CSharp.Tests
 {
     public class GoToRegionFacts : AbstractSingleRequestHandlerTestFixture<GotoRegionService>
     {
-        public GoToRegionFacts(ITestOutputHelper output, SharedOmniSharpHostFixture sharedOmniSharpHostFixture)
-            : base(output, sharedOmniSharpHostFixture)
-        {
-        }
+        public GoToRegionFacts(
+            ITestOutputHelper output,
+            SharedOmniSharpHostFixture sharedOmniSharpHostFixture
+        )
+            : base(output, sharedOmniSharpHostFixture) { }
 
         protected override string EndpointName => OmniSharpEndpoints.GotoRegion;
 
         [Fact]
         public async Task CanFindRegionsInFileWithRegions()
         {
-            const string source = @"
+            const string source =
+                @"
                 public class Foo
                 {
                       #region A
@@ -67,7 +69,7 @@ namespace OmniSharp.Roslyn.CSharp.Tests
                 Line = point.Line,
                 Column = point.Offset,
                 FileName = testFile.FileName,
-                Buffer = testFile.Content.Code
+                Buffer = testFile.Content.Code,
             };
 
             var response = await requestHandler.Handle(request);

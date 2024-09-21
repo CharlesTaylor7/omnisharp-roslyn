@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -22,30 +22,46 @@ namespace OmniSharp.LanguageServerProtocol.Handlers
     {
         public static IEnumerable<IJsonRpcHandler> Enumerate(RequestHandlers handlers)
         {
-            foreach (var (selector, membersAsTreeHandler, findUsagesHandler) in handlers
-                .OfType<
+            foreach (
+                var (selector, membersAsTreeHandler, findUsagesHandler) in handlers.OfType<
                     Mef.IRequestHandler<MembersTreeRequest, FileMemberTree>,
-                    Mef.IRequestHandler<FindUsagesRequest, QuickFixResponse>>())
+                    Mef.IRequestHandler<FindUsagesRequest, QuickFixResponse>
+                >()
+            )
             {
-                yield return new OmniSharpCodeLensHandler(membersAsTreeHandler, findUsagesHandler, selector);
+                yield return new OmniSharpCodeLensHandler(
+                    membersAsTreeHandler,
+                    findUsagesHandler,
+                    selector
+                );
             }
         }
 
-        private readonly Mef.IRequestHandler<MembersTreeRequest, FileMemberTree> _membersAsTreeHandler;
-        private readonly Mef.IRequestHandler<FindUsagesRequest, QuickFixResponse> _findUsagesHandler;
+        private readonly Mef.IRequestHandler<
+            MembersTreeRequest,
+            FileMemberTree
+        > _membersAsTreeHandler;
+        private readonly Mef.IRequestHandler<
+            FindUsagesRequest,
+            QuickFixResponse
+        > _findUsagesHandler;
         private readonly TextDocumentSelector _documentSelector;
 
         public OmniSharpCodeLensHandler(
             Mef.IRequestHandler<MembersTreeRequest, FileMemberTree> membersAsTreeHandler,
             Mef.IRequestHandler<FindUsagesRequest, QuickFixResponse> findUsagesHandler,
-            TextDocumentSelector documentSelector)
+            TextDocumentSelector documentSelector
+        )
         {
             _membersAsTreeHandler = membersAsTreeHandler;
             _findUsagesHandler = findUsagesHandler;
             _documentSelector = documentSelector;
         }
 
-        public override async Task<CodeLensContainer> Handle(CodeLensParams request, CancellationToken token)
+        public override async Task<CodeLensContainer> Handle(
+            CodeLensParams request,
+            CancellationToken token
+        )
         {
             var omnisharpRequest = new MembersTreeRequest()
             {
@@ -71,7 +87,7 @@ namespace OmniSharp.LanguageServerProtocol.Handlers
                 Column = (int)request.Range.Start.Character,
                 Line = (int)request.Range.Start.Line,
                 OnlyThisFile = false,
-                ExcludeDefinition = true
+                ExcludeDefinition = true,
             };
 
             var omnisharpResponse = await _findUsagesHandler.Handle(omnisharpRequest);
@@ -80,7 +96,7 @@ namespace OmniSharp.LanguageServerProtocol.Handlers
 
             var jsonCamelCaseContract = new JsonSerializer
             {
-                ContractResolver = new CamelCasePropertyNamesContractResolver()
+                ContractResolver = new CamelCasePropertyNamesContractResolver(),
             };
 
             request = request with
@@ -90,31 +106,38 @@ namespace OmniSharp.LanguageServerProtocol.Handlers
                     Title = length == 1 ? "1 reference" : $"{length} references",
                     Name = "omnisharp/client/findReferences",
                     Arguments = new JArray(
-                    new[]
-                    {
-                        JObject.FromObject(
-                            new Location
-                            {
-                                Uri = request.Data.ToObject<Uri>()!,
-                                Range = request.Range,
-                            },
-                            jsonCamelCaseContract)
-                    }),
-                }
+                        new[]
+                        {
+                            JObject.FromObject(
+                                new Location
+                                {
+                                    Uri = request.Data.ToObject<Uri>()!,
+                                    Range = request.Range,
+                                },
+                                jsonCamelCaseContract
+                            ),
+                        }
+                    ),
+                },
             };
 
             return request;
         }
 
-        private static void ToCodeLens(TextDocumentIdentifier textDocument, FileMemberElement node,
-            List<CodeLens> codeLensContainer)
+        private static void ToCodeLens(
+            TextDocumentIdentifier textDocument,
+            FileMemberElement node,
+            List<CodeLens> codeLensContainer
+        )
         {
             var codeLens = new CodeLens
             {
-                Data = JToken.FromObject(string.IsNullOrEmpty(node.Location.FileName)
-                    ? textDocument.Uri
-                    : Helpers.ToUri(node.Location.FileName)),
-                Range = node.Location.ToRange()
+                Data = JToken.FromObject(
+                    string.IsNullOrEmpty(node.Location.FileName)
+                        ? textDocument.Uri
+                        : Helpers.ToUri(node.Location.FileName)
+                ),
+                Range = node.Location.ToRange(),
             };
 
             codeLensContainer.Add(codeLens);
@@ -128,12 +151,15 @@ namespace OmniSharp.LanguageServerProtocol.Handlers
             }
         }
 
-        protected override CodeLensRegistrationOptions CreateRegistrationOptions(CodeLensCapability capability, ClientCapabilities clientCapabilities)
+        protected override CodeLensRegistrationOptions CreateRegistrationOptions(
+            CodeLensCapability capability,
+            ClientCapabilities clientCapabilities
+        )
         {
             return new CodeLensRegistrationOptions()
             {
                 DocumentSelector = _documentSelector,
-                ResolveProvider = true
+                ResolveProvider = true,
             };
         }
     }

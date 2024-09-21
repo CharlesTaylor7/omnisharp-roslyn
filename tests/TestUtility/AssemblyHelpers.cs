@@ -7,9 +7,9 @@ namespace TestUtility
     {
         public const string CorLibName =
 #if NETCOREAPP
-        "System.Private.CoreLib";
+            "System.Private.CoreLib";
 #else
-        "mscorlib";
+            "mscorlib";
 #endif
 
         public static Assembly FromType(Type type)

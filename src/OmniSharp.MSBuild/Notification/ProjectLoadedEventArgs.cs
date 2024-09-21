@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using Microsoft.CodeAnalysis;
@@ -30,7 +30,8 @@ namespace OmniSharp.MSBuild.Notification
             bool projectIdIsDefinedInSolution,
             ImmutableArray<string> sourceFiles,
             SemanticVersion sdkVersion,
-            IEnumerable<string> references = null)
+            IEnumerable<string> references = null
+        )
         {
             Id = id;
             Project = project;

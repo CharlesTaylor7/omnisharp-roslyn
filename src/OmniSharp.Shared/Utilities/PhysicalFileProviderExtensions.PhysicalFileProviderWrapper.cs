@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using Microsoft.Extensions.FileProviders;
@@ -24,7 +24,8 @@ namespace OmniSharp.Utilities
 
             protected override void DisposeCore(bool disposing)
             {
-                if (_changeTokens == null) return;
+                if (_changeTokens == null)
+                    return;
                 foreach (var kvp in _changeTokens)
                 {
                     kvp.Value.Dispose();
@@ -59,7 +60,9 @@ namespace OmniSharp.Utilities
                 {
                     if (_changeTokens == null)
                     {
-                        _changeTokens = new Dictionary<string, PollingFileChangeToken>(StringComparer.OrdinalIgnoreCase);
+                        _changeTokens = new Dictionary<string, PollingFileChangeToken>(
+                            StringComparer.OrdinalIgnoreCase
+                        );
                     }
 
                     if (!_changeTokens.TryGetValue(filePath, out var changeToken))

@@ -18,9 +18,11 @@ namespace OmniSharp
         {
             _sb = new StringBuilder();
             _format = SymbolDisplayFormat.MinimallyQualifiedFormat;
-            _format = _format.WithMemberOptions(_format.MemberOptions
-                                                ^ SymbolDisplayMemberOptions.IncludeContainingType
-                                                ^ SymbolDisplayMemberOptions.IncludeType);
+            _format = _format.WithMemberOptions(
+                _format.MemberOptions
+                    ^ SymbolDisplayMemberOptions.IncludeContainingType
+                    ^ SymbolDisplayMemberOptions.IncludeType
+            );
 
             if (IsConstructor(symbol))
             {
@@ -35,9 +37,11 @@ namespace OmniSharp
                 {
                     RenderMethodSymbol(symbol as IMethodSymbol);
                 }
-                else if (symbol.Kind == SymbolKind.Event ||
-                         symbol.Kind == SymbolKind.Local ||
-                         symbol.Kind == SymbolKind.Parameter)
+                else if (
+                    symbol.Kind == SymbolKind.Event
+                    || symbol.Kind == SymbolKind.Local
+                    || symbol.Kind == SymbolKind.Parameter
+                )
                 {
                     _sb.Append(symbol.Name);
                 }

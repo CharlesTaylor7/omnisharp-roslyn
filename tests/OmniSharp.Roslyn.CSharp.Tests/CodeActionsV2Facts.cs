@@ -15,9 +15,7 @@ namespace OmniSharp.Roslyn.CSharp.Tests
     public class CodeActionsV2Facts : AbstractCodeActionsTestFixture
     {
         public CodeActionsV2Facts(ITestOutputHelper output)
-            : base(output)
-        {
-        }
+            : base(output) { }
 
         [Theory]
         [InlineData(true)]
@@ -57,11 +55,19 @@ namespace OmniSharp.Roslyn.CSharp.Tests
 
             var configuration = new Dictionary<string, string>
             {
-                { "RoslynExtensionsOptions:LocationPaths:0", TestAssets.Instance.TestBinariesFolder },
+                {
+                    "RoslynExtensionsOptions:LocationPaths:0",
+                    TestAssets.Instance.TestBinariesFolder
+                },
             };
 
-            var refactorings = await FindRefactoringsAsync(code,
-                TestHelpers.GetConfigurationDataWithAnalyzerConfig(roslynAnalyzersEnabled, existingConfiguration: configuration));
+            var refactorings = await FindRefactoringsAsync(
+                code,
+                TestHelpers.GetConfigurationDataWithAnalyzerConfig(
+                    roslynAnalyzersEnabled,
+                    existingConfiguration: configuration
+                )
+            );
 
             Assert.NotEmpty(refactorings);
             Assert.Contains("Add ConfigureAwait(false)", refactorings.Select(x => x.Name));
@@ -86,8 +92,15 @@ namespace OmniSharp.Roslyn.CSharp.Tests
 
                 public class c {public c() {Guid.NewGuid();}}";
 
-            var response = await RunRefactoringAsync(code, "Remove Unnecessary Usings", isAnalyzersEnabled: roslynAnalyzersEnabled);
-            AssertUtils.AssertIgnoringIndent(expected, ((ModifiedFileResponse)response.Changes.First()).Buffer);
+            var response = await RunRefactoringAsync(
+                code,
+                "Remove Unnecessary Usings",
+                isAnalyzersEnabled: roslynAnalyzersEnabled
+            );
+            AssertUtils.AssertIgnoringIndent(
+                expected,
+                ((ModifiedFileResponse)response.Changes.First()).Buffer
+            );
         }
 
         [Theory]
@@ -124,50 +137,106 @@ namespace OmniSharp.Roslyn.CSharp.Tests
 
             var refactorings = await FindRefactoringNamesAsync(code, roslynAnalyzersEnabled);
 
-            var expected = roslynAnalyzersEnabled ? new List<(string Name, string CodeActionKind)>
-            {
-                ("Fix formatting", CodeActionKind.QuickFix),
-                ("using System;", CodeActionKind.QuickFix),
+            var expected = roslynAnalyzersEnabled
+                ? new List<(string Name, string CodeActionKind)>
+                {
+                    ("Fix formatting", CodeActionKind.QuickFix),
+                    ("using System;", CodeActionKind.QuickFix),
 #if NETCOREAPP
-                ("using Internal;", CodeActionKind.QuickFix),
-                ("Fully qualify 'Console' -> Internal.Console", CodeActionKind.QuickFix),
-                ("Fully qualify 'Console' -> System.Console", CodeActionKind.QuickFix),
+                    ("using Internal;", CodeActionKind.QuickFix),
+                    ("Fully qualify 'Console' -> Internal.Console", CodeActionKind.QuickFix),
+                    ("Fully qualify 'Console' -> System.Console", CodeActionKind.QuickFix),
 #else
-                ("System.Console", CodeActionKind.QuickFix),
+                    ("System.Console", CodeActionKind.QuickFix),
 #endif
-                ("Generate variable 'Console' -> Generate property 'Console'", CodeActionKind.QuickFix),
-                ("Generate variable 'Console' -> Generate field 'Console'", CodeActionKind.QuickFix),
-                ("Generate variable 'Console' -> Generate read-only field 'Console'", CodeActionKind.QuickFix),
-                ("Generate variable 'Console' -> Generate local 'Console'", CodeActionKind.QuickFix),
-                ("Generate variable 'Console' -> Generate parameter 'Console'", CodeActionKind.QuickFix),
-                ("Generate type 'Console' -> Generate class 'Console' in new file", CodeActionKind.QuickFix),
-                ("Generate type 'Console' -> Generate class 'Console'", CodeActionKind.QuickFix),
-                ("Generate type 'Console' -> Generate nested class 'Console'", CodeActionKind.QuickFix),
-                ("Extract local function", CodeActionKind.RefactorExtract),
-                ("Extract method", CodeActionKind.RefactorExtract),
-                ("Introduce local for 'Console.Write(\"should be using System;\")'", CodeActionKind.Refactor)
-            } : new List<(string Name, string CodeActionKind)>
-            {
-                ("using System;", CodeActionKind.QuickFix),
+                    (
+                        "Generate variable 'Console' -> Generate property 'Console'",
+                        CodeActionKind.QuickFix
+                    ),
+                    (
+                        "Generate variable 'Console' -> Generate field 'Console'",
+                        CodeActionKind.QuickFix
+                    ),
+                    (
+                        "Generate variable 'Console' -> Generate read-only field 'Console'",
+                        CodeActionKind.QuickFix
+                    ),
+                    (
+                        "Generate variable 'Console' -> Generate local 'Console'",
+                        CodeActionKind.QuickFix
+                    ),
+                    (
+                        "Generate variable 'Console' -> Generate parameter 'Console'",
+                        CodeActionKind.QuickFix
+                    ),
+                    (
+                        "Generate type 'Console' -> Generate class 'Console' in new file",
+                        CodeActionKind.QuickFix
+                    ),
+                    (
+                        "Generate type 'Console' -> Generate class 'Console'",
+                        CodeActionKind.QuickFix
+                    ),
+                    (
+                        "Generate type 'Console' -> Generate nested class 'Console'",
+                        CodeActionKind.QuickFix
+                    ),
+                    ("Extract local function", CodeActionKind.RefactorExtract),
+                    ("Extract method", CodeActionKind.RefactorExtract),
+                    (
+                        "Introduce local for 'Console.Write(\"should be using System;\")'",
+                        CodeActionKind.Refactor
+                    ),
+                }
+                : new List<(string Name, string CodeActionKind)>
+                {
+                    ("using System;", CodeActionKind.QuickFix),
 #if NETCOREAPP
-                ("using Internal;", CodeActionKind.QuickFix),
-                ("Fully qualify 'Console' -> Internal.Console", CodeActionKind.QuickFix),
-                ("Fully qualify 'Console' -> System.Console", CodeActionKind.QuickFix),
+                    ("using Internal;", CodeActionKind.QuickFix),
+                    ("Fully qualify 'Console' -> Internal.Console", CodeActionKind.QuickFix),
+                    ("Fully qualify 'Console' -> System.Console", CodeActionKind.QuickFix),
 #else
-                ("System.Console", CodeActionKind.QuickFix),
+                    ("System.Console", CodeActionKind.QuickFix),
 #endif
-                ("Generate variable 'Console' -> Generate property 'Console'", CodeActionKind.QuickFix),
-                ("Generate variable 'Console' -> Generate field 'Console'", CodeActionKind.QuickFix),
-                ("Generate variable 'Console' -> Generate read-only field 'Console'", CodeActionKind.QuickFix),
-                ("Generate variable 'Console' -> Generate local 'Console'", CodeActionKind.QuickFix),
-                ("Generate variable 'Console' -> Generate parameter 'Console'", CodeActionKind.QuickFix),
-                ("Generate type 'Console' -> Generate class 'Console' in new file", CodeActionKind.QuickFix),
-                ("Generate type 'Console' -> Generate class 'Console'", CodeActionKind.QuickFix),
-                ("Generate type 'Console' -> Generate nested class 'Console'", CodeActionKind.QuickFix),
-                ("Extract local function", CodeActionKind.RefactorExtract),
-                ("Extract method", CodeActionKind.RefactorExtract),
-                ("Introduce local for 'Console.Write(\"should be using System;\")'", CodeActionKind.Refactor)
-            };
+                    (
+                        "Generate variable 'Console' -> Generate property 'Console'",
+                        CodeActionKind.QuickFix
+                    ),
+                    (
+                        "Generate variable 'Console' -> Generate field 'Console'",
+                        CodeActionKind.QuickFix
+                    ),
+                    (
+                        "Generate variable 'Console' -> Generate read-only field 'Console'",
+                        CodeActionKind.QuickFix
+                    ),
+                    (
+                        "Generate variable 'Console' -> Generate local 'Console'",
+                        CodeActionKind.QuickFix
+                    ),
+                    (
+                        "Generate variable 'Console' -> Generate parameter 'Console'",
+                        CodeActionKind.QuickFix
+                    ),
+                    (
+                        "Generate type 'Console' -> Generate class 'Console' in new file",
+                        CodeActionKind.QuickFix
+                    ),
+                    (
+                        "Generate type 'Console' -> Generate class 'Console'",
+                        CodeActionKind.QuickFix
+                    ),
+                    (
+                        "Generate type 'Console' -> Generate nested class 'Console'",
+                        CodeActionKind.QuickFix
+                    ),
+                    ("Extract local function", CodeActionKind.RefactorExtract),
+                    ("Extract method", CodeActionKind.RefactorExtract),
+                    (
+                        "Introduce local for 'Console.Write(\"should be using System;\")'",
+                        CodeActionKind.Refactor
+                    ),
+                };
             AssertEx.Equal(expected.OrderBy(x => x.Name), refactorings.OrderBy(x => x.Name));
         }
 
@@ -197,8 +266,15 @@ namespace OmniSharp.Roslyn.CSharp.Tests
                         Console.Write(""should be using System;"");
                     }
                 }";
-            var response = await RunRefactoringAsync(code, "Extract Method", isAnalyzersEnabled: roslynAnalyzersEnabled);
-            AssertUtils.AssertIgnoringIndent(expected, ((ModifiedFileResponse)response.Changes.First()).Buffer);
+            var response = await RunRefactoringAsync(
+                code,
+                "Extract Method",
+                isAnalyzersEnabled: roslynAnalyzersEnabled
+            );
+            AssertUtils.AssertIgnoringIndent(
+                expected,
+                ((ModifiedFileResponse)response.Changes.First()).Buffer
+            );
         }
 
         [Theory]
@@ -206,10 +282,24 @@ namespace OmniSharp.Roslyn.CSharp.Tests
         [InlineData(false)]
         public async Task Can_generate_type_and_return_name_of_new_file(bool roslynAnalyzersEnabled)
         {
-            using (var testProject = await TestAssets.Instance.GetTestProjectAsync("ProjectWithMissingType"))
-            using (var host = OmniSharpTestHost.Create(testProject.Directory, testOutput: TestOutput, configurationData: TestHelpers.GetConfigurationDataWithAnalyzerConfig(roslynAnalyzersEnabled)))
+            using (
+                var testProject = await TestAssets.Instance.GetTestProjectAsync(
+                    "ProjectWithMissingType"
+                )
+            )
+            using (
+                var host = OmniSharpTestHost.Create(
+                    testProject.Directory,
+                    testOutput: TestOutput,
+                    configurationData: TestHelpers.GetConfigurationDataWithAnalyzerConfig(
+                        roslynAnalyzersEnabled
+                    )
+                )
+            )
             {
-                var requestHandler = host.GetRequestHandler<RunCodeActionService>(OmniSharpEndpoints.V2.RunCodeAction);
+                var requestHandler = host.GetRequestHandler<RunCodeActionService>(
+                    OmniSharpEndpoints.V2.RunCodeAction
+                );
                 var document = host.Workspace.CurrentSolution.Projects.First().Documents.First();
                 var buffer = await document.GetTextAsync();
                 var path = document.FilePath;
@@ -222,7 +312,7 @@ namespace OmniSharp.Roslyn.CSharp.Tests
                     Buffer = buffer.ToString(),
                     Identifier = "Generate class 'Z' in new file",
                     WantsTextChanges = true,
-                    WantsAllCodeActionOperations = true
+                    WantsAllCodeActionOperations = true,
                 };
 
                 var response = await requestHandler.Handle(request);
@@ -231,12 +321,15 @@ namespace OmniSharp.Roslyn.CSharp.Tests
                 Assert.NotNull(changes[0].FileName);
 
                 Assert.True(File.Exists(changes[0].FileName));
-                Assert.Equal(@"namespace ConsoleApplication
+                Assert.Equal(
+                    @"namespace ConsoleApplication
 {
     internal class Z
     {
     }
-}".Replace("\r\n", "\n"), ((ModifiedFileResponse)changes[0]).Changes.First().NewText);
+}".Replace("\r\n", "\n"),
+                    ((ModifiedFileResponse)changes[0]).Changes.First().NewText
+                );
 
                 Assert.NotNull(changes[1].FileName);
             }
@@ -245,12 +338,28 @@ namespace OmniSharp.Roslyn.CSharp.Tests
         [Theory]
         [InlineData(true)]
         [InlineData(false)]
-        public async Task Can_send_rename_and_fileOpen_responses_when_codeAction_renames_file(bool roslynAnalyzersEnabled)
+        public async Task Can_send_rename_and_fileOpen_responses_when_codeAction_renames_file(
+            bool roslynAnalyzersEnabled
+        )
         {
-            using (var testProject = await TestAssets.Instance.GetTestProjectAsync("ProjectWithMismatchedFileName"))
-            using (var host = OmniSharpTestHost.Create(testProject.Directory, testOutput: TestOutput, configurationData: TestHelpers.GetConfigurationDataWithAnalyzerConfig(roslynAnalyzersEnabled)))
+            using (
+                var testProject = await TestAssets.Instance.GetTestProjectAsync(
+                    "ProjectWithMismatchedFileName"
+                )
+            )
+            using (
+                var host = OmniSharpTestHost.Create(
+                    testProject.Directory,
+                    testOutput: TestOutput,
+                    configurationData: TestHelpers.GetConfigurationDataWithAnalyzerConfig(
+                        roslynAnalyzersEnabled
+                    )
+                )
+            )
             {
-                var requestHandler = host.GetRequestHandler<RunCodeActionService>(OmniSharpEndpoints.V2.RunCodeAction);
+                var requestHandler = host.GetRequestHandler<RunCodeActionService>(
+                    OmniSharpEndpoints.V2.RunCodeAction
+                );
                 var document = host.Workspace.CurrentSolution.Projects.First().Documents.First();
                 var buffer = await document.GetTextAsync();
                 var path = document.FilePath;
@@ -263,7 +372,7 @@ namespace OmniSharp.Roslyn.CSharp.Tests
                     Buffer = buffer.ToString(),
                     Identifier = "Rename file to Class1.cs",
                     WantsTextChanges = true,
-                    WantsAllCodeActionOperations = true
+                    WantsAllCodeActionOperations = true,
                 };
 
                 var response = await requestHandler.Handle(request);
@@ -271,8 +380,14 @@ namespace OmniSharp.Roslyn.CSharp.Tests
                 Assert.Equal(2, changes.Length);
                 Assert.Equal(FileModificationType.Renamed, changes[0].ModificationType);
                 Assert.Contains("Class1.cs", ((RenamedFileResponse)changes[0]).NewFileName);
-                Assert.False(File.Exists(((RenamedFileResponse)changes[0]).FileName), "The old renamed file exists - even though it should not.");
-                Assert.True(File.Exists(((RenamedFileResponse)changes[0]).NewFileName), "The new renamed file doesn't exist - even though it should.");
+                Assert.False(
+                    File.Exists(((RenamedFileResponse)changes[0]).FileName),
+                    "The old renamed file exists - even though it should not."
+                );
+                Assert.True(
+                    File.Exists(((RenamedFileResponse)changes[0]).NewFileName),
+                    "The new renamed file doesn't exist - even though it should."
+                );
                 Assert.Equal(FileModificationType.Opened, changes[1].ModificationType);
             }
         }

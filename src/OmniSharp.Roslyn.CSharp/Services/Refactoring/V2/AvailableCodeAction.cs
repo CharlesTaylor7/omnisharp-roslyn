@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Immutable;
 using System.Threading;
 using System.Threading.Tasks;
@@ -10,9 +10,13 @@ namespace OmniSharp.Roslyn.CSharp.Services.Refactoring.V2
     {
         public CodeAction CodeAction { get; }
         public CodeAction ParentCodeAction { get; }
-        public string CodeActionKind { get;  }
+        public string CodeActionKind { get; }
 
-        public AvailableCodeAction(CodeAction codeAction, string codeActionKind, CodeAction parentCodeAction = null)
+        public AvailableCodeAction(
+            CodeAction codeAction,
+            string codeActionKind,
+            CodeAction parentCodeAction = null
+        )
         {
             this.CodeAction = codeAction ?? throw new ArgumentNullException(nameof(codeAction));
             this.ParentCodeAction = parentCodeAction;
@@ -31,7 +35,9 @@ namespace OmniSharp.Roslyn.CSharp.Services.Refactoring.V2
                 : CodeAction.Title;
         }
 
-        public Task<ImmutableArray<CodeActionOperation>> GetOperationsAsync(CancellationToken cancellationToken)
+        public Task<ImmutableArray<CodeActionOperation>> GetOperationsAsync(
+            CancellationToken cancellationToken
+        )
         {
             return CodeAction.GetOperationsAsync(cancellationToken);
         }

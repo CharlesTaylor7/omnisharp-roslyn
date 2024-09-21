@@ -22,39 +22,48 @@ namespace OmniSharp.Roslyn.CSharp.Tests
 
             public bool IsEnabled(LogLevel logLevel) => true;
 
-            public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)
+            public void Log<TState>(
+                LogLevel logLevel,
+                EventId eventId,
+                TState state,
+                Exception exception,
+                Func<TState, Exception, string> formatter
+            )
             {
                 RecordedMessages = RecordedMessages.Add(state.ToString());
             }
 
-            public ImmutableArray<string> RecordedMessages { get; set; } = ImmutableArray.Create<string>();
+            public ImmutableArray<string> RecordedMessages { get; set; } =
+                ImmutableArray.Create<string>();
         }
 
         private class LoggerFactory : ILoggerFactory
         {
             public Logger Logger { get; } = new Logger();
 
-            public void AddProvider(ILoggerProvider provider)
-            {
-            }
+            public void AddProvider(ILoggerProvider provider) { }
 
             public ILogger CreateLogger(string categoryName)
             {
                 return Logger;
             }
 
-            public void Dispose()
-            {
-            }
+            public void Dispose() { }
         }
 
         [Theory]
         [InlineData(AnalyzerWorkType.Background)]
         [InlineData(AnalyzerWorkType.Foreground)]
-        public void WhenItemsAreAddedButThrotlingIsntOverNoWorkShouldBeReturned(AnalyzerWorkType workType)
+        public void WhenItemsAreAddedButThrotlingIsntOverNoWorkShouldBeReturned(
+            AnalyzerWorkType workType
+        )
         {
             var now = DateTime.UtcNow;
-            var queue = new AnalyzerWorkQueue(new LoggerFactory(), utcNow: () => now, timeoutForPendingWorkMs: 10 * 1000);
+            var queue = new AnalyzerWorkQueue(
+                new LoggerFactory(),
+                utcNow: () => now,
+                timeoutForPendingWorkMs: 10 * 1000
+            );
             var document = CreateTestDocumentId();
 
             queue.PutWork(new[] { document }, workType);
@@ -67,7 +76,11 @@ namespace OmniSharp.Roslyn.CSharp.Tests
         public void WhenWorksIsAddedToQueueThenTheyWillBeReturned(AnalyzerWorkType workType)
         {
             var now = DateTime.UtcNow;
-            var queue = new AnalyzerWorkQueue(new LoggerFactory(), utcNow: () => now, timeoutForPendingWorkMs: 10 * 1000);
+            var queue = new AnalyzerWorkQueue(
+                new LoggerFactory(),
+                utcNow: () => now,
+                timeoutForPendingWorkMs: 10 * 1000
+            );
             var document = CreateTestDocumentId();
 
             queue.PutWork(new[] { document }, workType);
@@ -82,10 +95,16 @@ namespace OmniSharp.Roslyn.CSharp.Tests
         [Theory]
         [InlineData(AnalyzerWorkType.Background)]
         [InlineData(AnalyzerWorkType.Foreground)]
-        public void WhenSameItemIsAddedMultipleTimesInRowThenThrottleItemAsOne(AnalyzerWorkType workType)
+        public void WhenSameItemIsAddedMultipleTimesInRowThenThrottleItemAsOne(
+            AnalyzerWorkType workType
+        )
         {
             var now = DateTime.UtcNow;
-            var queue = new AnalyzerWorkQueue(new LoggerFactory(), utcNow: () => now, timeoutForPendingWorkMs: 10 * 1000);
+            var queue = new AnalyzerWorkQueue(
+                new LoggerFactory(),
+                utcNow: () => now,
+                timeoutForPendingWorkMs: 10 * 1000
+            );
             var document = CreateTestDocumentId();
 
             queue.PutWork(new[] { document }, workType);
@@ -106,7 +125,11 @@ namespace OmniSharp.Roslyn.CSharp.Tests
         public void WhenForegroundWorkIsAddedThenWaitNextIterationOfItReady()
         {
             var now = DateTime.UtcNow;
-            var queue = new AnalyzerWorkQueue(new LoggerFactory(), utcNow: () => now, timeoutForPendingWorkMs: 500);
+            var queue = new AnalyzerWorkQueue(
+                new LoggerFactory(),
+                utcNow: () => now,
+                timeoutForPendingWorkMs: 500
+            );
             var document = CreateTestDocumentId();
 
             queue.PutWork(new[] { document }, AnalyzerWorkType.Foreground);
@@ -128,7 +151,11 @@ namespace OmniSharp.Roslyn.CSharp.Tests
         public void WhenForegroundWorkIsUnderAnalysisOutFromQueueThenWaitUntilNextIterationOfItIsReady()
         {
             var now = DateTime.UtcNow;
-            var queue = new AnalyzerWorkQueue(new LoggerFactory(), utcNow: () => now, timeoutForPendingWorkMs: 500);
+            var queue = new AnalyzerWorkQueue(
+                new LoggerFactory(),
+                utcNow: () => now,
+                timeoutForPendingWorkMs: 500
+            );
             var document = CreateTestDocumentId();
 
             queue.PutWork(new[] { document }, AnalyzerWorkType.Foreground);
@@ -151,7 +178,11 @@ namespace OmniSharp.Roslyn.CSharp.Tests
         {
             var now = DateTime.UtcNow;
             var loggerFactory = new LoggerFactory();
-            var queue = new AnalyzerWorkQueue(loggerFactory, utcNow: () => now, timeoutForPendingWorkMs: 20);
+            var queue = new AnalyzerWorkQueue(
+                loggerFactory,
+                utcNow: () => now,
+                timeoutForPendingWorkMs: 20
+            );
             var document = CreateTestDocumentId();
 
             queue.PutWork(new[] { document }, AnalyzerWorkType.Foreground);
@@ -165,7 +196,10 @@ namespace OmniSharp.Roslyn.CSharp.Tests
             pendingTask.Wait(cts.Token);
 
             Assert.True(pendingTask.IsCompleted);
-            Assert.Contains("Timeout before work got ready", loggerFactory.Logger.RecordedMessages.Single());
+            Assert.Contains(
+                "Timeout before work got ready",
+                loggerFactory.Logger.RecordedMessages.Single()
+            );
         }
 
         [Fact]
@@ -173,28 +207,33 @@ namespace OmniSharp.Roslyn.CSharp.Tests
         {
             var now = DateTime.UtcNow;
 
-            var queue = new AnalyzerWorkQueue(new LoggerFactory(), utcNow: () => now, timeoutForPendingWorkMs: 1000);
+            var queue = new AnalyzerWorkQueue(
+                new LoggerFactory(),
+                utcNow: () => now,
+                timeoutForPendingWorkMs: 1000
+            );
 
-            var parallelQueues =
-                Enumerable.Range(0, 10)
-                    .Select(_ =>
-                        Task.Run(() =>
-                        {
-                            var document = CreateTestDocumentId();
+            var parallelQueues = Enumerable
+                .Range(0, 10)
+                .Select(_ =>
+                    Task.Run(() =>
+                    {
+                        var document = CreateTestDocumentId();
 
-                            queue.PutWork(new[] { document }, AnalyzerWorkType.Foreground);
+                        queue.PutWork(new[] { document }, AnalyzerWorkType.Foreground);
 
-                            now = PassOverThrotlingPeriod(now);
+                        now = PassOverThrotlingPeriod(now);
 
-                            var work = queue.TakeWork(AnalyzerWorkType.Foreground);
+                        var work = queue.TakeWork(AnalyzerWorkType.Foreground);
 
-                            var pendingTask = queue.WaitForegroundWorkComplete();
+                        var pendingTask = queue.WaitForegroundWorkComplete();
 
-                            queue.WaitForegroundWorkComplete();
+                        queue.WaitForegroundWorkComplete();
 
-                            pendingTask.Wait(TimeSpan.FromMilliseconds(300));
-                        }))
-                    .ToArray();
+                        pendingTask.Wait(TimeSpan.FromMilliseconds(300));
+                    })
+                )
+                .ToArray();
 
             await Task.WhenAll(parallelQueues);
 
@@ -205,7 +244,11 @@ namespace OmniSharp.Roslyn.CSharp.Tests
         public async Task WhenWorkIsAddedAgainWhenPreviousIsAnalysing_ThenDontWaitAnotherOneToGetReady()
         {
             var now = DateTime.UtcNow;
-            var queue = new AnalyzerWorkQueue(new LoggerFactory(), utcNow: () => now, timeoutForPendingWorkMs: 10 * 1000);
+            var queue = new AnalyzerWorkQueue(
+                new LoggerFactory(),
+                utcNow: () => now,
+                timeoutForPendingWorkMs: 10 * 1000
+            );
             var document = CreateTestDocumentId();
 
             queue.PutWork(new[] { document }, AnalyzerWorkType.Foreground);
@@ -233,7 +276,10 @@ namespace OmniSharp.Roslyn.CSharp.Tests
         [Fact]
         public void WhenBackgroundWorkIsAdded_DontWaitIt()
         {
-            var queue = new AnalyzerWorkQueue(new LoggerFactory(), timeoutForPendingWorkMs: 10 * 1000);
+            var queue = new AnalyzerWorkQueue(
+                new LoggerFactory(),
+                timeoutForPendingWorkMs: 10 * 1000
+            );
             var document = CreateTestDocumentId();
 
             queue.PutWork(new[] { document }, AnalyzerWorkType.Background);
@@ -245,7 +291,11 @@ namespace OmniSharp.Roslyn.CSharp.Tests
         public void WhenSingleFileIsPromoted_ThenPromoteItFromBackgroundQueueToForeground()
         {
             var now = DateTime.UtcNow;
-            var queue = new AnalyzerWorkQueue(new LoggerFactory(), utcNow: () => now, timeoutForPendingWorkMs: 10 * 1000);
+            var queue = new AnalyzerWorkQueue(
+                new LoggerFactory(),
+                utcNow: () => now,
+                timeoutForPendingWorkMs: 10 * 1000
+            );
             var document = CreateTestDocumentId();
 
             queue.PutWork(new[] { document }, AnalyzerWorkType.Background);
@@ -261,7 +311,11 @@ namespace OmniSharp.Roslyn.CSharp.Tests
         public void WhenFileIsntAtBackgroundQueueAndTriedToBePromoted_ThenDontDoNothing()
         {
             var now = DateTime.UtcNow;
-            var queue = new AnalyzerWorkQueue(new LoggerFactory(), utcNow: () => now, timeoutForPendingWorkMs: 10 * 1000);
+            var queue = new AnalyzerWorkQueue(
+                new LoggerFactory(),
+                utcNow: () => now,
+                timeoutForPendingWorkMs: 10 * 1000
+            );
             var document = CreateTestDocumentId();
 
             queue.TryPromote(document);
@@ -275,7 +329,11 @@ namespace OmniSharp.Roslyn.CSharp.Tests
         public void WhenFileIsProcessingInBackgroundQueue_ThenPromoteItAsForeground()
         {
             var now = DateTime.UtcNow;
-            var queue = new AnalyzerWorkQueue(new LoggerFactory(), utcNow: () => now, timeoutForPendingWorkMs: 10 * 1000);
+            var queue = new AnalyzerWorkQueue(
+                new LoggerFactory(),
+                utcNow: () => now,
+                timeoutForPendingWorkMs: 10 * 1000
+            );
             var document = CreateTestDocumentId();
 
             queue.PutWork(new[] { document }, AnalyzerWorkType.Background);
@@ -301,7 +359,8 @@ namespace OmniSharp.Roslyn.CSharp.Tests
                 version: VersionStamp.Create(),
                 name: "testProject",
                 assemblyName: "AssemblyName",
-                language: LanguageNames.CSharp);
+                language: LanguageNames.CSharp
+            );
 
             return DocumentId.CreateNewId(projectInfo.Id);
         }

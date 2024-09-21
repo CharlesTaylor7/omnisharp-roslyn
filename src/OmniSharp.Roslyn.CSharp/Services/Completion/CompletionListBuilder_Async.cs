@@ -1,4 +1,4 @@
-﻿#nullable enable
+#nullable enable
 
 using System.Collections.Generic;
 using System.Collections.Immutable;
@@ -27,17 +27,23 @@ namespace OmniSharp.Roslyn.CSharp.Services.Completion
             CSharpCompletionService completionService,
             CSharpCompletionList completions,
             TextSpan typedSpan,
-            bool expectingImportedItems, bool isSuggestionMode)
+            bool expectingImportedItems,
+            bool isSuggestionMode
+        )
         {
             var completionsBuilder = new List<CompletionItem>(completions.ItemsList.Count);
             var seenUnimportedCompletions = false;
-            var commitCharacterRuleCache = new Dictionary<ImmutableArray<CharacterSetModificationRule>, IReadOnlyList<char>>();
+            var commitCharacterRuleCache =
+                new Dictionary<ImmutableArray<CharacterSetModificationRule>, IReadOnlyList<char>>();
             var commitCharacterRuleBuilder = new HashSet<char>();
 
             for (int i = 0; i < completions.ItemsList.Count; i++)
             {
                 var completion = completions.ItemsList[i];
-                string labelText = completion.DisplayTextPrefix + completion.DisplayText + completion.DisplayTextSuffix;
+                string labelText =
+                    completion.DisplayTextPrefix
+                    + completion.DisplayText
+                    + completion.DisplayTextSuffix;
                 string? insertText;
                 string? filterText = null;
                 List<LinePositionSpanTextChange>? additionalTextEdits = null;
@@ -54,15 +60,22 @@ namespace OmniSharp.Roslyn.CSharp.Services.Completion
                     }
 
                     // The completion is somehow expensive. Currently, this one of two categories: import completion or override/partial completion.
-                    Debug.Assert(completion.GetProviderName() is OverrideCompletionProvider or PartialMethodCompletionProvider
-                                                              or TypeImportCompletionProvider or ExtensionMethodImportCompletionProvider
-                                                              or AwaitCompletionProvider);
+                    Debug.Assert(
+                        completion.GetProviderName()
+                            is OverrideCompletionProvider
+                                or PartialMethodCompletionProvider
+                                or TypeImportCompletionProvider
+                                or ExtensionMethodImportCompletionProvider
+                                or AwaitCompletionProvider
+                    );
 
                     changeSpan = typedSpan;
 
                     switch (completion.GetProviderName())
                     {
-                        case OverrideCompletionProvider or PartialMethodCompletionProvider or AwaitCompletionProvider:
+                        case OverrideCompletionProvider
+                        or PartialMethodCompletionProvider
+                        or AwaitCompletionProvider:
                             // For override and partial completion, we don't want to use the DisplayText as the insert text because they contain
                             // characters that will affect our ability to asynchronously resolve the change later.
                             insertText = completion.FilterText;
@@ -83,7 +96,8 @@ namespace OmniSharp.Roslyn.CSharp.Services.Completion
                     // to pop completions quickly
 
                     // If the completion item is the misc project name, skip it.
-                    if (completion.DisplayText == Configuration.OmniSharpMiscProjectName) continue;
+                    if (completion.DisplayText == Configuration.OmniSharpMiscProjectName)
+                        continue;
 
                     GetCompletionInfo(
                         sourceText,
@@ -93,27 +107,42 @@ namespace OmniSharp.Roslyn.CSharp.Services.Completion
                         typedSpan,
                         labelText,
                         expectingImportedItems,
-                        out insertText, out filterText, out sortText, out insertTextFormat, out changeSpan, out additionalTextEdits);
+                        out insertText,
+                        out filterText,
+                        out sortText,
+                        out insertTextFormat,
+                        out changeSpan,
+                        out additionalTextEdits
+                    );
                 }
 
-                var treatAsASuggestion = isSuggestionMode || ShouldTreatCompletionItemAsSuggestion(completion, typedSpan);
-                var commitCharacters = BuildCommitCharacters(completion.Rules.CommitCharacterRules, treatAsASuggestion, commitCharacterRuleCache, commitCharacterRuleBuilder);
+                var treatAsASuggestion =
+                    isSuggestionMode
+                    || ShouldTreatCompletionItemAsSuggestion(completion, typedSpan);
+                var commitCharacters = BuildCommitCharacters(
+                    completion.Rules.CommitCharacterRules,
+                    treatAsASuggestion,
+                    commitCharacterRuleCache,
+                    commitCharacterRuleBuilder
+                );
 
-                completionsBuilder.Add(new CompletionItem
-                {
-                    Label = labelText,
-                    TextEdit = GetChangeForTextAndSpan(insertText!, changeSpan, sourceText),
-                    InsertTextFormat = insertTextFormat,
-                    AdditionalTextEdits = additionalTextEdits,
-                    SortText = sortText,
-                    FilterText = filterText,
-                    Kind = GetCompletionItemKind(completion.Tags),
-                    Detail = completion.InlineDescription,
-                    Data = (cacheId, i),
-                    Preselect = completion.Rules.MatchPriority == MatchPriority.Preselect,
-                    CommitCharacters = commitCharacters,
-                    HasAfterInsertStep = hasAfterInsertStep,
-                });
+                completionsBuilder.Add(
+                    new CompletionItem
+                    {
+                        Label = labelText,
+                        TextEdit = GetChangeForTextAndSpan(insertText!, changeSpan, sourceText),
+                        InsertTextFormat = insertTextFormat,
+                        AdditionalTextEdits = additionalTextEdits,
+                        SortText = sortText,
+                        FilterText = filterText,
+                        Kind = GetCompletionItemKind(completion.Tags),
+                        Detail = completion.InlineDescription,
+                        Data = (cacheId, i),
+                        Preselect = completion.Rules.MatchPriority == MatchPriority.Preselect,
+                        CommitCharacters = commitCharacters,
+                        HasAfterInsertStep = hasAfterInsertStep,
+                    }
+                );
             }
 
             return (completionsBuilder, seenUnimportedCompletions);

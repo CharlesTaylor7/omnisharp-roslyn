@@ -19,9 +19,11 @@ namespace OmniSharp.Cake.Tests
         private static Assembly Assembly => typeof(LineIndexHelperFacts).GetTypeInfo().Assembly;
         private static string ResourcePath => "OmniSharp.Cake.Tests.TestAssets";
 
-        private static string SingleCakePath => PlatformHelper.IsWindows ? @"C:\Work\single.cake" : "/work/single.cake";
+        private static string SingleCakePath =>
+            PlatformHelper.IsWindows ? @"C:\Work\single.cake" : "/work/single.cake";
 
-        private static string MultiCakePath => PlatformHelper.IsWindows ?  @"C:\Work\multi.cake" : "/work/multi.cake";
+        private static string MultiCakePath =>
+            PlatformHelper.IsWindows ? @"C:\Work\multi.cake" : "/work/multi.cake";
 
         private static string GetResourceContent(string resourceName)
         {
@@ -59,16 +61,31 @@ namespace OmniSharp.Cake.Tests
         {
             var workspace = new OmniSharpWorkspace(
                 new HostServicesAggregator(
-                    Enumerable.Empty<IHostServicesProvider>(), new LoggerFactory()),
-                new LoggerFactory(), new DummyFileSystemWatcher());
+                    Enumerable.Empty<IHostServicesProvider>(),
+                    new LoggerFactory()
+                ),
+                new LoggerFactory(),
+                new DummyFileSystemWatcher()
+            );
 
-            var projectInfo = ProjectInfo.Create(ProjectId.CreateNewId(), VersionStamp.Create(),
-                "ProjectNameVal", "AssemblyNameVal", LanguageNames.CSharp);
+            var projectInfo = ProjectInfo.Create(
+                ProjectId.CreateNewId(),
+                VersionStamp.Create(),
+                "ProjectNameVal",
+                "AssemblyNameVal",
+                LanguageNames.CSharp
+            );
 
-            var documentInfo = DocumentInfo.Create(DocumentId.CreateNewId(projectInfo.Id), fileName,
-                null, SourceCodeKind.Regular,
-                TextLoader.From(TextAndVersion.Create(SourceText.From(contents), VersionStamp.Create())),
-                fileName);
+            var documentInfo = DocumentInfo.Create(
+                DocumentId.CreateNewId(projectInfo.Id),
+                fileName,
+                null,
+                SourceCodeKind.Regular,
+                TextLoader.From(
+                    TextAndVersion.Create(SourceText.From(contents), VersionStamp.Create())
+                ),
+                fileName
+            );
 
             workspace.AddProject(projectInfo);
             workspace.AddDocument(documentInfo);
@@ -79,7 +96,10 @@ namespace OmniSharp.Cake.Tests
         [Theory]
         [InlineData(0, 8209)]
         [InlineData(7, 8216)]
-        public async Task TranslateToGenerated_Should_Translate_Index_In_Single_File(int index, int expected)
+        public async Task TranslateToGenerated_Should_Translate_Index_In_Single_File(
+            int index,
+            int expected
+        )
         {
             var fileName = SingleCakePath;
             var workspace = CreateSimpleWorkspace(fileName, GetGeneratedFileContent(fileName));
@@ -87,29 +107,44 @@ namespace OmniSharp.Cake.Tests
             var actual = await LineIndexHelper.TranslateToGenerated(fileName, index, workspace);
 
             Assert.Equal(expected, actual);
-            Assert.Equal(GetFileContent(fileName).Split('\n')[index],
-                GetGeneratedFileContent(fileName).Split('\n')[actual]);
+            Assert.Equal(
+                GetFileContent(fileName).Split('\n')[index],
+                GetGeneratedFileContent(fileName).Split('\n')[actual]
+            );
         }
 
         [Theory]
         [InlineData(8209, 0)]
         [InlineData(8216, 7)]
-        public async Task TranslateFromGenerated_Should_Translate_Index_In_Single_File(int index, int expected)
+        public async Task TranslateFromGenerated_Should_Translate_Index_In_Single_File(
+            int index,
+            int expected
+        )
         {
             var fileName = SingleCakePath;
             var workspace = CreateSimpleWorkspace(fileName, GetGeneratedFileContent(fileName));
 
-            var (actualIndex, actualFileName) = await LineIndexHelper.TranslateFromGenerated(fileName, index, workspace, true);
+            var (actualIndex, actualFileName) = await LineIndexHelper.TranslateFromGenerated(
+                fileName,
+                index,
+                workspace,
+                true
+            );
 
             Assert.Equal(expected, actualIndex);
-            Assert.Equal(GetGeneratedFileContent(fileName).Split('\n')[index],
-                GetFileContent(actualFileName).Split('\n')[actualIndex]);
+            Assert.Equal(
+                GetGeneratedFileContent(fileName).Split('\n')[index],
+                GetFileContent(actualFileName).Split('\n')[actualIndex]
+            );
         }
 
         [Theory]
         [InlineData(0, 8209)]
         [InlineData(4, 8227)]
-        public async Task TranslateToGenerated_Should_Translate_Index_With_Multiple_Files(int index, int expected)
+        public async Task TranslateToGenerated_Should_Translate_Index_With_Multiple_Files(
+            int index,
+            int expected
+        )
         {
             var fileName = MultiCakePath;
             var workspace = CreateSimpleWorkspace(fileName, GetGeneratedFileContent(fileName));
@@ -117,23 +152,35 @@ namespace OmniSharp.Cake.Tests
             var actual = await LineIndexHelper.TranslateToGenerated(fileName, index, workspace);
 
             Assert.Equal(expected, actual);
-            Assert.Equal(GetFileContent(fileName).Split('\n')[index],
-                GetGeneratedFileContent(fileName).Split('\n')[actual]);
+            Assert.Equal(
+                GetFileContent(fileName).Split('\n')[index],
+                GetGeneratedFileContent(fileName).Split('\n')[actual]
+            );
         }
 
         [Theory]
         [InlineData(8209, 0)]
         [InlineData(8227, 4)]
-        public async Task TranslateFromGenerated_Should_Translate_Index_With_Multiple_Files(int index, int expected)
+        public async Task TranslateFromGenerated_Should_Translate_Index_With_Multiple_Files(
+            int index,
+            int expected
+        )
         {
             var fileName = MultiCakePath;
             var workspace = CreateSimpleWorkspace(fileName, GetGeneratedFileContent(fileName));
 
-            var (actualIndex, actualFileName) = await LineIndexHelper.TranslateFromGenerated(fileName, index, workspace, true);
+            var (actualIndex, actualFileName) = await LineIndexHelper.TranslateFromGenerated(
+                fileName,
+                index,
+                workspace,
+                true
+            );
 
             Assert.Equal(expected, actualIndex);
-            Assert.Equal(GetGeneratedFileContent(fileName).Split('\n')[index],
-                GetFileContent(actualFileName).Split('\n')[actualIndex]);
+            Assert.Equal(
+                GetGeneratedFileContent(fileName).Split('\n')[index],
+                GetFileContent(actualFileName).Split('\n')[actualIndex]
+            );
         }
 
         [Fact]
@@ -144,20 +191,21 @@ namespace OmniSharp.Cake.Tests
             var fileName = SingleCakePath;
             var workspace = CreateSimpleWorkspace(fileName, GetGeneratedFileContent(fileName));
 
-            var (actualIndex, _) = await LineIndexHelper.TranslateFromGenerated(fileName, index, workspace, true);
+            var (actualIndex, _) = await LineIndexHelper.TranslateFromGenerated(
+                fileName,
+                index,
+                workspace,
+                true
+            );
 
             Assert.Equal(expected, actualIndex);
         }
 
         private class DummyFileSystemWatcher : IFileSystemWatcher
         {
-            public void Watch(string pathOrExtension, FileSystemNotificationCallback callback)
-            {
-            }
+            public void Watch(string pathOrExtension, FileSystemNotificationCallback callback) { }
 
-            public void WatchDirectories(FileSystemNotificationCallback callback)
-            {
-            }
+            public void WatchDirectories(FileSystemNotificationCallback callback) { }
         }
     }
 }

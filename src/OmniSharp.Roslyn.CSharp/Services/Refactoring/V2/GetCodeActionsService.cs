@@ -14,7 +14,8 @@ using OmniSharp.Services;
 namespace OmniSharp.Roslyn.CSharp.Services.Refactoring.V2
 {
     [OmniSharpHandler(OmniSharpEndpoints.V2.GetCodeActions, LanguageNames.CSharp)]
-    public class GetCodeActionsService : BaseCodeActionService<GetCodeActionsRequest, GetCodeActionsResponse>
+    public class GetCodeActionsService
+        : BaseCodeActionService<GetCodeActionsRequest, GetCodeActionsResponse>
     {
         [ImportingConstructor]
         public GetCodeActionsService(
@@ -24,10 +25,16 @@ namespace OmniSharp.Roslyn.CSharp.Services.Refactoring.V2
             ILoggerFactory loggerFactory,
             ICsDiagnosticWorker diagnostics,
             CachingCodeFixProviderForProjects codeFixesForProjects,
-            OmniSharpOptions options)
-            : base(workspace, providers, loggerFactory.CreateLogger<GetCodeActionsService>(), diagnostics, codeFixesForProjects, options)
-        {
-        }
+            OmniSharpOptions options
+        )
+            : base(
+                workspace,
+                providers,
+                loggerFactory.CreateLogger<GetCodeActionsService>(),
+                diagnostics,
+                codeFixesForProjects,
+                options
+            ) { }
 
         public override async Task<GetCodeActionsResponse> Handle(GetCodeActionsRequest request)
         {
@@ -35,13 +42,19 @@ namespace OmniSharp.Roslyn.CSharp.Services.Refactoring.V2
 
             return new GetCodeActionsResponse
             {
-                CodeActions = availableActions.Select(ConvertToOmniSharpCodeAction)
+                CodeActions = availableActions.Select(ConvertToOmniSharpCodeAction),
             };
         }
 
-        private static OmniSharpCodeAction ConvertToOmniSharpCodeAction(AvailableCodeAction availableAction)
+        private static OmniSharpCodeAction ConvertToOmniSharpCodeAction(
+            AvailableCodeAction availableAction
+        )
         {
-            return new OmniSharpCodeAction(availableAction.GetIdentifier(), availableAction.GetTitle(), availableAction.CodeActionKind);
+            return new OmniSharpCodeAction(
+                availableAction.GetIdentifier(),
+                availableAction.GetTitle(),
+                availableAction.CodeActionKind
+            );
         }
     }
 }

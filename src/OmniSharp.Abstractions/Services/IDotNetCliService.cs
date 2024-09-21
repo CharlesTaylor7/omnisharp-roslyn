@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Diagnostics;
 using System.Threading.Tasks;
 
@@ -45,7 +45,11 @@ namespace OmniSharp.Services
         /// <param name="arguments">Additional arguments to pass to "dotnet restore"</param>
         /// <param name="onFailure">A callback that will be invoked if "dotnet restore" does not
         /// return a success code.</param>
-        Task RestoreAsync(string workingDirectory, string arguments = null, Action onFailure = null);
+        Task RestoreAsync(
+            string workingDirectory,
+            string arguments = null,
+            Action onFailure = null
+        );
 
         /// <summary>
         /// Launches "dotnet" in the given working directory with the specified arguments.

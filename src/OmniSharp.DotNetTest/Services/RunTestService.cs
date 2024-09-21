@@ -14,23 +14,35 @@ namespace OmniSharp.DotNetTest.Services
     internal class RunTestService : BaseTestService<RunTestRequest, RunTestResponse>
     {
         [ImportingConstructor]
-        public RunTestService(OmniSharpWorkspace workspace, IDotNetCliService dotNetCli, IEventEmitter eventEmitter, ILoggerFactory loggerFactory)
-            : base(workspace, dotNetCli, eventEmitter, loggerFactory)
-        {
-        }
+        public RunTestService(
+            OmniSharpWorkspace workspace,
+            IDotNetCliService dotNetCli,
+            IEventEmitter eventEmitter,
+            ILoggerFactory loggerFactory
+        )
+            : base(workspace, dotNetCli, eventEmitter, loggerFactory) { }
 
-        protected override Task<RunTestResponse> HandleRequest(RunTestRequest request, TestManager testManager)
+        protected override Task<RunTestResponse> HandleRequest(
+            RunTestRequest request,
+            TestManager testManager
+        )
         {
             if (testManager.IsConnected)
             {
-                return testManager.RunTestAsync(request.MethodName, request.RunSettings, request.TestFrameworkName, request.TargetFrameworkVersion, CancellationToken.None);
+                return testManager.RunTestAsync(
+                    request.MethodName,
+                    request.RunSettings,
+                    request.TestFrameworkName,
+                    request.TargetFrameworkVersion,
+                    CancellationToken.None
+                );
             }
 
             var response = new RunTestResponse
             {
                 Failure = "Failed to connect to 'dotnet test' process",
                 Pass = false,
-                ContextHadNoTests = false
+                ContextHadNoTests = false,
             };
 
             return Task.FromResult(response);

@@ -8,18 +8,23 @@ using Xunit.Abstractions;
 
 namespace OmniSharp.Cake.Tests
 {
-    public sealed class GotoDefinitionFacts : CakeSingleRequestHandlerTestFixture<GotoDefinitionHandler>
+    public sealed class GotoDefinitionFacts
+        : CakeSingleRequestHandlerTestFixture<GotoDefinitionHandler>
     {
-        public GotoDefinitionFacts(ITestOutputHelper testOutput) : base(testOutput)
-        {
-        }
+        public GotoDefinitionFacts(ITestOutputHelper testOutput)
+            : base(testOutput) { }
 
         protected override string EndpointName => OmniSharpEndpoints.GotoDefinition;
 
         [Fact]
         public async Task ShouldSupportLoadedFiles()
         {
-            using (var testProject = await TestAssets.Instance.GetTestProjectAsync("CakeProject", shadowCopy: false))
+            using (
+                var testProject = await TestAssets.Instance.GetTestProjectAsync(
+                    "CakeProject",
+                    shadowCopy: false
+                )
+            )
             using (var host = CreateOmniSharpHost(testProject.Directory))
             {
                 var fileName = Path.Combine(testProject.Directory, "build.cake");
@@ -28,7 +33,7 @@ namespace OmniSharp.Cake.Tests
                 {
                     FileName = fileName,
                     Line = 8,
-                    Column = 10
+                    Column = 10,
                 };
 
                 var requestHandler = GetRequestHandler(host);
@@ -43,7 +48,12 @@ namespace OmniSharp.Cake.Tests
         [Fact]
         public async Task ShouldNavigateToAProperty()
         {
-            using (var testProject = await TestAssets.Instance.GetTestProjectAsync("CakeProject", shadowCopy: false))
+            using (
+                var testProject = await TestAssets.Instance.GetTestProjectAsync(
+                    "CakeProject",
+                    shadowCopy: false
+                )
+            )
             using (var host = CreateOmniSharpHost(testProject.Directory))
             {
                 var fileName = Path.Combine(testProject.Directory, "build.cake");
@@ -52,7 +62,7 @@ namespace OmniSharp.Cake.Tests
                 {
                     FileName = fileName,
                     Line = 11,
-                    Column = 20
+                    Column = 20,
                 };
 
                 var requestHandler = GetRequestHandler(host);
@@ -67,7 +77,12 @@ namespace OmniSharp.Cake.Tests
         [Fact]
         public async Task ShouldNavigateIntoDslMetadataWithoutGenericParams()
         {
-            using (var testProject = await TestAssets.Instance.GetTestProjectAsync("CakeProject", shadowCopy: false))
+            using (
+                var testProject = await TestAssets.Instance.GetTestProjectAsync(
+                    "CakeProject",
+                    shadowCopy: false
+                )
+            )
             using (var host = CreateOmniSharpHost(testProject.Directory))
             {
                 var fileName = Path.Combine(testProject.Directory, "build.cake");
@@ -77,7 +92,7 @@ namespace OmniSharp.Cake.Tests
                     FileName = fileName,
                     Line = 11,
                     Column = 10,
-                    WantMetadata = true
+                    WantMetadata = true,
                 };
 
                 var requestHandler = GetRequestHandler(host);
@@ -94,7 +109,12 @@ namespace OmniSharp.Cake.Tests
         [Fact]
         public async Task ShouldNavigateIntoDslMetadataWithGenericParams()
         {
-            using (var testProject = await TestAssets.Instance.GetTestProjectAsync("CakeProject", shadowCopy: false))
+            using (
+                var testProject = await TestAssets.Instance.GetTestProjectAsync(
+                    "CakeProject",
+                    shadowCopy: false
+                )
+            )
             using (var host = CreateOmniSharpHost(testProject.Directory))
             {
                 var fileName = Path.Combine(testProject.Directory, "build.cake");
@@ -104,7 +124,7 @@ namespace OmniSharp.Cake.Tests
                     FileName = fileName,
                     Line = 0,
                     Column = 16,
-                    WantMetadata = true
+                    WantMetadata = true,
                 };
 
                 var requestHandler = GetRequestHandler(host);
@@ -121,7 +141,12 @@ namespace OmniSharp.Cake.Tests
         [Fact]
         public async Task ShouldNavigateIntoDslMetadataProperty()
         {
-            using (var testProject = await TestAssets.Instance.GetTestProjectAsync("CakeProject", shadowCopy: false))
+            using (
+                var testProject = await TestAssets.Instance.GetTestProjectAsync(
+                    "CakeProject",
+                    shadowCopy: false
+                )
+            )
             using (var host = CreateOmniSharpHost(testProject.Directory))
             {
                 var fileName = Path.Combine(testProject.Directory, "build.cake");
@@ -131,7 +156,7 @@ namespace OmniSharp.Cake.Tests
                     FileName = fileName,
                     Line = 12,
                     Column = 37,
-                    WantMetadata = true
+                    WantMetadata = true,
                 };
 
                 var requestHandler = GetRequestHandler(host);

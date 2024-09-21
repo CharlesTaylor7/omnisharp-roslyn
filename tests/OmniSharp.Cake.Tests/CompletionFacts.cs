@@ -17,7 +17,8 @@ namespace OmniSharp.Cake.Tests
         private const int ImportCompletionTimeout = 2000;
         private readonly ILogger _logger;
 
-        public CompletionFacts(ITestOutputHelper testOutput) : base(testOutput)
+        public CompletionFacts(ITestOutputHelper testOutput)
+            : base(testOutput)
         {
             _logger = LoggerFactory.CreateLogger<CompletionFacts>();
         }
@@ -29,7 +30,12 @@ namespace OmniSharp.Cake.Tests
         {
             const string input = @"TaskSe$$";
 
-            using (var testProject = await TestAssets.Instance.GetTestProjectAsync("CakeProject", shadowCopy: false))
+            using (
+                var testProject = await TestAssets.Instance.GetTestProjectAsync(
+                    "CakeProject",
+                    shadowCopy: false
+                )
+            )
             using (var host = CreateOmniSharpHost(testProject.Directory))
             {
                 var fileName = Path.Combine(testProject.Directory, "build.cake");
@@ -49,7 +55,12 @@ namespace OmniSharp.Cake.Tests
                         Inform$$
                     });";
 
-            using (var testProject = await TestAssets.Instance.GetTestProjectAsync("CakeProject", shadowCopy: false))
+            using (
+                var testProject = await TestAssets.Instance.GetTestProjectAsync(
+                    "CakeProject",
+                    shadowCopy: false
+                )
+            )
             using (var host = CreateOmniSharpHost(testProject.Directory))
             {
                 var fileName = Path.Combine(testProject.Directory, "build.cake");
@@ -69,18 +80,25 @@ namespace OmniSharp.Cake.Tests
                         Inform$$
                     });";
 
-            using (var testProject = await TestAssets.Instance.GetTestProjectAsync("CakeProject", shadowCopy: false))
+            using (
+                var testProject = await TestAssets.Instance.GetTestProjectAsync(
+                    "CakeProject",
+                    shadowCopy: false
+                )
+            )
             using (var host = CreateOmniSharpHost(testProject.Directory))
             {
                 var fileName = Path.Combine(testProject.Directory, "build.cake");
-                var completion = (await FindCompletionsAsync(fileName, input, host))
-                    .Items.First(x => x.TextEdit.NewText == "Information");
+                var completion = (await FindCompletionsAsync(fileName, input, host)).Items.First(
+                    x => x.TextEdit.NewText == "Information"
+                );
 
                 var resolved = await ResolveCompletionAsync(completion, host);
 
                 Assert.StartsWith(
                     "```csharp\nvoid Information(string format, params object[] args)",
-                    resolved.Item?.Documentation);
+                    resolved.Item?.Documentation
+                );
             }
         }
 
@@ -89,9 +107,24 @@ namespace OmniSharp.Cake.Tests
         {
             const string input = @"var regex = new Rege$$";
 
-            using (var testProject = await TestAssets.Instance.GetTestProjectAsync("CakeProject", shadowCopy: false))
-            using (var host = CreateOmniSharpHost(testProject.Directory,
-                new[] { new KeyValuePair<string, string>("RoslynExtensionsOptions:EnableImportCompletion", "true") }))
+            using (
+                var testProject = await TestAssets.Instance.GetTestProjectAsync(
+                    "CakeProject",
+                    shadowCopy: false
+                )
+            )
+            using (
+                var host = CreateOmniSharpHost(
+                    testProject.Directory,
+                    new[]
+                    {
+                        new KeyValuePair<string, string>(
+                            "RoslynExtensionsOptions:EnableImportCompletion",
+                            "true"
+                        ),
+                    }
+                )
+            )
             {
                 var fileName = Path.Combine(testProject.Directory, "build.cake");
 
@@ -120,7 +153,8 @@ namespace OmniSharp.Cake.Tests
         [Fact]
         public async Task ShouldNotGetAdditionalTextEditsFromOverrideCompletion()
         {
-            const string source = @"
+            const string source =
+                @"
 class Foo
 {
     public virtual void Test(string text) {}
@@ -133,7 +167,12 @@ class FooChild : Foo
 }
 ";
 
-            using (var testProject = await TestAssets.Instance.GetTestProjectAsync("CakeProject", shadowCopy: false))
+            using (
+                var testProject = await TestAssets.Instance.GetTestProjectAsync(
+                    "CakeProject",
+                    shadowCopy: false
+                )
+            )
             using (var host = CreateOmniSharpHost(testProject.Directory))
             {
                 var fileName = Path.Combine(testProject.Directory, "build.cake");
@@ -145,45 +184,61 @@ class FooChild : Foo
                         "GetHashCode()",
                         "Test(string text)",
                         "Test(string text, string moreText)",
-                        "ToString()"
+                        "ToString()",
                     },
-                    completions.Items.Select(c => c.Label));
-                Assert.Equal(new[]
+                    completions.Items.Select(c => c.Label)
+                );
+                Assert.Equal(
+                    new[]
                     {
                         "public override bool Equals(object obj)\n    {\n        return base.Equals(obj);$0\n    \\}",
                         "public override int GetHashCode()\n    {\n        return base.GetHashCode();$0\n    \\}",
                         "public override void Test(string text)\n    {\n        base.Test(text);$0\n    \\}",
                         "public override void Test(string text, string moreText)\n    {\n        base.Test(text, moreText);$0\n    \\}",
-                        "public override string ToString()\n    {\n        return base.ToString();$0\n    \\}"
+                        "public override string ToString()\n    {\n        return base.ToString();$0\n    \\}",
                     },
-                    completions.Items.Select(c => c.TextEdit.NewText));
+                    completions.Items.Select(c => c.TextEdit.NewText)
+                );
 
-                Assert.Equal(new[]
+                Assert.Equal(
+                    new[]
                     {
                         "override Equals",
                         "override GetHashCode",
                         "override Test",
                         "override Test",
-                        "override ToString"
+                        "override ToString",
                     },
-                    completions.Items.Select(c => c.FilterText));
+                    completions.Items.Select(c => c.FilterText)
+                );
 
                 Assert.All(completions.Items, c => Assert.Null(c.AdditionalTextEdits));
 
-                Assert.All(completions.Items.Select(c => c.TextEdit),
+                Assert.All(
+                    completions.Items.Select(c => c.TextEdit),
                     r =>
                     {
                         Assert.Equal(9, r.StartLine);
                         Assert.Equal(4, r.StartColumn);
                         Assert.Equal(9, r.EndLine);
                         Assert.Equal(13, r.EndColumn);
-                    });
+                    }
+                );
 
-                Assert.All(completions.Items, c => Assert.Equal(InsertTextFormat.Snippet, c.InsertTextFormat));
+                Assert.All(
+                    completions.Items,
+                    c => Assert.Equal(InsertTextFormat.Snippet, c.InsertTextFormat)
+                );
             }
         }
 
-        private async Task<CompletionResponse> FindCompletionsAsync(string filename, string source, OmniSharpTestHost host, char? triggerChar = null, TestFile[] additionalFiles = null)
+        private async Task<CompletionResponse> FindCompletionsAsync(
+            string filename,
+            string source,
+            OmniSharpTestHost host,
+            char? triggerChar = null,
+            TestFile[] additionalFiles = null
+        )
         {
             var testFile = new TestFile(filename, source);
 
@@ -202,8 +257,11 @@ class FooChild : Foo
                 Column = point.Offset,
                 FileName = testFile.FileName,
                 Buffer = testFile.Content.Code,
-                CompletionTrigger = triggerChar is object ? CompletionTriggerKind.TriggerCharacter : CompletionTriggerKind.Invoked,
-                TriggerCharacter = triggerChar
+                CompletionTrigger =
+                    triggerChar is object
+                        ? CompletionTriggerKind.TriggerCharacter
+                        : CompletionTriggerKind.Invoked,
+                TriggerCharacter = triggerChar,
             };
 
             var updateBufferRequest = new UpdateBufferRequest
@@ -212,7 +270,7 @@ class FooChild : Foo
                 Column = request.Column,
                 FileName = request.FileName,
                 Line = request.Line,
-                FromDisk = false
+                FromDisk = false,
             };
 
             await GetUpdateBufferHandler(host).Handle(updateBufferRequest);
@@ -222,10 +280,17 @@ class FooChild : Foo
             return await requestHandler.Handle(request);
         }
 
-        private static async Task<CompletionResolveResponse> ResolveCompletionAsync(CompletionItem completionItem, OmniSharpTestHost testHost)
-            => await GetResolveHandler(testHost).Handle(new CompletionResolveRequest { Item = completionItem });
+        private static async Task<CompletionResolveResponse> ResolveCompletionAsync(
+            CompletionItem completionItem,
+            OmniSharpTestHost testHost
+        ) =>
+            await GetResolveHandler(testHost)
+                .Handle(new CompletionResolveRequest { Item = completionItem });
 
-        private static CompletionResolveHandler GetResolveHandler(OmniSharpTestHost host)
-            => host.GetRequestHandler<CompletionResolveHandler>(OmniSharpEndpoints.CompletionResolve, Constants.LanguageNames.Cake);
+        private static CompletionResolveHandler GetResolveHandler(OmniSharpTestHost host) =>
+            host.GetRequestHandler<CompletionResolveHandler>(
+                OmniSharpEndpoints.CompletionResolve,
+                Constants.LanguageNames.Cake
+            );
     }
 }

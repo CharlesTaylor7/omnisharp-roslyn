@@ -9,19 +9,23 @@ using Xunit.Abstractions;
 
 namespace OmniSharp.Roslyn.CSharp.Tests
 {
-    public class BlockStructureFacts : AbstractSingleRequestHandlerTestFixture<BlockStructureService>
+    public class BlockStructureFacts
+        : AbstractSingleRequestHandlerTestFixture<BlockStructureService>
     {
-        public BlockStructureFacts(ITestOutputHelper output, SharedOmniSharpHostFixture sharedOmniSharpHostFixture)
-            : base(output, sharedOmniSharpHostFixture)
-        {
-        }
+        public BlockStructureFacts(
+            ITestOutputHelper output,
+            SharedOmniSharpHostFixture sharedOmniSharpHostFixture
+        )
+            : base(output, sharedOmniSharpHostFixture) { }
 
         protected override string EndpointName => OmniSharpEndpoints.V2.BlockStructure;
 
         [Fact]
         public async Task UsesRoslynBlockStructureService()
         {
-            var testFile = new TestFile("foo.cs", @"class Foo[|
+            var testFile = new TestFile(
+                "foo.cs",
+                @"class Foo[|
 {
     void M()[|
     {
@@ -29,14 +33,14 @@ namespace OmniSharp.Roslyn.CSharp.Tests
         {
         }|]
     }|]
-}|]");
+}|]"
+            );
             var text = testFile.Content.Text;
 
-            var lineSpans = (await GetResponseAsync(testFile)).Spans
-                .Select(b => b.Range)
-                .ToArray();
+            var lineSpans = (await GetResponseAsync(testFile)).Spans.Select(b => b.Range).ToArray();
 
-            var expected = testFile.Content.GetSpans()
+            var expected = testFile
+                .Content.GetSpans()
                 .Select(span => testFile.Content.GetRangeFromSpan(span).ToRange())
                 .Reverse()
                 .ToArray();
@@ -49,7 +53,7 @@ namespace OmniSharp.Roslyn.CSharp.Tests
         {
             var request = new BlockStructureRequest
             {
-                FileName = $"{Guid.NewGuid().ToString("N")}.cs"
+                FileName = $"{Guid.NewGuid().ToString("N")}.cs",
             };
 
             var requestHandler = GetRequestHandler(SharedOmniSharpTestHost);
@@ -62,7 +66,9 @@ namespace OmniSharp.Roslyn.CSharp.Tests
         [Fact]
         public async Task SupportsRegionBlocks()
         {
-            var testFile = new TestFile("foo.cs", @"
+            var testFile = new TestFile(
+                "foo.cs",
+                @"
 [|#region Code Region Here
 class Foo[|
 {
@@ -73,10 +79,13 @@ class Foo[|
         }|]
     }|]
 }|]
-#endregion|]");
+#endregion|]"
+            );
 
-            var regionSpan = Assert.Single((await GetResponseAsync(testFile)).Spans,
-                span => span.Kind == CodeFoldingBlockKinds.Region);
+            var regionSpan = Assert.Single(
+                (await GetResponseAsync(testFile)).Spans,
+                span => span.Kind == CodeFoldingBlockKinds.Region
+            );
             Assert.Equal(1, regionSpan.Range.Start.Line);
             Assert.Equal(0, regionSpan.Range.Start.Column);
             Assert.Equal(11, regionSpan.Range.End.Line);
@@ -86,10 +95,7 @@ class Foo[|
         private Task<BlockStructureResponse> GetResponseAsync(TestFile testFile)
         {
             SharedOmniSharpTestHost.AddFilesToWorkspace(testFile);
-            var request = new BlockStructureRequest
-            {
-                FileName = testFile.FileName,
-            };
+            var request = new BlockStructureRequest { FileName = testFile.FileName };
 
             var requestHandler = GetRequestHandler(SharedOmniSharpTestHost);
             return requestHandler.Handle(request);

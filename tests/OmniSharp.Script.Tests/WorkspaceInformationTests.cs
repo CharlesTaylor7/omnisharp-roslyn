@@ -17,16 +17,17 @@ namespace OmniSharp.Script.Tests
 {
     public class WorkspaceInformationTests : AbstractTestFixture
     {
-        private static Dictionary<string, string> s_netCoreScriptingConfiguration = new Dictionary<string, string>
+        private static Dictionary<string, string> s_netCoreScriptingConfiguration = new Dictionary<
+            string,
+            string
+        >
         {
             ["script:enableScriptNuGetReferences"] = "true",
-            ["script:defaultTargetFramework"] = "net6.0"
+            ["script:defaultTargetFramework"] = "net6.0",
         };
 
         public WorkspaceInformationTests(ITestOutputHelper output)
-            : base(output)
-        {
-        }
+            : base(output) { }
 
         [Fact]
         public async Task SingleCsiScript()
@@ -50,11 +51,18 @@ namespace OmniSharp.Script.Tests
         [Fact]
         public async Task SingleCsiScriptWithCustomRspNamespacesAndReferences()
         {
-            using (var testProject = TestAssets.Instance.GetTestScript("SingleCsiScriptWithCustomRsp"))
-            using (var host = CreateOmniSharpHost(testProject.Directory, new Dictionary<string, string>
-            {
-                ["script:rspFilePath"] = Path.Combine(testProject.Directory, "test.rsp")
-            }))
+            using (
+                var testProject = TestAssets.Instance.GetTestScript("SingleCsiScriptWithCustomRsp")
+            )
+            using (
+                var host = CreateOmniSharpHost(
+                    testProject.Directory,
+                    new Dictionary<string, string>
+                    {
+                        ["script:rspFilePath"] = Path.Combine(testProject.Directory, "test.rsp"),
+                    }
+                )
+            )
             {
                 var workspaceInfo = await GetWorkspaceInfoAsync(host);
                 var project = Assert.Single(workspaceInfo.Projects);
@@ -84,15 +92,19 @@ namespace OmniSharp.Script.Tests
                 Assert.Empty(workspaceInfo.Projects);
 
                 var filePath = testProject.AddDisposableFile("main.csx");
-                var service = host.GetRequestHandler<OnFilesChangedService>(OmniSharpEndpoints.FilesChanged);
-                await service.Handle(new[]
-                {
-                    new FilesChangedRequest
+                var service = host.GetRequestHandler<OnFilesChangedService>(
+                    OmniSharpEndpoints.FilesChanged
+                );
+                await service.Handle(
+                    new[]
                     {
-                        FileName = filePath,
-                        ChangeType = FileWatching.FileChangeType.Create
+                        new FilesChangedRequest
+                        {
+                            FileName = filePath,
+                            ChangeType = FileWatching.FileChangeType.Create,
+                        },
                     }
-                });
+                );
 
                 // back off for 2 seconds to let the watcher and workspace process new projects
                 await Task.Delay(2000);
@@ -121,8 +133,14 @@ namespace OmniSharp.Script.Tests
                 Assert.Equal(2, scriptProjects.Length);
 
                 // ordering is non deterministic
-                Assert.True(scriptProjects.Any(x => Path.GetFileName(x.Path) == "main.csx"), "Expected a 'main.csx' but couldn't find it");
-                Assert.True(scriptProjects.Any(x => Path.GetFileName(x.Path) == "users.csx"), "Expected a 'main.csx' but couldn't find it");
+                Assert.True(
+                    scriptProjects.Any(x => Path.GetFileName(x.Path) == "main.csx"),
+                    "Expected a 'main.csx' but couldn't find it"
+                );
+                Assert.True(
+                    scriptProjects.Any(x => Path.GetFileName(x.Path) == "users.csx"),
+                    "Expected a 'main.csx' but couldn't find it"
+                );
 
                 // should have reference to mscorlib
                 VerifyCorLib(scriptProjects[0]);
@@ -138,7 +156,12 @@ namespace OmniSharp.Script.Tests
         public async Task DotnetCoreScriptSimple()
         {
             using (var testProject = TestAssets.Instance.GetTestScript("DotnetCoreScriptSimple"))
-            using (var host = CreateOmniSharpHost(testProject.Directory, configurationData: s_netCoreScriptingConfiguration))
+            using (
+                var host = CreateOmniSharpHost(
+                    testProject.Directory,
+                    configurationData: s_netCoreScriptingConfiguration
+                )
+            )
             {
                 var workspaceInfo = await GetWorkspaceInfoAsync(host);
                 var project = Assert.Single(workspaceInfo.Projects);
@@ -163,7 +186,12 @@ namespace OmniSharp.Script.Tests
         public async Task DotnetCoreScriptWithNuget()
         {
             using (var testProject = TestAssets.Instance.GetTestScript("DotnetCoreScriptWithNuget"))
-            using (var host = CreateOmniSharpHost(testProject.Directory, configurationData: s_netCoreScriptingConfiguration))
+            using (
+                var host = CreateOmniSharpHost(
+                    testProject.Directory,
+                    configurationData: s_netCoreScriptingConfiguration
+                )
+            )
             {
                 var workspaceInfo = await GetWorkspaceInfoAsync(host);
                 var project = Assert.Single(workspaceInfo.Projects);
@@ -191,10 +219,15 @@ namespace OmniSharp.Script.Tests
         public async Task DoesntParticipateInWorkspaceInfoResponseWhenDisabled()
         {
             using (var testProject = TestAssets.Instance.GetTestScript("SingleCsiScript"))
-            using (var host = CreateOmniSharpHost(testProject.Directory, configurationData: new Dictionary<string, string>
-            {
-                ["script:enabled"] = "false"
-            }))
+            using (
+                var host = CreateOmniSharpHost(
+                    testProject.Directory,
+                    configurationData: new Dictionary<string, string>
+                    {
+                        ["script:enabled"] = "false",
+                    }
+                )
+            )
             {
                 var workspaceInfo = await GetWorkspaceInfoAsync(host);
                 Assert.Null(workspaceInfo);
@@ -206,24 +239,32 @@ namespace OmniSharp.Script.Tests
         private void VerifyCorLib(ScriptContextModel project, bool expected = true)
         {
             var corLibFound = project.AssemblyReferences.Any(r => r == GetMsCorlibPath());
-            Assert.True(corLibFound == expected, $"{(expected ? "Missing" : "Unnecessary")} reference to mscorlib");
+            Assert.True(
+                corLibFound == expected,
+                $"{(expected ? "Missing" : "Unnecessary")} reference to mscorlib"
+            );
         }
 
         private void VerifyAssemblyReference(ScriptContextModel project, string partialName) =>
-            Assert.True(project.AssemblyReferences.Any(r => r.IndexOf(partialName, StringComparison.OrdinalIgnoreCase) > 0), $"Missing reference to {partialName}");
+            Assert.True(
+                project.AssemblyReferences.Any(r =>
+                    r.IndexOf(partialName, StringComparison.OrdinalIgnoreCase) > 0
+                ),
+                $"Missing reference to {partialName}"
+            );
 
-        private static async Task<ScriptContextModelCollection> GetWorkspaceInfoAsync(OmniSharpTestHost host)
+        private static async Task<ScriptContextModelCollection> GetWorkspaceInfoAsync(
+            OmniSharpTestHost host
+        )
         {
             var service = host.GetWorkspaceInformationService();
 
-            var request = new WorkspaceInformationRequest
-            {
-                ExcludeSourceFiles = false
-            };
+            var request = new WorkspaceInformationRequest { ExcludeSourceFiles = false };
 
             var response = await service.Handle(request);
 
-            if (!response.ContainsKey("Script")) return null;
+            if (!response.ContainsKey("Script"))
+                return null;
 
             return (ScriptContextModelCollection)response["Script"];
         }

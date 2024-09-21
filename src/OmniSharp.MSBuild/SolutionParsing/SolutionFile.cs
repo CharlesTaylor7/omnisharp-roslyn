@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Immutable;
 using System.IO;
 
@@ -15,7 +15,8 @@ namespace OmniSharp.MSBuild.SolutionParsing
             Version formatVersion,
             Version visualStudioVersion,
             ImmutableArray<ProjectBlock> projects,
-            ImmutableArray<GlobalSectionBlock> globalSections)
+            ImmutableArray<GlobalSectionBlock> globalSections
+        )
         {
             FormatVersion = formatVersion;
             VisualStudioVersion = visualStudioVersion;
@@ -64,7 +65,12 @@ namespace OmniSharp.MSBuild.SolutionParsing
                     }
                 }
 
-                return new SolutionFile(formatVersion, visualStudioVersion, projects.ToImmutable(), globalSections.ToImmutable());
+                return new SolutionFile(
+                    formatVersion,
+                    visualStudioVersion,
+                    projects.ToImmutable(),
+                    globalSections.ToImmutable()
+                );
             }
         }
 
@@ -102,7 +108,9 @@ namespace OmniSharp.MSBuild.SolutionParsing
             }
 
             // If we got here, we didn't find the file header on either the first or second line.
-            throw new InvalidSolutionFileException("Solution header should be on first or second line.");
+            throw new InvalidSolutionFileException(
+                "Solution header should be on first or second line."
+            );
         }
 
         private static Version ParseVisualStudioVersion(string line)

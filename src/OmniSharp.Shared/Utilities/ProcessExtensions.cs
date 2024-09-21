@@ -102,7 +102,7 @@ namespace OmniSharp.Utilities
                 CreateNoWindow = true,
                 UseShellExecute = false,
                 RedirectStandardOutput = true,
-                RedirectStandardError = true
+                RedirectStandardError = true,
             };
 
             var entries = new List<(int processId, int parentProcessId)>();
@@ -117,8 +117,7 @@ namespace OmniSharp.Utilities
                 }
 
                 var parts = e.Data.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
-                if (Int32.TryParse(parts[0], out var ppid) &&
-                    Int32.TryParse(parts[1], out var pid))
+                if (Int32.TryParse(parts[0], out var ppid) && Int32.TryParse(parts[1], out var pid))
                 {
                     entries.Add((pid, ppid));
                 }

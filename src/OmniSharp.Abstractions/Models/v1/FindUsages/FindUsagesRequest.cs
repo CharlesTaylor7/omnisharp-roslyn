@@ -2,7 +2,11 @@ using OmniSharp.Mef;
 
 namespace OmniSharp.Models.FindUsages
 {
-    [OmniSharpEndpoint(OmniSharpEndpoints.FindUsages, typeof(FindUsagesRequest), typeof(QuickFixResponse))]
+    [OmniSharpEndpoint(
+        OmniSharpEndpoints.FindUsages,
+        typeof(FindUsagesRequest),
+        typeof(QuickFixResponse)
+    )]
     public class FindUsagesRequest : Request
     {
         /// <summary>

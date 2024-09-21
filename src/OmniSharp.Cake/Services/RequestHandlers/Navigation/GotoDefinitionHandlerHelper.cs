@@ -20,7 +20,8 @@ namespace OmniSharp.Cake.Services.RequestHandlers.Navigation
             string fileName,
             int line,
             int timeout,
-            MetadataExternalSourceService metadataExternalSourceService)
+            MetadataExternalSourceService metadataExternalSourceService
+        )
         {
             var document = workspace.GetDocument(fileName);
             var lineIndex = line + MethodLineOffset;
@@ -58,7 +59,11 @@ namespace OmniSharp.Cake.Services.RequestHandlers.Navigation
             }
 
             var position = sourceText.Lines.GetPosition(new LinePosition(lineIndex, column));
-            var symbol = await SymbolFinder.FindSymbolAtPositionAsync(semanticModel, position, workspace);
+            var symbol = await SymbolFinder.FindSymbolAtPositionAsync(
+                semanticModel,
+                position,
+                workspace
+            );
 
             if (symbol == null || symbol is INamespaceSymbol)
             {
@@ -77,25 +82,41 @@ namespace OmniSharp.Cake.Services.RequestHandlers.Navigation
                     continue;
                 }
 
-                var cancellationSource = new CancellationTokenSource(TimeSpan.FromMilliseconds(timeout));
-                var (metadataDocument, _) = await metadataExternalSourceService.GetAndAddExternalSymbolDocument(document.Project, symbol, cancellationSource.Token);
+                var cancellationSource = new CancellationTokenSource(
+                    TimeSpan.FromMilliseconds(timeout)
+                );
+                var (metadataDocument, _) =
+                    await metadataExternalSourceService.GetAndAddExternalSymbolDocument(
+                        document.Project,
+                        symbol,
+                        cancellationSource.Token
+                    );
                 if (metadataDocument == null)
                 {
                     continue;
                 }
 
-                cancellationSource = new CancellationTokenSource(TimeSpan.FromMilliseconds(timeout));
-                var metadataLocation = await metadataExternalSourceService.GetExternalSymbolLocation(symbol, metadataDocument, cancellationSource.Token);
+                cancellationSource = new CancellationTokenSource(
+                    TimeSpan.FromMilliseconds(timeout)
+                );
+                var metadataLocation =
+                    await metadataExternalSourceService.GetExternalSymbolLocation(
+                        symbol,
+                        metadataDocument,
+                        cancellationSource.Token
+                    );
                 var lineSpan = metadataLocation.GetMappedLineSpan();
 
-                result.Add(new Alias
-                {
-                    Document = document,
-                    MetadataDocument = metadataDocument,
-                    Symbol = symbol,
-                    Location = location,
-                    LineSpan = lineSpan
-                });
+                result.Add(
+                    new Alias
+                    {
+                        Document = document,
+                        MetadataDocument = metadataDocument,
+                        Symbol = symbol,
+                        Location = location,
+                        LineSpan = lineSpan,
+                    }
+                );
             }
 
             return result;

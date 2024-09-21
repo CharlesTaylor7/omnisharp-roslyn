@@ -16,11 +16,9 @@ namespace TestUtility
             _instances = instances.ToImmutableArray();
         }
 
-        public void RegisterInstance(MSBuildInstance instance)
-            => RegisteredInstance = instance;
+        public void RegisterInstance(MSBuildInstance instance) => RegisteredInstance = instance;
 
-        public ImmutableArray<MSBuildInstance> GetInstances()
-            => _instances;
+        public ImmutableArray<MSBuildInstance> GetInstances() => _instances;
 
         public void DeleteFakeInstancesFolders()
         {

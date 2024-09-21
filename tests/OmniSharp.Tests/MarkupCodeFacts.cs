@@ -15,7 +15,10 @@ namespace OmniSharp.Tests
 
             Assert.Equal("class C { }", markupCode.Code);
             Assert.False(markupCode.HasPosition);
-            Assert.Throws<InvalidOperationException>(() => { var _ = markupCode.Position; });
+            Assert.Throws<InvalidOperationException>(() =>
+            {
+                var _ = markupCode.Position;
+            });
 
             var spans = markupCode.GetSpans();
             Assert.Empty(spans);
@@ -77,7 +80,10 @@ namespace OmniSharp.Tests
 
             var spans = markupCode.GetSpans();
             Assert.Single(spans);
-            Assert.Equal(TextSpan.FromBounds(markupCode.Code.Length, markupCode.Code.Length), spans[0]);
+            Assert.Equal(
+                TextSpan.FromBounds(markupCode.Code.Length, markupCode.Code.Length),
+                spans[0]
+            );
         }
 
         [Fact]
@@ -135,7 +141,10 @@ namespace OmniSharp.Tests
 
             var spans = markupCode.GetSpans("test");
             Assert.Single(spans);
-            Assert.Equal(TextSpan.FromBounds(markupCode.Code.Length, markupCode.Code.Length), spans[0]);
+            Assert.Equal(
+                TextSpan.FromBounds(markupCode.Code.Length, markupCode.Code.Length),
+                spans[0]
+            );
         }
 
         [Fact]

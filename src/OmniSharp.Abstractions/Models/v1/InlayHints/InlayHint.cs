@@ -1,4 +1,4 @@
-﻿using OmniSharp.Models.V2;
+using OmniSharp.Models.V2;
 
 #nullable enable annotations
 
@@ -18,7 +18,7 @@ public sealed record InlayHint
 
     /// <summary>
     /// The kind of this hint. Can be omitted in which case the client
-	/// should fall back to a reasonable default.
+    /// should fall back to a reasonable default.
     /// </summary>
     public InlayHintKind? Kind { get; set; }
 
@@ -40,14 +40,18 @@ public sealed record InlayHint
 #nullable enable
     public override string ToString()
     {
-        var textEdits = TextEdits is null ? "null" : $"[ {string.Join<LinePositionSpanTextChange>(", ", TextEdits)} ]";
+        var textEdits = TextEdits is null
+            ? "null"
+            : $"[ {string.Join<LinePositionSpanTextChange>(", ", TextEdits)} ]";
         return $"InlayHint {{ {nameof(Position)} = {Position}, {nameof(Label)} = {Label}, {nameof(Tooltip)} = {Tooltip ?? "null"}, {nameof(TextEdits)} = {textEdits} }}";
     }
 
     public bool Equals(InlayHint? other)
     {
-        if (ReferenceEquals(this, other)) return true;
-        if (other is null) return false;
+        if (ReferenceEquals(this, other))
+            return true;
+        if (other is null)
+            return false;
 
         return Position == other.Position
             && Label == other.Label
@@ -55,7 +59,10 @@ public sealed record InlayHint
             && TextEditsEqual(TextEdits, other.TextEdits);
     }
 
-    private static bool TextEditsEqual(LinePositionSpanTextChange[]? a, LinePositionSpanTextChange[]? b)
+    private static bool TextEditsEqual(
+        LinePositionSpanTextChange[]? a,
+        LinePositionSpanTextChange[]? b
+    )
     {
         if (a is null)
         {
@@ -83,7 +90,8 @@ public sealed record InlayHint
         return true;
     }
 
-    public override int GetHashCode() => (Position, Label, Tooltip, TextEdits?.GetHashCode() ?? 0).GetHashCode();
+    public override int GetHashCode() =>
+        (Position, Label, Tooltip, TextEdits?.GetHashCode() ?? 0).GetHashCode();
 }
 
 public enum InlayHintKind
@@ -92,6 +100,7 @@ public enum InlayHintKind
     /// An inlay hint that is for a type annotation.
     /// </summary>
     Type = 1,
+
     /// <summary>
     /// An inlay hint that is for a parameter.
     /// </summary>

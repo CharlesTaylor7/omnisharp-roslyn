@@ -16,9 +16,11 @@ namespace OmniSharp.Tests
         {
             private readonly IDictionary<LogLevel, List<string>> _logMessages;
 
-            public FakeLoggerProvider(IDictionary<LogLevel, List<string>> logMessages) => _logMessages = logMessages;
+            public FakeLoggerProvider(IDictionary<LogLevel, List<string>> logMessages) =>
+                _logMessages = logMessages;
 
             public ILogger CreateLogger(string categoryName) => new FakeLogger(_logMessages);
+
             public void Dispose() { }
         }
 
@@ -26,12 +28,20 @@ namespace OmniSharp.Tests
         {
             private readonly IDictionary<LogLevel, List<string>> _logMessages;
 
-            public FakeLogger(IDictionary<LogLevel, List<string>> logMessages) => _logMessages = logMessages;
+            public FakeLogger(IDictionary<LogLevel, List<string>> logMessages) =>
+                _logMessages = logMessages;
 
             public IDisposable BeginScope<TState>(TState state) => null;
+
             public bool IsEnabled(LogLevel logLevel) => true;
 
-            public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)
+            public void Log<TState>(
+                LogLevel logLevel,
+                EventId eventId,
+                TState state,
+                Exception exception,
+                Func<TState, Exception, string> formatter
+            )
             {
                 if (!_logMessages.TryGetValue(logLevel, out var messages))
                 {
@@ -43,17 +53,23 @@ namespace OmniSharp.Tests
             }
         }
 
-        private static (ILogger, IDictionary<LogLevel, List<string>>) CreateLogger(LogLevel logLevel)
+        private static (ILogger, IDictionary<LogLevel, List<string>>) CreateLogger(
+            LogLevel logLevel
+        )
         {
             var environment = new OmniSharpEnvironment(logLevel: logLevel);
             var configuration = new ConfigurationBuilder().Build();
             var logMessages = new Dictionary<LogLevel, List<string>>();
 
-            var serviceProvider = CompositionHostBuilder.CreateDefaultServiceProvider(environment, configuration, NullEventEmitter.Instance,
+            var serviceProvider = CompositionHostBuilder.CreateDefaultServiceProvider(
+                environment,
+                configuration,
+                NullEventEmitter.Instance,
                 configureLogging: builder =>
                 {
                     builder.AddProvider(new FakeLoggerProvider(logMessages));
-                });
+                }
+            );
 
             var loggerFactory = serviceProvider.GetRequiredService<ILoggerFactory>();
             var logger = loggerFactory.CreateLogger<LoggingTests>();

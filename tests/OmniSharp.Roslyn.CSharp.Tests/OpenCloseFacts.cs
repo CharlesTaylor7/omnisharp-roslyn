@@ -10,10 +10,11 @@ namespace OmniSharp.Roslyn.CSharp.Tests
 {
     public class OpenCloseFacts : AbstractSingleRequestHandlerTestFixture<FileOpenService>
     {
-        public OpenCloseFacts(ITestOutputHelper output, SharedOmniSharpHostFixture sharedOmniSharpHostFixture)
-            : base(output, sharedOmniSharpHostFixture)
-        {
-        }
+        public OpenCloseFacts(
+            ITestOutputHelper output,
+            SharedOmniSharpHostFixture sharedOmniSharpHostFixture
+        )
+            : base(output, sharedOmniSharpHostFixture) { }
 
         protected override string EndpointName => OmniSharpEndpoints.Open;
 
@@ -28,10 +29,7 @@ namespace OmniSharp.Roslyn.CSharp.Tests
                 var documentId = host.Workspace.GetDocumentId("foo.cs");
                 var requestHandler = GetRequestHandler(host);
 
-                var request = new FileOpenRequest
-                {
-                    FileName = "foo.cs"
-                };
+                var request = new FileOpenRequest { FileName = "foo.cs" };
 
                 var response = await requestHandler.Handle(request);
 

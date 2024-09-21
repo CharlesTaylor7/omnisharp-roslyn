@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 
 namespace OmniSharp.FileWatching
 {
@@ -6,8 +6,10 @@ namespace OmniSharp.FileWatching
     {
         private class Callbacks
         {
-            private List<FileSystemNotificationCallback> _callbacks = new List<FileSystemNotificationCallback>();
-            private HashSet<FileSystemNotificationCallback> _callbackSet = new HashSet<FileSystemNotificationCallback>();
+            private List<FileSystemNotificationCallback> _callbacks =
+                new List<FileSystemNotificationCallback>();
+            private HashSet<FileSystemNotificationCallback> _callbackSet =
+                new HashSet<FileSystemNotificationCallback>();
 
             public void Add(FileSystemNotificationCallback callback)
             {

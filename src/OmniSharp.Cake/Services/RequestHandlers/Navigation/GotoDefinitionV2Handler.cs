@@ -5,10 +5,10 @@ using System.Linq;
 using System.Threading.Tasks;
 using OmniSharp.Extensions;
 using OmniSharp.Mef;
-using OmniSharp.Models.V2.GotoDefinition;
 using OmniSharp.Models.Metadata;
 using OmniSharp.Models.v1.SourceGeneratedFile;
 using OmniSharp.Models.V2;
+using OmniSharp.Models.V2.GotoDefinition;
 using OmniSharp.Roslyn;
 using OmniSharp.Utilities;
 using Location = OmniSharp.Models.V2.Location;
@@ -17,20 +17,27 @@ using Range = OmniSharp.Models.V2.Range;
 namespace OmniSharp.Cake.Services.RequestHandlers.Navigation
 {
     [OmniSharpHandler(OmniSharpEndpoints.V2.GotoDefinition, Constants.LanguageNames.Cake), Shared]
-    public class GotoDefinitionV2Handler : CakeRequestHandler<GotoDefinitionRequest, GotoDefinitionResponse>
+    public class GotoDefinitionV2Handler
+        : CakeRequestHandler<GotoDefinitionRequest, GotoDefinitionResponse>
     {
         private readonly MetadataExternalSourceService _metadataExternalSourceService;
 
         [ImportingConstructor]
         public GotoDefinitionV2Handler(
             OmniSharpWorkspace workspace,
-            MetadataExternalSourceService metadataExternalSourceService)
+            MetadataExternalSourceService metadataExternalSourceService
+        )
             : base(workspace)
         {
-            _metadataExternalSourceService = metadataExternalSourceService ?? throw new ArgumentNullException(nameof(metadataExternalSourceService));
+            _metadataExternalSourceService =
+                metadataExternalSourceService
+                ?? throw new ArgumentNullException(nameof(metadataExternalSourceService));
         }
 
-        protected override async Task<GotoDefinitionResponse> TranslateResponse(GotoDefinitionResponse response, GotoDefinitionRequest request)
+        protected override async Task<GotoDefinitionResponse> TranslateResponse(
+            GotoDefinitionResponse response,
+            GotoDefinitionRequest request
+        )
         {
             var definitions = new List<Definition>();
             foreach (var definition in response.Definitions ?? Enumerable.Empty<Definition>())
@@ -44,16 +51,18 @@ namespace OmniSharp.Cake.Services.RequestHandlers.Navigation
                         file = file.Replace('/', '\\');
                     }
 
-                    definitions.Add(new Definition
-                    {
-                        MetadataSource = definition.MetadataSource,
-                        SourceGeneratedFileInfo = definition.SourceGeneratedFileInfo,
-                        Location = new Location
+                    definitions.Add(
+                        new Definition
                         {
-                            FileName = file,
-                            Range = definition.Location.Range
+                            MetadataSource = definition.MetadataSource,
+                            SourceGeneratedFileInfo = definition.SourceGeneratedFileInfo,
+                            Location = new Location
+                            {
+                                FileName = file,
+                                Range = definition.Location.Range,
+                            },
                         }
-                    });
+                    );
 
                     continue;
                 }
@@ -72,45 +81,44 @@ namespace OmniSharp.Cake.Services.RequestHandlers.Navigation
                 );
 
                 definitions.AddRange(
-                    aliasLocations.Select(loc =>
-                        new Definition
+                    aliasLocations
+                        .Select(loc => new Definition
                         {
                             Location = new Location
                             {
-                                FileName = loc.MetadataDocument.FilePath ?? loc.MetadataDocument.Name,
+                                FileName =
+                                    loc.MetadataDocument.FilePath ?? loc.MetadataDocument.Name,
                                 Range = new Range
                                 {
                                     Start = new Point
                                     {
                                         Column = loc.LineSpan.StartLinePosition.Character,
-                                        Line = loc.LineSpan.StartLinePosition.Line
+                                        Line = loc.LineSpan.StartLinePosition.Line,
                                     },
                                     End = new Point
                                     {
                                         Column = loc.LineSpan.EndLinePosition.Character,
-                                        Line = loc.LineSpan.EndLinePosition.Line
+                                        Line = loc.LineSpan.EndLinePosition.Line,
                                     },
-                                }
+                                },
                             },
                             MetadataSource = new MetadataSource
                             {
                                 AssemblyName = loc.Symbol.ContainingAssembly.Name,
                                 ProjectName = loc.Document.Project.Name,
-                                TypeName = loc.Symbol.GetSymbolName()
+                                TypeName = loc.Symbol.GetSymbolName(),
                             },
                             SourceGeneratedFileInfo = new SourceGeneratedFileInfo
                             {
                                 DocumentGuid = loc.Document.Id.Id,
-                                ProjectGuid = loc.Document.Id.ProjectId.Id
-                            }
+                                ProjectGuid = loc.Document.Id.ProjectId.Id,
+                            },
                         })
-                        .ToList());
+                        .ToList()
+                );
             }
 
-            return new GotoDefinitionResponse
-            {
-                Definitions = definitions
-            };
+            return new GotoDefinitionResponse { Definitions = definitions };
         }
     }
 }

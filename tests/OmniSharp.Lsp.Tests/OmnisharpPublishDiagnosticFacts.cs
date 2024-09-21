@@ -18,9 +18,8 @@ namespace OmniSharp.Lsp.Tests
 {
     public class OmnisharpPublishDiagnosticFacts : AbstractLanguageServerTestBase
     {
-        public OmnisharpPublishDiagnosticFacts(ITestOutputHelper testOutput) : base(testOutput)
-        {
-        }
+        public OmnisharpPublishDiagnosticFacts(ITestOutputHelper testOutput)
+            : base(testOutput) { }
 
         [Theory]
         [InlineData(true)]
@@ -40,8 +39,15 @@ namespace OmniSharp.Lsp.Tests
 
         private Task ReadyHost(bool roslynAnalyzersEnabled)
         {
-            return Restart(configurationData: new Dictionary<string, string>
-                {{"RoslynExtensionsOptions:EnableAnalyzersSupport", roslynAnalyzersEnabled.ToString()}});
+            return Restart(
+                configurationData: new Dictionary<string, string>
+                {
+                    {
+                        "RoslynExtensionsOptions:EnableAnalyzersSupport",
+                        roslynAnalyzersEnabled.ToString()
+                    },
+                }
+            );
         }
 
         [Fact]
@@ -50,14 +56,13 @@ namespace OmniSharp.Lsp.Tests
             await ReadyHost(true);
             AddFilesToWorkspace(
                 new TestFile("a.cs", "class C1 { int n = true; }"),
-                new TestFile("b.cs", "class C2 { int n = true; }"));
+                new TestFile("b.cs", "class C2 { int n = true; }")
+            );
 
             await WaitForDiagnostics();
 
-            Assert.Contains(GetDiagnostics("a.cs"),
-                x => x.Code == "CS0029");
-            Assert.Contains(GetDiagnostics("b.cs"),
-                x => x.Code == "CS0029");
+            Assert.Contains(GetDiagnostics("a.cs"), x => x.Code == "CS0029");
+            Assert.Contains(GetDiagnostics("b.cs"), x => x.Code == "CS0029");
         }
 
         [Fact]
@@ -74,8 +79,7 @@ namespace OmniSharp.Lsp.Tests
         public async Task WhenUnusedImportExistsWithoutAnalyzersEnabled_ThenReturnEmptyTags()
         {
             await ReadyHost(false);
-            AddFilesToWorkspace(
-                new TestFile("returnemptytags.cs", @"using System.IO;"));
+            AddFilesToWorkspace(new TestFile("returnemptytags.cs", @"using System.IO;"));
 
             await WaitForDiagnostics();
 
@@ -88,15 +92,14 @@ namespace OmniSharp.Lsp.Tests
         public async Task WhenUnusedImportIsFoundAndAnalyzersEnabled_ThenReturnUnnecessaryTag()
         {
             await ReadyHost(true);
-            AddFilesToWorkspace(
-                new TestFile("returnidetags.cs", @"using System.IO;"));
+            AddFilesToWorkspace(new TestFile("returnidetags.cs", @"using System.IO;"));
 
             await WaitForDiagnostics();
 
-            Assert.Contains(DiagnosticTag.Unnecessary,
-                GetDiagnostics("returnidetags.cs")
-                .Single(x => x.Code == "IDE0005")
-                .Tags);
+            Assert.Contains(
+                DiagnosticTag.Unnecessary,
+                GetDiagnostics("returnidetags.cs").Single(x => x.Code == "IDE0005").Tags
+            );
         }
 
         [Fact]
@@ -105,7 +108,8 @@ namespace OmniSharp.Lsp.Tests
         {
             await ReadyHost(true);
             AddFilesToWorkspace(
-                new TestFile("a.cs", "class C1 { bool Test(object input) => input == default; }"));
+                new TestFile("a.cs", "class C1 { bool Test(object input) => input == default; }")
+            );
 
             await WaitForDiagnostics();
 

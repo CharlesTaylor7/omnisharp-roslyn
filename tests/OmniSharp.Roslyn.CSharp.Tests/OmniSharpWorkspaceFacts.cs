@@ -14,8 +14,11 @@ namespace OmniSharp.Roslyn.CSharp.Tests
             Workspace = new OmniSharpWorkspace(
                 new HostServicesAggregator(
                     Enumerable.Empty<IHostServicesProvider>(),
-                    new LoggerFactory()),
-                new LoggerFactory(), new ManualFileSystemWatcher());
+                    new LoggerFactory()
+                ),
+                new LoggerFactory(),
+                new ManualFileSystemWatcher()
+            );
         }
 
         public OmniSharpWorkspace Workspace { get; }
@@ -36,9 +39,12 @@ namespace OmniSharp.Roslyn.CSharp.Tests
             Assert.Collection(
                 project.Documents,
                 document => Assert.Equal("/path/to/file1.cs", document.FilePath),
-                document => Assert.Equal("/path/to/file2.cs", document.FilePath));
+                document => Assert.Equal("/path/to/file2.cs", document.FilePath)
+            );
 
-            var miscProject = Assert.Single(Workspace.CurrentSolution.Projects.Except(new[] { project }));
+            var miscProject = Assert.Single(
+                Workspace.CurrentSolution.Projects.Except(new[] { project })
+            );
             Assert.Empty(miscProject.DocumentIds);
         }
 
@@ -47,7 +53,10 @@ namespace OmniSharp.Roslyn.CSharp.Tests
         {
             // Arrange
             var project = AddProjectToWorkspace("/path/to/project.csproj");
-            var expectedDocumentId = Workspace.TryAddMiscellaneousDocument("/misc/file.cs", LanguageNames.CSharp);
+            var expectedDocumentId = Workspace.TryAddMiscellaneousDocument(
+                "/misc/file.cs",
+                LanguageNames.CSharp
+            );
 
             // Act
             Workspace.TryPromoteMiscellaneousDocumentsToProject(project);
@@ -55,7 +64,9 @@ namespace OmniSharp.Roslyn.CSharp.Tests
             // Assert
             project = Workspace.CurrentSolution.GetProject(project.Id);
             Assert.Empty(project.DocumentIds);
-            var miscProject = Assert.Single(Workspace.CurrentSolution.Projects.Except(new[] { project }));
+            var miscProject = Assert.Single(
+                Workspace.CurrentSolution.Projects.Except(new[] { project })
+            );
             var document = Assert.Single(miscProject.DocumentIds);
             Assert.Equal(expectedDocumentId.Id, document.Id);
         }
@@ -136,7 +147,8 @@ namespace OmniSharp.Roslyn.CSharp.Tests
                 "ProjectNameVal",
                 "AssemblyNameVal",
                 LanguageNames.CSharp,
-                filePath);
+                filePath
+            );
             Workspace.AddProject(projectInfo);
             var project = Workspace.CurrentSolution.GetProject(projectInfo.Id);
             return project;

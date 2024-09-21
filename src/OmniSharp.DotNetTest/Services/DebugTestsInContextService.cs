@@ -15,19 +15,28 @@ namespace OmniSharp.DotNetTest.Services
 {
     [Shared]
     [OmniSharpHandler(OmniSharpEndpoints.V2.DebugTestsInContextGetStartInfo, LanguageNames.CSharp)]
-    internal class DebugTestsInContextService : BaseTestService,
-        IRequestHandler<DebugTestsInContextGetStartInfoRequest, DebugTestGetStartInfoResponse>
+    internal class DebugTestsInContextService
+        : BaseTestService,
+            IRequestHandler<DebugTestsInContextGetStartInfoRequest, DebugTestGetStartInfoResponse>
     {
         private readonly DebugSessionManager _debugSessionManager;
 
         [ImportingConstructor]
-        public DebugTestsInContextService(DebugSessionManager debugSessionManager, OmniSharpWorkspace workspace, IDotNetCliService dotNetCli, IEventEmitter eventEmitter, ILoggerFactory loggerFactory)
+        public DebugTestsInContextService(
+            DebugSessionManager debugSessionManager,
+            OmniSharpWorkspace workspace,
+            IDotNetCliService dotNetCli,
+            IEventEmitter eventEmitter,
+            ILoggerFactory loggerFactory
+        )
             : base(workspace, dotNetCli, eventEmitter, loggerFactory)
         {
             _debugSessionManager = debugSessionManager;
         }
 
-        public async Task<DebugTestGetStartInfoResponse> Handle(DebugTestsInContextGetStartInfoRequest request)
+        public async Task<DebugTestGetStartInfoResponse> Handle(
+            DebugTestsInContextGetStartInfoRequest request
+        )
         {
             var document = Workspace.GetDocument(request.FileName);
             if (document is null)
@@ -40,9 +49,19 @@ namespace OmniSharp.DotNetTest.Services
                 };
             }
 
-            var testManager = TestManager.Create(document.Project, DotNetCli, EventEmitter, LoggerFactory);
+            var testManager = TestManager.Create(
+                document.Project,
+                DotNetCli,
+                EventEmitter,
+                LoggerFactory
+            );
 
-            var (methodNames, testFramework) = await testManager.GetContextTestMethodNames(request.Line, request.Column, document, CancellationToken.None);
+            var (methodNames, testFramework) = await testManager.GetContextTestMethodNames(
+                request.Line,
+                request.Column,
+                document,
+                CancellationToken.None
+            );
 
             if (methodNames is null)
             {
@@ -51,7 +70,6 @@ namespace OmniSharp.DotNetTest.Services
                     Succeeded = false,
                     FailureReason = "Could not find any tests to run",
                     ContextHadNoTests = true,
-
                 };
             }
 
@@ -60,13 +78,19 @@ namespace OmniSharp.DotNetTest.Services
             if (testManager.IsConnected)
             {
                 _debugSessionManager.StartSession(testManager);
-                return await _debugSessionManager.DebugGetStartInfoAsync(methodNames, request.RunSettings, testFramework, request.TargetFrameworkVersion, CancellationToken.None);
+                return await _debugSessionManager.DebugGetStartInfoAsync(
+                    methodNames,
+                    request.RunSettings,
+                    testFramework,
+                    request.TargetFrameworkVersion,
+                    CancellationToken.None
+                );
             }
 
             return new DebugTestGetStartInfoResponse
             {
                 FailureReason = "Failed to connect to the 'dotnet test' process",
-                Succeeded = false
+                Succeeded = false,
             };
         }
     }

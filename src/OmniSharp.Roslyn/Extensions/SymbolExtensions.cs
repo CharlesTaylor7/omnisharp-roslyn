@@ -13,23 +13,23 @@ namespace OmniSharp.Extensions
 {
     public static class SymbolExtensions
     {
-        private static readonly SymbolDisplayFormat NameFormat =
-            new SymbolDisplayFormat(
-                globalNamespaceStyle: SymbolDisplayGlobalNamespaceStyle.Omitted,
-                typeQualificationStyle: SymbolDisplayTypeQualificationStyle.NameAndContainingTypesAndNamespaces,
-                propertyStyle: SymbolDisplayPropertyStyle.NameOnly,
-                genericsOptions: SymbolDisplayGenericsOptions.IncludeTypeParameters | SymbolDisplayGenericsOptions.IncludeVariance,
-                memberOptions: SymbolDisplayMemberOptions.IncludeParameters | SymbolDisplayMemberOptions.IncludeExplicitInterface,
-                parameterOptions:
-                    SymbolDisplayParameterOptions.IncludeParamsRefOut |
-                    SymbolDisplayParameterOptions.IncludeExtensionThis |
-                    SymbolDisplayParameterOptions.IncludeType |
-                    SymbolDisplayParameterOptions.IncludeName,
-                miscellaneousOptions:
-                    SymbolDisplayMiscellaneousOptions.EscapeKeywordIdentifiers |
-                    SymbolDisplayMiscellaneousOptions.UseSpecialTypes);
+        private static readonly SymbolDisplayFormat NameFormat = new SymbolDisplayFormat(
+            globalNamespaceStyle: SymbolDisplayGlobalNamespaceStyle.Omitted,
+            typeQualificationStyle: SymbolDisplayTypeQualificationStyle.NameAndContainingTypesAndNamespaces,
+            propertyStyle: SymbolDisplayPropertyStyle.NameOnly,
+            genericsOptions: SymbolDisplayGenericsOptions.IncludeTypeParameters
+                | SymbolDisplayGenericsOptions.IncludeVariance,
+            memberOptions: SymbolDisplayMemberOptions.IncludeParameters
+                | SymbolDisplayMemberOptions.IncludeExplicitInterface,
+            parameterOptions: SymbolDisplayParameterOptions.IncludeParamsRefOut
+                | SymbolDisplayParameterOptions.IncludeExtensionThis
+                | SymbolDisplayParameterOptions.IncludeType
+                | SymbolDisplayParameterOptions.IncludeName,
+            miscellaneousOptions: SymbolDisplayMiscellaneousOptions.EscapeKeywordIdentifiers
+                | SymbolDisplayMiscellaneousOptions.UseSpecialTypes
+        );
 
-        private readonly static CachedStringBuilder s_cachedBuilder;
+        private static readonly CachedStringBuilder s_cachedBuilder;
 
         public static string ToNameDisplayString(this ISymbol symbol)
         {
@@ -57,8 +57,7 @@ namespace OmniSharp.Extensions
 
             while (symbol != null)
             {
-                if (symbol.Kind == SymbolKind.Assembly ||
-                    symbol.Kind == SymbolKind.NetModule)
+                if (symbol.Kind == SymbolKind.Assembly || symbol.Kind == SymbolKind.NetModule)
                 {
                     break;
                 }
@@ -75,7 +74,8 @@ namespace OmniSharp.Extensions
             var builder = s_cachedBuilder.Acquire();
             try
             {
-                ISymbol current = null, previous = null;
+                ISymbol current = null,
+                    previous = null;
 
                 while (symbols.Count > 0)
                 {
@@ -83,8 +83,10 @@ namespace OmniSharp.Extensions
 
                     if (previous != null)
                     {
-                        if (previous.Kind == SymbolKind.NamedType &&
-                            current.Kind == SymbolKind.NamedType)
+                        if (
+                            previous.Kind == SymbolKind.NamedType
+                            && current.Kind == SymbolKind.NamedType
+                        )
                         {
                             builder.Append('+');
                         }
@@ -192,25 +194,26 @@ namespace OmniSharp.Extensions
 
         public static string GetKindString(this IFieldSymbol fieldSymbol)
         {
-            if (fieldSymbol.ContainingType?.TypeKind == TypeKind.Enum &&
-                fieldSymbol.HasConstantValue)
+            if (
+                fieldSymbol.ContainingType?.TypeKind == TypeKind.Enum
+                && fieldSymbol.HasConstantValue
+            )
             {
                 return SymbolKinds.EnumMember;
             }
 
-            return fieldSymbol.IsConst
-                ? SymbolKinds.Constant
-                : SymbolKinds.Field;
+            return fieldSymbol.IsConst ? SymbolKinds.Constant : SymbolKinds.Field;
         }
 
         public static string GetKindString(this IPropertySymbol propertySymbol)
         {
-            return propertySymbol.IsIndexer
-                ? SymbolKinds.Indexer
-                : SymbolKinds.Property;
+            return propertySymbol.IsIndexer ? SymbolKinds.Indexer : SymbolKinds.Property;
         }
 
-        public static bool IsOverridable(this ISymbol symbol) => symbol?.ContainingType?.TypeKind == TypeKind.Class && !symbol.IsSealed && (symbol.IsVirtual || symbol.IsAbstract || symbol.IsOverride);
+        public static bool IsOverridable(this ISymbol symbol) =>
+            symbol?.ContainingType?.TypeKind == TypeKind.Class
+            && !symbol.IsSealed
+            && (symbol.IsVirtual || symbol.IsAbstract || symbol.IsOverride);
 
         /// <summary>
         /// Do not use this API in new OmniSharp endpoints. Use <see cref="GetKindString(ISymbol)"/> instead.
@@ -223,9 +226,11 @@ namespace OmniSharp.Extensions
                 return Enum.GetName(namedType.TypeKind.GetType(), namedType.TypeKind);
             }
 
-            if (symbol.Kind == SymbolKind.Field &&
-                symbol.ContainingType?.TypeKind == TypeKind.Enum &&
-                symbol.Name != WellKnownMemberNames.EnumBackingFieldName)
+            if (
+                symbol.Kind == SymbolKind.Field
+                && symbol.ContainingType?.TypeKind == TypeKind.Enum
+                && symbol.Name != WellKnownMemberNames.EnumBackingFieldName
+            )
             {
                 return "EnumMember";
             }
@@ -242,8 +247,13 @@ namespace OmniSharp.Extensions
         {
             // Traverse up until we find a named type that is parented by the namespace
             var topLevelNamedType = symbol;
-            while (!SymbolEqualityComparer.Default.Equals(topLevelNamedType.ContainingSymbol, symbol.ContainingNamespace) ||
-                topLevelNamedType.Kind != SymbolKind.NamedType)
+            while (
+                !SymbolEqualityComparer.Default.Equals(
+                    topLevelNamedType.ContainingSymbol,
+                    symbol.ContainingNamespace
+                )
+                || topLevelNamedType.Kind != SymbolKind.NamedType
+            )
             {
                 topLevelNamedType = topLevelNamedType.ContainingSymbol;
             }
@@ -275,7 +285,9 @@ namespace OmniSharp.Extensions
             {
                 // TODO: Is this the best to get the fully metadata name?
                 var parts = symbol.ToDisplayParts();
-                var filteredParts = parts.Where(x => x.Kind != SymbolDisplayPartKind.Punctuation).ToArray();
+                var filteredParts = parts
+                    .Where(x => x.Kind != SymbolDisplayPartKind.Punctuation)
+                    .ToArray();
                 var typeName = new StringBuilder();
                 foreach (var part in filteredParts.Take(filteredParts.Length - 1))
                 {
@@ -293,14 +305,19 @@ namespace OmniSharp.Extensions
         internal static string GetFilePathForExternalSymbol(this ISymbol symbol, Project project)
         {
             var topLevelSymbol = symbol.GetTopLevelContainingNamedType();
-            return $"$metadata$/Project/{Folderize(project.Name)}/Assembly/{Folderize(topLevelSymbol.ContainingAssembly.Name)}/Symbol/{Folderize(GetTypeDisplayString(topLevelSymbol))}.cs".Replace(Path.AltDirectorySeparatorChar, Path.DirectorySeparatorChar);
+            return $"$metadata$/Project/{Folderize(project.Name)}/Assembly/{Folderize(topLevelSymbol.ContainingAssembly.Name)}/Symbol/{Folderize(GetTypeDisplayString(topLevelSymbol))}.cs".Replace(
+                Path.AltDirectorySeparatorChar,
+                Path.DirectorySeparatorChar
+            );
         }
 
         private static string Folderize(string path) => string.Join("/", path.Split('.'));
 
-        public static bool IsInterfaceType(this ISymbol symbol) => (symbol as ITypeSymbol)?.IsInterfaceType() == true;
+        public static bool IsInterfaceType(this ISymbol symbol) =>
+            (symbol as ITypeSymbol)?.IsInterfaceType() == true;
 
-        public static bool IsInterfaceType(this ITypeSymbol symbol) => symbol?.TypeKind == TypeKind.Interface;
+        public static bool IsInterfaceType(this ITypeSymbol symbol) =>
+            symbol?.TypeKind == TypeKind.Interface;
 
         public static bool IsImplementableMember(this ISymbol symbol)
         {
@@ -319,9 +336,11 @@ namespace OmniSharp.Extensions
                 if (symbol.Kind == SymbolKind.Method)
                 {
                     var methodSymbol = (IMethodSymbol)symbol;
-                    if (methodSymbol.MethodKind == MethodKind.Ordinary ||
-                        methodSymbol.MethodKind == MethodKind.PropertyGet ||
-                        methodSymbol.MethodKind == MethodKind.PropertySet)
+                    if (
+                        methodSymbol.MethodKind == MethodKind.Ordinary
+                        || methodSymbol.MethodKind == MethodKind.PropertyGet
+                        || methodSymbol.MethodKind == MethodKind.PropertySet
+                    )
                     {
                         return true;
                     }

@@ -1,4 +1,4 @@
-﻿#nullable enable
+#nullable enable
 
 using System.Collections.Generic;
 using System.Collections.Immutable;
@@ -19,54 +19,68 @@ namespace OmniSharp.Roslyn.CSharp.Services.Completion
 {
     internal static partial class CompletionListBuilder
     {
-        private static readonly Dictionary<string, CompletionItemKind> s_roslynTagToCompletionItemKind = new()
-        {
-            { WellKnownTags.Public, CompletionItemKind.Keyword },
-            { WellKnownTags.Protected, CompletionItemKind.Keyword },
-            { WellKnownTags.Private, CompletionItemKind.Keyword },
-            { WellKnownTags.Internal, CompletionItemKind.Keyword },
-            { WellKnownTags.File, CompletionItemKind.File },
-            { WellKnownTags.Project, CompletionItemKind.File },
-            { WellKnownTags.Folder, CompletionItemKind.Folder },
-            { WellKnownTags.Assembly, CompletionItemKind.File },
-            { WellKnownTags.Class, CompletionItemKind.Class },
-            { WellKnownTags.Constant, CompletionItemKind.Constant },
-            { WellKnownTags.Delegate, CompletionItemKind.Function },
-            { WellKnownTags.Enum, CompletionItemKind.Enum },
-            { WellKnownTags.EnumMember, CompletionItemKind.EnumMember },
-            { WellKnownTags.Event, CompletionItemKind.Event },
-            { WellKnownTags.ExtensionMethod, CompletionItemKind.Method },
-            { WellKnownTags.Field, CompletionItemKind.Field },
-            { WellKnownTags.Interface, CompletionItemKind.Interface },
-            { WellKnownTags.Intrinsic, CompletionItemKind.Text },
-            { WellKnownTags.Keyword, CompletionItemKind.Keyword },
-            { WellKnownTags.Label, CompletionItemKind.Text },
-            { WellKnownTags.Local, CompletionItemKind.Variable },
-            { WellKnownTags.Namespace, CompletionItemKind.Module },
-            { WellKnownTags.Method, CompletionItemKind.Method },
-            { WellKnownTags.Module, CompletionItemKind.Module },
-            { WellKnownTags.Operator, CompletionItemKind.Operator },
-            { WellKnownTags.Parameter, CompletionItemKind.Variable },
-            { WellKnownTags.Property, CompletionItemKind.Property },
-            { WellKnownTags.RangeVariable, CompletionItemKind.Variable },
-            { WellKnownTags.Reference, CompletionItemKind.Reference },
-            { WellKnownTags.Structure, CompletionItemKind.Struct },
-            { WellKnownTags.TypeParameter, CompletionItemKind.TypeParameter },
-            { WellKnownTags.Snippet, CompletionItemKind.Snippet },
-            { WellKnownTags.Error, CompletionItemKind.Text },
-            { WellKnownTags.Warning, CompletionItemKind.Text },
-        };
+        private static readonly Dictionary<
+            string,
+            CompletionItemKind
+        > s_roslynTagToCompletionItemKind =
+            new()
+            {
+                { WellKnownTags.Public, CompletionItemKind.Keyword },
+                { WellKnownTags.Protected, CompletionItemKind.Keyword },
+                { WellKnownTags.Private, CompletionItemKind.Keyword },
+                { WellKnownTags.Internal, CompletionItemKind.Keyword },
+                { WellKnownTags.File, CompletionItemKind.File },
+                { WellKnownTags.Project, CompletionItemKind.File },
+                { WellKnownTags.Folder, CompletionItemKind.Folder },
+                { WellKnownTags.Assembly, CompletionItemKind.File },
+                { WellKnownTags.Class, CompletionItemKind.Class },
+                { WellKnownTags.Constant, CompletionItemKind.Constant },
+                { WellKnownTags.Delegate, CompletionItemKind.Function },
+                { WellKnownTags.Enum, CompletionItemKind.Enum },
+                { WellKnownTags.EnumMember, CompletionItemKind.EnumMember },
+                { WellKnownTags.Event, CompletionItemKind.Event },
+                { WellKnownTags.ExtensionMethod, CompletionItemKind.Method },
+                { WellKnownTags.Field, CompletionItemKind.Field },
+                { WellKnownTags.Interface, CompletionItemKind.Interface },
+                { WellKnownTags.Intrinsic, CompletionItemKind.Text },
+                { WellKnownTags.Keyword, CompletionItemKind.Keyword },
+                { WellKnownTags.Label, CompletionItemKind.Text },
+                { WellKnownTags.Local, CompletionItemKind.Variable },
+                { WellKnownTags.Namespace, CompletionItemKind.Module },
+                { WellKnownTags.Method, CompletionItemKind.Method },
+                { WellKnownTags.Module, CompletionItemKind.Module },
+                { WellKnownTags.Operator, CompletionItemKind.Operator },
+                { WellKnownTags.Parameter, CompletionItemKind.Variable },
+                { WellKnownTags.Property, CompletionItemKind.Property },
+                { WellKnownTags.RangeVariable, CompletionItemKind.Variable },
+                { WellKnownTags.Reference, CompletionItemKind.Reference },
+                { WellKnownTags.Structure, CompletionItemKind.Struct },
+                { WellKnownTags.TypeParameter, CompletionItemKind.TypeParameter },
+                { WellKnownTags.Snippet, CompletionItemKind.Snippet },
+                { WellKnownTags.Error, CompletionItemKind.Text },
+                { WellKnownTags.Warning, CompletionItemKind.Text },
+            };
 
-        internal const string AwaitCompletionProvider = "Microsoft.CodeAnalysis.CSharp.Completion.Providers.AwaitCompletionProvider";
-        internal const string ObjectCreationCompletionProvider = "Microsoft.CodeAnalysis.CSharp.Completion.Providers.ObjectCreationCompletionProvider";
-        internal const string OverrideCompletionProvider = "Microsoft.CodeAnalysis.CSharp.Completion.Providers.OverrideCompletionProvider";
-        internal const string PartialMethodCompletionProvider = "Microsoft.CodeAnalysis.CSharp.Completion.Providers.PartialMethodCompletionProvider";
-        internal const string InternalsVisibleToCompletionProvider = "Microsoft.CodeAnalysis.CSharp.Completion.Providers.InternalsVisibleToCompletionProvider";
-        internal const string XmlDocCommentCompletionProvider = "Microsoft.CodeAnalysis.CSharp.Completion.Providers.XmlDocCommentCompletionProvider";
-        internal const string TypeImportCompletionProvider = "Microsoft.CodeAnalysis.CSharp.Completion.Providers.TypeImportCompletionProvider";
-        internal const string ExtensionMethodImportCompletionProvider = "Microsoft.CodeAnalysis.CSharp.Completion.Providers.ExtensionMethodImportCompletionProvider";
-        internal const string AggregateEmbeddedLanguageCompletionProvider = "Microsoft.CodeAnalysis.CSharp.Completion.Providers.AggregateEmbeddedLanguageCompletionProvider";
-        internal const string SnippetCompletionProvider = "Microsoft.CodeAnalysis.CSharp.Completion.CompletionProviders.Snippets.CSharpSnippetCompletionProvider";
+        internal const string AwaitCompletionProvider =
+            "Microsoft.CodeAnalysis.CSharp.Completion.Providers.AwaitCompletionProvider";
+        internal const string ObjectCreationCompletionProvider =
+            "Microsoft.CodeAnalysis.CSharp.Completion.Providers.ObjectCreationCompletionProvider";
+        internal const string OverrideCompletionProvider =
+            "Microsoft.CodeAnalysis.CSharp.Completion.Providers.OverrideCompletionProvider";
+        internal const string PartialMethodCompletionProvider =
+            "Microsoft.CodeAnalysis.CSharp.Completion.Providers.PartialMethodCompletionProvider";
+        internal const string InternalsVisibleToCompletionProvider =
+            "Microsoft.CodeAnalysis.CSharp.Completion.Providers.InternalsVisibleToCompletionProvider";
+        internal const string XmlDocCommentCompletionProvider =
+            "Microsoft.CodeAnalysis.CSharp.Completion.Providers.XmlDocCommentCompletionProvider";
+        internal const string TypeImportCompletionProvider =
+            "Microsoft.CodeAnalysis.CSharp.Completion.Providers.TypeImportCompletionProvider";
+        internal const string ExtensionMethodImportCompletionProvider =
+            "Microsoft.CodeAnalysis.CSharp.Completion.Providers.ExtensionMethodImportCompletionProvider";
+        internal const string AggregateEmbeddedLanguageCompletionProvider =
+            "Microsoft.CodeAnalysis.CSharp.Completion.Providers.AggregateEmbeddedLanguageCompletionProvider";
+        internal const string SnippetCompletionProvider =
+            "Microsoft.CodeAnalysis.CSharp.Completion.CompletionProviders.Snippets.CSharpSnippetCompletionProvider";
 
         internal static async Task<(IReadOnlyList<CompletionItem>, bool)> BuildCompletionItems(
             Document document,
@@ -77,12 +91,38 @@ namespace OmniSharp.Roslyn.CSharp.Services.Completion
             CSharpCompletionList completions,
             TextSpan typedSpan,
             bool expectingImportedItems,
-            bool isSuggestionMode, bool enableAsyncCompletion)
-            => enableAsyncCompletion
-                ? await BuildCompletionItemsAsync(document, sourceText, cacheId, position, completionService, completions, typedSpan, expectingImportedItems, isSuggestionMode)
-                : await BuildCompletionItemsSync(document, sourceText, cacheId, position, completionService, completions, typedSpan, expectingImportedItems, isSuggestionMode);
+            bool isSuggestionMode,
+            bool enableAsyncCompletion
+        ) =>
+            enableAsyncCompletion
+                ? await BuildCompletionItemsAsync(
+                    document,
+                    sourceText,
+                    cacheId,
+                    position,
+                    completionService,
+                    completions,
+                    typedSpan,
+                    expectingImportedItems,
+                    isSuggestionMode
+                )
+                : await BuildCompletionItemsSync(
+                    document,
+                    sourceText,
+                    cacheId,
+                    position,
+                    completionService,
+                    completions,
+                    typedSpan,
+                    expectingImportedItems,
+                    isSuggestionMode
+                );
 
-        internal static LinePositionSpanTextChange GetChangeForTextAndSpan(string? insertText, TextSpan changeSpan, SourceText sourceText)
+        internal static LinePositionSpanTextChange GetChangeForTextAndSpan(
+            string? insertText,
+            TextSpan changeSpan,
+            SourceText sourceText
+        )
         {
             var changeLinePositionSpan = sourceText.Lines.GetLinePositionSpan(changeSpan);
             return new()
@@ -91,11 +131,19 @@ namespace OmniSharp.Roslyn.CSharp.Services.Completion
                 StartLine = changeLinePositionSpan.Start.Line,
                 StartColumn = changeLinePositionSpan.Start.Character,
                 EndLine = changeLinePositionSpan.End.Line,
-                EndColumn = changeLinePositionSpan.End.Character
+                EndColumn = changeLinePositionSpan.End.Character,
             };
         }
 
-        private static IReadOnlyList<char>? BuildCommitCharacters(ImmutableArray<CharacterSetModificationRule> characterRules, bool isSuggestionMode, Dictionary<ImmutableArray<CharacterSetModificationRule>, IReadOnlyList<char>> commitCharacterRulesCache, HashSet<char> commitCharactersBuilder)
+        private static IReadOnlyList<char>? BuildCommitCharacters(
+            ImmutableArray<CharacterSetModificationRule> characterRules,
+            bool isSuggestionMode,
+            Dictionary<
+                ImmutableArray<CharacterSetModificationRule>,
+                IReadOnlyList<char>
+            > commitCharacterRulesCache,
+            HashSet<char> commitCharactersBuilder
+        )
         {
             if (isSuggestionMode)
             {
@@ -173,13 +221,16 @@ namespace OmniSharp.Roslyn.CSharp.Services.Completion
             return CompletionItemKind.Text;
         }
 
-        internal static bool ShouldTreatCompletionItemAsSuggestion(CSharpCompletionItem item, TextSpan typedSpan)
+        internal static bool ShouldTreatCompletionItemAsSuggestion(
+            CSharpCompletionItem item,
+            TextSpan typedSpan
+        )
         {
             // The user hasn't actually typed anything and completion provider does
             // not request the item be hard-selected.
-            return item.Rules.MatchPriority != MatchPriority.Preselect &&
-                typedSpan.Length == 0 &&
-                item.Rules.SelectionBehavior != CompletionItemSelectionBehavior.HardSelection;
+            return item.Rules.MatchPriority != MatchPriority.Preselect
+                && typedSpan.Length == 0
+                && item.Rules.SelectionBehavior != CompletionItemSelectionBehavior.HardSelection;
         }
     }
 }

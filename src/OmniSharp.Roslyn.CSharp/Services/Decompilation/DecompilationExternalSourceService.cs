@@ -1,30 +1,42 @@
-﻿using Microsoft.CodeAnalysis;
-using Microsoft.Extensions.Logging;
-using OmniSharp.Extensions;
-using OmniSharp.Options;
 using System;
 using System.Composition;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.CodeAnalysis;
+using Microsoft.Extensions.Logging;
+using OmniSharp.Extensions;
+using OmniSharp.Options;
 
 namespace OmniSharp.Roslyn.CSharp.Services.Decompilation
 {
     [Export(typeof(DecompilationExternalSourceService)), Shared]
-    public class DecompilationExternalSourceService : BaseExternalSourceService, IExternalSourceService
+    public class DecompilationExternalSourceService
+        : BaseExternalSourceService,
+            IExternalSourceService
     {
         private const string DecompiledKey = "$Decompiled$";
         private readonly ILoggerFactory _loggerFactory;
         private readonly Lazy<OmniSharpCSharpDecompiledSourceService> _service;
 
         [ImportingConstructor]
-        public DecompilationExternalSourceService(ILoggerFactory loggerFactory, OmniSharpOptions omnisharpOptions) : base()
+        public DecompilationExternalSourceService(
+            ILoggerFactory loggerFactory,
+            OmniSharpOptions omnisharpOptions
+        )
+            : base()
         {
             _loggerFactory = loggerFactory;
-            _service = new Lazy<OmniSharpCSharpDecompiledSourceService>(() => new OmniSharpCSharpDecompiledSourceService(omnisharpOptions, _loggerFactory));
+            _service = new Lazy<OmniSharpCSharpDecompiledSourceService>(
+                () => new OmniSharpCSharpDecompiledSourceService(omnisharpOptions, _loggerFactory)
+            );
         }
 
-        public async Task<(Document document, string documentPath)> GetAndAddExternalSymbolDocument(Project project, ISymbol symbol, CancellationToken cancellationToken)
+        public async Task<(Document document, string documentPath)> GetAndAddExternalSymbolDocument(
+            Project project,
+            ISymbol symbol,
+            CancellationToken cancellationToken
+        )
         {
             var fileName = symbol.GetFilePathForExternalSymbol(project);
 
@@ -34,10 +46,17 @@ namespace OmniSharp.Roslyn.CSharp.Services.Decompilation
             // we will use a separate project to hold decompiled documents
             if (project.IsSubmission)
             {
-                decompilationProject = project.Solution.Projects.FirstOrDefault(x => x.Name == DecompiledKey);
+                decompilationProject = project.Solution.Projects.FirstOrDefault(x =>
+                    x.Name == DecompiledKey
+                );
                 if (decompilationProject == null)
                 {
-                    decompilationProject = project.Solution.AddProject(DecompiledKey, $"{DecompiledKey}.dll", LanguageNames.CSharp)
+                    decompilationProject = project
+                        .Solution.AddProject(
+                            DecompiledKey,
+                            $"{DecompiledKey}.dll",
+                            LanguageNames.CSharp
+                        )
                         .WithCompilationOptions(project.CompilationOptions)
                         .WithMetadataReferences(project.MetadataReferences);
                 }
@@ -54,7 +73,12 @@ namespace OmniSharp.Roslyn.CSharp.Services.Decompilation
                 var temporaryDocument = decompilationProject.AddDocument(fileName, string.Empty);
 
                 var compilation = await decompilationProject.GetCompilationAsync();
-                document = await _service.Value.AddSourceToAsync(temporaryDocument, compilation, topLevelSymbol, cancellationToken);
+                document = await _service.Value.AddSourceToAsync(
+                    temporaryDocument,
+                    compilation,
+                    topLevelSymbol,
+                    cancellationToken
+                );
 
                 _cache.TryAdd(fileName, document);
             }

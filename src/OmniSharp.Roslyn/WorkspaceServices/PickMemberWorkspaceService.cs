@@ -1,7 +1,7 @@
-using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.ExternalAccess.OmniSharp.PickMembers;
 using System.Collections.Immutable;
 using System.Composition;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.ExternalAccess.OmniSharp.PickMembers;
 
 namespace OmniSharp
 {
@@ -10,12 +10,20 @@ namespace OmniSharp
     internal class PickMemberWorkspaceService : IOmniSharpPickMembersService
     {
         [ImportingConstructor]
-        public PickMemberWorkspaceService()
+        public PickMemberWorkspaceService() { }
+
+        public OmniSharpPickMembersResult PickMembers(
+            string title,
+            ImmutableArray<ISymbol> members,
+            ImmutableArray<OmniSharpPickMembersOption> options = default,
+            bool selectAll = true
+        )
         {
-        }
-        public OmniSharpPickMembersResult PickMembers(string title, ImmutableArray<ISymbol> members, ImmutableArray<OmniSharpPickMembersOption> options = default, bool selectAll = true)
-        {
-            return new OmniSharpPickMembersResult(members, options.IsDefault ? ImmutableArray<OmniSharpPickMembersOption>.Empty : options, selectAll);
+            return new OmniSharpPickMembersResult(
+                members,
+                options.IsDefault ? ImmutableArray<OmniSharpPickMembersOption>.Empty : options,
+                selectAll
+            );
         }
     }
 }

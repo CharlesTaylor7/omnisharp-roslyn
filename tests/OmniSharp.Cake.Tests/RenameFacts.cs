@@ -16,16 +16,20 @@ namespace OmniSharp.Cake.Tests
 {
     public sealed class RenameFacts : CakeSingleRequestHandlerTestFixture<RenameHandler>
     {
-        public RenameFacts(ITestOutputHelper testOutput) : base(testOutput)
-        {
-        }
+        public RenameFacts(ITestOutputHelper testOutput)
+            : base(testOutput) { }
 
         protected override string EndpointName => OmniSharpEndpoints.Rename;
 
         [Fact]
         public async Task ShouldSupportLoadedFiles()
         {
-            using (var testProject = await TestAssets.Instance.GetTestProjectAsync("CakeProject", shadowCopy: false))
+            using (
+                var testProject = await TestAssets.Instance.GetTestProjectAsync(
+                    "CakeProject",
+                    shadowCopy: false
+                )
+            )
             using (var host = CreateOmniSharpHost(testProject.Directory))
             {
                 var fileName = Path.Combine(testProject.Directory, "build.cake");
@@ -36,7 +40,7 @@ namespace OmniSharp.Cake.Tests
                     Line = 8,
                     Column = 10,
                     WantsTextChanges = true,
-                    RenameTo = "Build"
+                    RenameTo = "Build",
                 };
 
                 var requestHandler = GetRequestHandler(host);
@@ -44,29 +48,37 @@ namespace OmniSharp.Cake.Tests
 
                 Assert.Equal(2, response.Changes.Count());
 
-                var loadedFile = response.Changes.FirstOrDefault(x => x.FileName.Equals(Path.Combine(testProject.Directory, "foo.cake")));
+                var loadedFile = response.Changes.FirstOrDefault(x =>
+                    x.FileName.Equals(Path.Combine(testProject.Directory, "foo.cake"))
+                );
                 Assert.NotNull(loadedFile);
-                Assert.Contains(new LinePositionSpanTextChange
+                Assert.Contains(
+                    new LinePositionSpanTextChange
                     {
                         NewText = "Build",
                         StartLine = 4,
                         EndLine = 4,
                         StartColumn = 22,
-                        EndColumn = 28
+                        EndColumn = 28,
                     },
-                    loadedFile.Changes);
+                    loadedFile.Changes
+                );
 
-                var sameFile = response.Changes.FirstOrDefault(x => x.FileName.Equals(Path.Combine(testProject.Directory, "build.cake")));
+                var sameFile = response.Changes.FirstOrDefault(x =>
+                    x.FileName.Equals(Path.Combine(testProject.Directory, "build.cake"))
+                );
                 Assert.NotNull(sameFile);
-                Assert.Contains(new LinePositionSpanTextChange
+                Assert.Contains(
+                    new LinePositionSpanTextChange
                     {
                         NewText = "Build",
                         StartLine = 8,
                         EndLine = 8,
                         StartColumn = 5,
-                        EndColumn = 11
+                        EndColumn = 11,
                     },
-                    sameFile.Changes);
+                    sameFile.Changes
+                );
             }
         }
     }

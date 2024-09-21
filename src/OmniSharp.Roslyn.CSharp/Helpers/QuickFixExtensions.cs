@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using Microsoft.CodeAnalysis;
 using OmniSharp.Models;
 
@@ -6,7 +6,11 @@ namespace OmniSharp.Helpers
 {
     internal static class QuickFixExtensions
     {
-        internal static void Add(this ICollection<QuickFix> quickFixes, ISymbol symbol, OmniSharpWorkspace workspace)
+        internal static void Add(
+            this ICollection<QuickFix> quickFixes,
+            ISymbol symbol,
+            OmniSharpWorkspace workspace
+        )
         {
             foreach (var location in symbol.Locations)
             {
@@ -14,7 +18,11 @@ namespace OmniSharp.Helpers
             }
         }
 
-        internal static void Add(this ICollection<QuickFix> quickFixes, Location location, OmniSharpWorkspace workspace)
+        internal static void Add(
+            this ICollection<QuickFix> quickFixes,
+            Location location,
+            OmniSharpWorkspace workspace
+        )
         {
             if (location.IsInSource)
             {
@@ -23,7 +31,11 @@ namespace OmniSharp.Helpers
             }
         }
 
-        internal static void AddRange(this ICollection<QuickFix> quickFixes, IEnumerable<ISymbol> symbols, OmniSharpWorkspace workspace)
+        internal static void AddRange(
+            this ICollection<QuickFix> quickFixes,
+            IEnumerable<ISymbol> symbols,
+            OmniSharpWorkspace workspace
+        )
         {
             foreach (var symbol in symbols)
             {

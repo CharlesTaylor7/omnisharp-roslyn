@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Immutable;
 using System.IO;
 using System.Text.RegularExpressions;
@@ -13,19 +13,20 @@ namespace OmniSharp.MSBuild.SolutionParsing
         // An example of a project line looks like this:
         //  Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ClassLibrary1", "ClassLibrary1\ClassLibrary1.csproj", "{DEBCE986-61B9-435E-8018-44B9EF751655}"
         private static readonly Lazy<Regex> s_lazyProjectHeader = new Lazy<Regex>(
-            () => new Regex
-                (
-                "^" // Beginning of line
-                + "Project\\(\"(?<PROJECTTYPEGUID>.*)\"\\)"
-                + "\\s*=\\s*" // Any amount of whitespace plus "=" plus any amount of whitespace
-                + "\"(?<PROJECTNAME>.*)\""
-                + "\\s*,\\s*" // Any amount of whitespace plus "," plus any amount of whitespace
-                + "\"(?<RELATIVEPATH>.*)\""
-                + "\\s*,\\s*" // Any amount of whitespace plus "," plus any amount of whitespace
-                + "\"(?<PROJECTGUID>.*)\""
-                + "$", // End-of-line
-                RegexOptions.Compiled)
-            );
+            () =>
+                new Regex(
+                    "^" // Beginning of line
+                        + "Project\\(\"(?<PROJECTTYPEGUID>.*)\"\\)"
+                        + "\\s*=\\s*" // Any amount of whitespace plus "=" plus any amount of whitespace
+                        + "\"(?<PROJECTNAME>.*)\""
+                        + "\\s*,\\s*" // Any amount of whitespace plus "," plus any amount of whitespace
+                        + "\"(?<RELATIVEPATH>.*)\""
+                        + "\\s*,\\s*" // Any amount of whitespace plus "," plus any amount of whitespace
+                        + "\"(?<PROJECTGUID>.*)\""
+                        + "$", // End-of-line
+                    RegexOptions.Compiled
+                )
+        );
 
         public string ProjectTypeGuid { get; }
         public string ProjectName { get; }
@@ -34,11 +35,17 @@ namespace OmniSharp.MSBuild.SolutionParsing
         public ImmutableArray<SectionBlock> Sections { get; }
 
         public bool IsNotSupported =>
-            ProjectTypeGuid.Equals(SolutionFolderGuid, StringComparison.OrdinalIgnoreCase) ||
-            ProjectTypeGuid.Equals(LegacyAspNetWebsite, StringComparison.OrdinalIgnoreCase) ||
-            (RelativePath != null && RelativePath.ToLowerInvariant().StartsWith("http://"));
+            ProjectTypeGuid.Equals(SolutionFolderGuid, StringComparison.OrdinalIgnoreCase)
+            || ProjectTypeGuid.Equals(LegacyAspNetWebsite, StringComparison.OrdinalIgnoreCase)
+            || (RelativePath != null && RelativePath.ToLowerInvariant().StartsWith("http://"));
 
-        private ProjectBlock(string projectTypeGuid, string projectName, string relativePath, string projectGuid, ImmutableArray<SectionBlock> sections)
+        private ProjectBlock(
+            string projectTypeGuid,
+            string projectName,
+            string relativePath,
+            string projectGuid,
+            ImmutableArray<SectionBlock> sections
+        )
         {
             ProjectTypeGuid = projectTypeGuid;
             ProjectName = projectName;
@@ -68,7 +75,9 @@ namespace OmniSharp.MSBuild.SolutionParsing
 
             if (relativePath.IndexOfAny(Path.GetInvalidPathChars()) >= 0)
             {
-                throw new InvalidSolutionFileException("A project path contains an invalid character.");
+                throw new InvalidSolutionFileException(
+                    "A project path contains an invalid character."
+                );
             }
 
             var sections = ImmutableArray.CreateBuilder<SectionBlock>();
@@ -96,7 +105,13 @@ namespace OmniSharp.MSBuild.SolutionParsing
                 }
             }
 
-            return new ProjectBlock(projectTypeGuid, projectName, relativePath, projectGuid, sections.ToImmutable());
+            return new ProjectBlock(
+                projectTypeGuid,
+                projectName,
+                relativePath,
+                projectGuid,
+                sections.ToImmutable()
+            );
         }
     }
 }

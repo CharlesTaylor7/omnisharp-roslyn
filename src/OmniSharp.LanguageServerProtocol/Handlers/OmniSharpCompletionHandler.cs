@@ -32,50 +32,81 @@ namespace OmniSharp.LanguageServerProtocol.Handlers
 
         public static IEnumerable<IJsonRpcHandler> Enumerate(RequestHandlers handlers)
         {
-            foreach (var (selector, completionHandler, completionResolveHandler) in handlers
-                .OfType<Mef.IRequestHandler<CompletionRequest, CompletionResponse>,
-                        Mef.IRequestHandler<CompletionResolveRequest, CompletionResolveResponse>>())
+            foreach (
+                var (selector, completionHandler, completionResolveHandler) in handlers.OfType<
+                    Mef.IRequestHandler<CompletionRequest, CompletionResponse>,
+                    Mef.IRequestHandler<CompletionResolveRequest, CompletionResolveResponse>
+                >()
+            )
             {
                 if (completionHandler != null && completionResolveHandler != null)
-                    yield return new OmniSharpCompletionHandler(completionHandler, completionResolveHandler, selector);
+                    yield return new OmniSharpCompletionHandler(
+                        completionHandler,
+                        completionResolveHandler,
+                        selector
+                    );
             }
         }
 
-        private readonly Mef.IRequestHandler<CompletionRequest, CompletionResponse> _completionHandler;
-        private readonly Mef.IRequestHandler<CompletionResolveRequest, CompletionResolveResponse> _completionResolveHandler;
+        private readonly Mef.IRequestHandler<
+            CompletionRequest,
+            CompletionResponse
+        > _completionHandler;
+        private readonly Mef.IRequestHandler<
+            CompletionResolveRequest,
+            CompletionResolveResponse
+        > _completionResolveHandler;
         private readonly TextDocumentSelector _documentSelector;
 
         public OmniSharpCompletionHandler(
             Mef.IRequestHandler<CompletionRequest, CompletionResponse> completionHandler,
-            Mef.IRequestHandler<CompletionResolveRequest, CompletionResolveResponse> completionResolveHandler,
-            TextDocumentSelector documentSelector)
+            Mef.IRequestHandler<
+                CompletionResolveRequest,
+                CompletionResolveResponse
+            > completionResolveHandler,
+            TextDocumentSelector documentSelector
+        )
         {
             _completionHandler = completionHandler;
             _completionResolveHandler = completionResolveHandler;
             _documentSelector = documentSelector;
         }
 
-        public override async Task<CompletionList> Handle(CompletionParams request, CancellationToken token)
+        public override async Task<CompletionList> Handle(
+            CompletionParams request,
+            CancellationToken token
+        )
         {
             var omnisharpRequest = new CompletionRequest()
             {
                 FileName = Helpers.FromUri(request.TextDocument.Uri),
                 Column = Convert.ToInt32(request.Position.Character),
                 Line = Convert.ToInt32(request.Position.Line),
-                CompletionTrigger = Helpers.ConvertEnum<CompletionTriggerKind, OmnisharpCompletionTriggerKind>(request.Context?.TriggerKind ?? CompletionTriggerKind.Invoked),
-                TriggerCharacter = request.Context?.TriggerCharacter is { Length: > 0 } str ? str[0] : null
+                CompletionTrigger = Helpers.ConvertEnum<
+                    CompletionTriggerKind,
+                    OmnisharpCompletionTriggerKind
+                >(request.Context?.TriggerKind ?? CompletionTriggerKind.Invoked),
+                TriggerCharacter = request.Context?.TriggerCharacter is { Length: > 0 } str
+                    ? str[0]
+                    : null,
             };
 
             var omnisharpResponse = await _completionHandler.Handle(omnisharpRequest);
 
-            return new CompletionList(omnisharpResponse.Items.Select(ToLSPCompletionItem), isIncomplete: omnisharpResponse.IsIncomplete);
+            return new CompletionList(
+                omnisharpResponse.Items.Select(ToLSPCompletionItem),
+                isIncomplete: omnisharpResponse.IsIncomplete
+            );
         }
 
-        public override async Task<CompletionItem> Handle(CompletionItem request, CancellationToken cancellationToken)
+        public override async Task<CompletionItem> Handle(
+            CompletionItem request,
+            CancellationToken cancellationToken
+        )
         {
             var resolveRequest = new CompletionResolveRequest
             {
-                Item = ToOmnisharpCompletionItem(request)
+                Item = ToOmnisharpCompletionItem(request),
             };
 
             var result = await _completionResolveHandler.Handle(resolveRequest);
@@ -84,7 +115,10 @@ namespace OmniSharp.LanguageServerProtocol.Handlers
             return ToLSPCompletionItem(result.Item!);
         }
 
-        protected override CompletionRegistrationOptions CreateRegistrationOptions(CompletionCapability capability, ClientCapabilities clientCapabilities)
+        protected override CompletionRegistrationOptions CreateRegistrationOptions(
+            CompletionCapability capability,
+            ClientCapabilities clientCapabilities
+        )
         {
             return new CompletionRegistrationOptions()
             {
@@ -94,22 +128,34 @@ namespace OmniSharp.LanguageServerProtocol.Handlers
             };
         }
 
-        private CompletionItem ToLSPCompletionItem(OmnisharpCompletionItem omnisharpCompletionItem)
-            => new CompletionItem
+        private CompletionItem ToLSPCompletionItem(
+            OmnisharpCompletionItem omnisharpCompletionItem
+        ) =>
+            new CompletionItem
             {
                 Label = omnisharpCompletionItem.Label,
-                Kind = ConvertEnum<OmnisharpCompletionItemKind, CompletionItemKind>(omnisharpCompletionItem.Kind),
+                Kind = ConvertEnum<OmnisharpCompletionItemKind, CompletionItemKind>(
+                    omnisharpCompletionItem.Kind
+                ),
                 Tags = omnisharpCompletionItem.Tags is { } tags
-                    ? Container<CompletionItemTag>.From(tags.Select(ConvertEnum<OmnisharpCompletionItemTag, CompletionItemTag>))
+                    ? Container<CompletionItemTag>.From(
+                        tags.Select(ConvertEnum<OmnisharpCompletionItemTag, CompletionItemTag>)
+                    )
                     : null,
                 Detail = omnisharpCompletionItem.Detail,
                 Documentation = omnisharpCompletionItem.Documentation is null
                     ? (StringOrMarkupContent?)null
-                    : new MarkupContent { Value = omnisharpCompletionItem.Documentation, Kind = MarkupKind.Markdown },
+                    : new MarkupContent
+                    {
+                        Value = omnisharpCompletionItem.Documentation,
+                        Kind = MarkupKind.Markdown,
+                    },
                 Preselect = omnisharpCompletionItem.Preselect,
                 SortText = omnisharpCompletionItem.SortText,
                 FilterText = omnisharpCompletionItem.FilterText,
-                InsertTextFormat = ConvertEnum<OmnisharpInsertTextFormat, InsertTextFormat>(omnisharpCompletionItem.InsertTextFormat),
+                InsertTextFormat = ConvertEnum<OmnisharpInsertTextFormat, InsertTextFormat>(
+                    omnisharpCompletionItem.InsertTextFormat
+                ),
                 TextEdit = Helpers.ToTextEdit(omnisharpCompletionItem.TextEdit),
                 CommitCharacters = omnisharpCompletionItem.CommitCharacters is { } chars
                     ? Container<string>.From(chars.Select(i => i.ToString()))
@@ -123,22 +169,30 @@ namespace OmniSharp.LanguageServerProtocol.Handlers
                     : null,
             };
 
-        private OmnisharpCompletionItem ToOmnisharpCompletionItem(CompletionItem completionItem)
-            => new OmnisharpCompletionItem
+        private OmnisharpCompletionItem ToOmnisharpCompletionItem(CompletionItem completionItem) =>
+            new OmnisharpCompletionItem
             {
                 Label = completionItem.Label,
-                Kind = ConvertEnum<CompletionItemKind, OmnisharpCompletionItemKind>(completionItem.Kind),
-                Tags = completionItem.Tags?.Select(ConvertEnum<CompletionItemTag, OmnisharpCompletionItemTag>).ToList(),
+                Kind = ConvertEnum<CompletionItemKind, OmnisharpCompletionItemKind>(
+                    completionItem.Kind
+                ),
+                Tags = completionItem
+                    .Tags?.Select(ConvertEnum<CompletionItemTag, OmnisharpCompletionItemTag>)
+                    .ToList(),
                 Detail = completionItem.Detail,
                 Documentation = completionItem.Documentation?.MarkupContent!.Value,
                 Preselect = completionItem.Preselect,
                 SortText = completionItem.SortText,
                 FilterText = completionItem.FilterText,
-                InsertTextFormat = ConvertEnum<InsertTextFormat, OmnisharpInsertTextFormat>(completionItem.InsertTextFormat),
+                InsertTextFormat = ConvertEnum<InsertTextFormat, OmnisharpInsertTextFormat>(
+                    completionItem.InsertTextFormat
+                ),
                 TextEdit = Helpers.FromTextEdit(completionItem.TextEdit!.TextEdit),
                 CommitCharacters = completionItem.CommitCharacters?.Select(i => i[0]).ToList(),
-                AdditionalTextEdits = completionItem.AdditionalTextEdits?.Select(e => Helpers.FromTextEdit(e)).ToList(),
-                Data = completionItem.Data!.ToObject<(long, int)>()
+                AdditionalTextEdits = completionItem
+                    .AdditionalTextEdits?.Select(e => Helpers.FromTextEdit(e))
+                    .ToList(),
+                Data = completionItem.Data!.ToObject<(long, int)>(),
             };
     }
 }

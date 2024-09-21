@@ -17,16 +17,26 @@ namespace OmniSharp.MSBuild.Tests
     public class LoadProjectsOnDemandTests : AbstractMSBuildTestFixture
     {
         public LoadProjectsOnDemandTests(ITestOutputHelper output)
-            : base(output)
-        {
-        }
+            : base(output) { }
 
         [Fact]
         public async Task LoadOnDemandProjectsOneByOne()
         {
-            var configData = new Dictionary<string, string> { [$"MsBuild:{nameof(MSBuildOptions.LoadProjectsOnDemand)}"] = "true" };
-            using (var testProject = await TestAssets.Instance.GetTestProjectAsync("TwoProjectsWithSolution"))
-            using (var host = CreateMSBuildTestHost(testProject.Directory, configurationData: configData.ToConfiguration()))
+            var configData = new Dictionary<string, string>
+            {
+                [$"MsBuild:{nameof(MSBuildOptions.LoadProjectsOnDemand)}"] = "true",
+            };
+            using (
+                var testProject = await TestAssets.Instance.GetTestProjectAsync(
+                    "TwoProjectsWithSolution"
+                )
+            )
+            using (
+                var host = CreateMSBuildTestHost(
+                    testProject.Directory,
+                    configurationData: configData.ToConfiguration()
+                )
+            )
             {
                 MSBuildWorkspaceInfo workspaceInfo = await host.RequestMSBuildWorkspaceInfoAsync();
 
@@ -36,9 +46,16 @@ namespace OmniSharp.MSBuild.Tests
                 Assert.Empty(workspaceInfo.Projects);
 
                 // Requesting library document should load only that project
-                GetCodeActionsService codeActionHandler = host.GetRequestHandler<GetCodeActionsService>(OmniSharpEndpoints.V2.GetCodeActions);
+                GetCodeActionsService codeActionHandler =
+                    host.GetRequestHandler<GetCodeActionsService>(
+                        OmniSharpEndpoints.V2.GetCodeActions
+                    );
                 GetCodeActionsResponse codeActionResponse = await codeActionHandler.Handle(
-                    new GetCodeActionsRequest { FileName = Path.Combine(testProject.Directory, "Lib", "Class1.cs") });
+                    new GetCodeActionsRequest
+                    {
+                        FileName = Path.Combine(testProject.Directory, "Lib", "Class1.cs"),
+                    }
+                );
                 workspaceInfo = await host.RequestMSBuildWorkspaceInfoAsync();
 
                 Assert.NotNull(codeActionResponse);
@@ -48,7 +65,9 @@ namespace OmniSharp.MSBuild.Tests
                 Assert.Equal("Lib.csproj", Path.GetFileName(workspaceInfo.Projects[0].Path));
 
                 // Requesting app document should load that project as well
-                QuickFixResponse codeCheckResponse = await host.RequestCodeCheckAsync(Path.Combine(testProject.Directory, "App", "Program.cs"));
+                QuickFixResponse codeCheckResponse = await host.RequestCodeCheckAsync(
+                    Path.Combine(testProject.Directory, "App", "Program.cs")
+                );
                 workspaceInfo = await host.RequestMSBuildWorkspaceInfoAsync();
 
                 Assert.NotNull(codeCheckResponse);
@@ -63,9 +82,21 @@ namespace OmniSharp.MSBuild.Tests
         [Fact]
         public async Task LoadOnDemandProjectAndItsReference()
         {
-            var configData = new Dictionary<string, string> { [$"MsBuild:{nameof(MSBuildOptions.LoadProjectsOnDemand)}"] = "true" }.ToConfiguration();
-            using (var testProject = await TestAssets.Instance.GetTestProjectAsync("TwoProjectsWithSolution"))
-            using (var host = CreateMSBuildTestHost(testProject.Directory, configurationData: configData))
+            var configData = new Dictionary<string, string>
+            {
+                [$"MsBuild:{nameof(MSBuildOptions.LoadProjectsOnDemand)}"] = "true",
+            }.ToConfiguration();
+            using (
+                var testProject = await TestAssets.Instance.GetTestProjectAsync(
+                    "TwoProjectsWithSolution"
+                )
+            )
+            using (
+                var host = CreateMSBuildTestHost(
+                    testProject.Directory,
+                    configurationData: configData
+                )
+            )
             {
                 MSBuildWorkspaceInfo workspaceInfo = await host.RequestMSBuildWorkspaceInfoAsync();
 
@@ -75,8 +106,12 @@ namespace OmniSharp.MSBuild.Tests
                 Assert.Empty(workspaceInfo.Projects);
 
                 // Requesting app document should load both projects
-                MembersAsTreeService membersAsTreeService = host.GetRequestHandler<MembersAsTreeService>(OmniSharpEndpoints.MembersTree);
-                var request = new MembersTreeRequest { FileName = Path.Combine(testProject.Directory, "App", "Program.cs") };
+                MembersAsTreeService membersAsTreeService =
+                    host.GetRequestHandler<MembersAsTreeService>(OmniSharpEndpoints.MembersTree);
+                var request = new MembersTreeRequest
+                {
+                    FileName = Path.Combine(testProject.Directory, "App", "Program.cs"),
+                };
                 FileMemberTree response = await membersAsTreeService.Handle(request);
                 workspaceInfo = await host.RequestMSBuildWorkspaceInfoAsync();
 
@@ -92,9 +127,21 @@ namespace OmniSharp.MSBuild.Tests
         [Fact]
         public async Task LoadOnDemandProjectWithTwoLevelsOfTransitiveReferences()
         {
-            var configData = new Dictionary<string, string> { [$"MsBuild:{nameof(MSBuildOptions.LoadProjectsOnDemand)}"] = "true" }.ToConfiguration();
-            using (var testProject = await TestAssets.Instance.GetTestProjectAsync("DeepProjectTransitiveReference"))
-            using (var host = CreateMSBuildTestHost(testProject.Directory, configurationData: configData))
+            var configData = new Dictionary<string, string>
+            {
+                [$"MsBuild:{nameof(MSBuildOptions.LoadProjectsOnDemand)}"] = "true",
+            }.ToConfiguration();
+            using (
+                var testProject = await TestAssets.Instance.GetTestProjectAsync(
+                    "DeepProjectTransitiveReference"
+                )
+            )
+            using (
+                var host = CreateMSBuildTestHost(
+                    testProject.Directory,
+                    configurationData: configData
+                )
+            )
             {
                 MSBuildWorkspaceInfo workspaceInfo = await host.RequestMSBuildWorkspaceInfoAsync();
 
@@ -104,8 +151,12 @@ namespace OmniSharp.MSBuild.Tests
                 Assert.Empty(workspaceInfo.Projects);
 
                 // Requesting the document should load project App, its reference Lib1 and Lib2 that is referenced by Lib1
-                MembersAsTreeService membersAsTreeService = host.GetRequestHandler<MembersAsTreeService>(OmniSharpEndpoints.MembersTree);
-                var request = new MembersTreeRequest { FileName = Path.Combine(testProject.Directory, "App", "Program.cs") };
+                MembersAsTreeService membersAsTreeService =
+                    host.GetRequestHandler<MembersAsTreeService>(OmniSharpEndpoints.MembersTree);
+                var request = new MembersTreeRequest
+                {
+                    FileName = Path.Combine(testProject.Directory, "App", "Program.cs"),
+                };
                 FileMemberTree response = await membersAsTreeService.Handle(request);
                 workspaceInfo = await host.RequestMSBuildWorkspaceInfoAsync();
 

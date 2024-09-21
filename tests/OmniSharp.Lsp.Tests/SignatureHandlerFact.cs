@@ -26,7 +26,7 @@ namespace OmniSharp.Lsp.Tests
         public async Task Get_signature_help()
         {
             const string source =
-@"class Program
+                @"class Program
 {
     public static void Main()
     {
@@ -45,7 +45,10 @@ namespace OmniSharp.Lsp.Tests
             Assert.Single(actual.Signatures);
             Assert.Equal(0, actual.ActiveParameter);
             Assert.Equal(0, actual.ActiveSignature);
-            Assert.Equal("Checks if object is tagged with the tag.", actual.Signatures.ElementAt(0).Documentation);
+            Assert.Equal(
+                "Checks if object is tagged with the tag.",
+                actual.Signatures.ElementAt(0).Documentation
+            );
         }
 
         private Task<SignatureHelp> GetSignatureAsync(string code)
@@ -55,34 +58,43 @@ namespace OmniSharp.Lsp.Tests
 
         private async Task<SignatureHelp> GetSignatureAsync(TestFile[] testFiles)
         {
-            OmniSharpTestHost.AddFilesToWorkspace(testFiles
-                .Select(f =>
-                    new TestFile(
-                        ((f.FileName.StartsWith("/") || f.FileName.StartsWith("\\")) ? f.FileName : ("/" + f.FileName))
-                        .Replace(Path.AltDirectorySeparatorChar, Path.DirectorySeparatorChar), f.Content))
-                .ToArray()
+            OmniSharpTestHost.AddFilesToWorkspace(
+                testFiles
+                    .Select(f => new TestFile(
+                        (
+                            (f.FileName.StartsWith("/") || f.FileName.StartsWith("\\"))
+                                ? f.FileName
+                                : ("/" + f.FileName)
+                        ).Replace(Path.AltDirectorySeparatorChar, Path.DirectorySeparatorChar),
+                        f.Content
+                    ))
+                    .ToArray()
             );
             var file = testFiles.Single(tf => tf.Content.HasPosition);
             var point = file.Content.GetPointFromPosition();
 
-            Client.TextDocument.DidChangeTextDocument(new DidChangeTextDocumentParams()
-            {
-                ContentChanges = new Container<TextDocumentContentChangeEvent>(new TextDocumentContentChangeEvent()
+            Client.TextDocument.DidChangeTextDocument(
+                new DidChangeTextDocumentParams()
                 {
-                    Text = file.Content.Code
-                }),
-                TextDocument = new OptionalVersionedTextDocumentIdentifier()
-                {
-                    Uri = DocumentUri.From(file.FileName),
-                    Version = 1
+                    ContentChanges = new Container<TextDocumentContentChangeEvent>(
+                        new TextDocumentContentChangeEvent() { Text = file.Content.Code }
+                    ),
+                    TextDocument = new OptionalVersionedTextDocumentIdentifier()
+                    {
+                        Uri = DocumentUri.From(file.FileName),
+                        Version = 1,
+                    },
                 }
-            });
-            return await Client.TextDocument.RequestSignatureHelp(new SignatureHelpParams()
-            {
-                TextDocument = file.FileName,
-                Position = new Position(point.Line, point.Offset),
-                Context = new SignatureHelpContext { }
-            }, CancellationToken);
+            );
+            return await Client.TextDocument.RequestSignatureHelp(
+                new SignatureHelpParams()
+                {
+                    TextDocument = file.FileName,
+                    Position = new Position(point.Line, point.Offset),
+                    Context = new SignatureHelpContext { },
+                },
+                CancellationToken
+            );
         }
     }
 }

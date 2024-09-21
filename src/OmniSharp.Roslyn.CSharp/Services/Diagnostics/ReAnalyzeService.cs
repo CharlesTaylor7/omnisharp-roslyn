@@ -19,7 +19,11 @@ namespace OmniSharp.Roslyn.CSharp.Services.Diagnostics
         private readonly ILogger<ReAnalyzeService> _logger;
 
         [ImportingConstructor]
-        public ReAnalyzeService(ICsDiagnosticWorker diagWorker, OmniSharpWorkspace workspace, ILoggerFactory loggerFactory)
+        public ReAnalyzeService(
+            ICsDiagnosticWorker diagWorker,
+            OmniSharpWorkspace workspace,
+            ILoggerFactory loggerFactory
+        )
         {
             _diagWorker = diagWorker;
             _workspace = workspace;
@@ -28,15 +32,17 @@ namespace OmniSharp.Roslyn.CSharp.Services.Diagnostics
 
         public Task<ReanalyzeResponse> Handle(ReAnalyzeRequest request)
         {
-
-            if(!string.IsNullOrEmpty(request.FileName))
+            if (!string.IsNullOrEmpty(request.FileName))
             {
                 var currentSolution = _workspace.CurrentSolution;
 
-                var projectIds = WhenRequestIsProjectFileItselfGetFilesFromIt(request.FileName, currentSolution)
+                var projectIds =
+                    WhenRequestIsProjectFileItselfGetFilesFromIt(request.FileName, currentSolution)
                     ?? GetProjectIdsFromDocumentFilePaths(request.FileName, currentSolution);
 
-                _logger.LogInformation($"Queue analysis for project(s) {string.Join(", ", projectIds)}");
+                _logger.LogInformation(
+                    $"Queue analysis for project(s) {string.Join(", ", projectIds)}"
+                );
 
                 _diagWorker.QueueDocumentsForDiagnostics(projectIds);
             }
@@ -49,11 +55,17 @@ namespace OmniSharp.Roslyn.CSharp.Services.Diagnostics
             return Task.FromResult(new ReanalyzeResponse());
         }
 
-        private ImmutableArray<ProjectId>? WhenRequestIsProjectFileItselfGetFilesFromIt(string FileName, Solution currentSolution)
+        private ImmutableArray<ProjectId>? WhenRequestIsProjectFileItselfGetFilesFromIt(
+            string FileName,
+            Solution currentSolution
+        )
         {
-            var projects = currentSolution.Projects.Where(x => CompareProjectPath(FileName, x)).Select(x => x.Id).ToImmutableArray();
+            var projects = currentSolution
+                .Projects.Where(x => CompareProjectPath(FileName, x))
+                .Select(x => x.Id)
+                .ToImmutableArray();
 
-            if(!projects.Any())
+            if (!projects.Any())
                 return null;
 
             return projects;
@@ -61,13 +73,14 @@ namespace OmniSharp.Roslyn.CSharp.Services.Diagnostics
 
         private static bool CompareProjectPath(string FileName, Project x)
         {
-            return String.Compare(
-                x.FilePath,
-                FileName,
-                StringComparison.InvariantCultureIgnoreCase) == 0;
+            return String.Compare(x.FilePath, FileName, StringComparison.InvariantCultureIgnoreCase)
+                == 0;
         }
 
-        private static ImmutableArray<ProjectId> GetProjectIdsFromDocumentFilePaths(string FileName, Solution currentSolution)
+        private static ImmutableArray<ProjectId> GetProjectIdsFromDocumentFilePaths(
+            string FileName,
+            Solution currentSolution
+        )
         {
             return currentSolution
                 .GetDocumentIdsWithFilePath(FileName)

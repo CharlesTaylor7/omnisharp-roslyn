@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Composition;
 using System.Linq;
@@ -47,9 +47,17 @@ namespace OmniSharp.Roslyn.CSharp.Services.Refactoring
                     var options = new OmniSharpRenameOptions(
                         RenameOverloads: _omniSharpOptions.RenameOptions.RenameOverloads,
                         RenameInStrings: _omniSharpOptions.RenameOptions.RenameInStrings,
-                        RenameInComments: _omniSharpOptions.RenameOptions.RenameInComments);
+                        RenameInComments: _omniSharpOptions.RenameOptions.RenameInComments
+                    );
 
-                    (solution, response.ErrorMessage) = await OmniSharpRenamer.RenameSymbolAsync(solution, symbol, request.RenameTo, options, nonConflictSymbols: null, CancellationToken.None);
+                    (solution, response.ErrorMessage) = await OmniSharpRenamer.RenameSymbolAsync(
+                        solution,
+                        symbol,
+                        request.RenameTo,
+                        options,
+                        nonConflictSymbols: null,
+                        CancellationToken.None
+                    );
 
                     if (response.ErrorMessage is not null)
                     {
@@ -67,9 +75,16 @@ namespace OmniSharp.Roslyn.CSharp.Services.Refactoring
                     {
                         var changedDocument = solution.GetDocument(changedDocumentId);
 
-                        if (!changes.TryGetValue(changedDocument.FilePath, out var modifiedFileResponse))
+                        if (
+                            !changes.TryGetValue(
+                                changedDocument.FilePath,
+                                out var modifiedFileResponse
+                            )
+                        )
                         {
-                            modifiedFileResponse = new ModifiedFileResponse(changedDocument.FilePath);
+                            modifiedFileResponse = new ModifiedFileResponse(
+                                changedDocument.FilePath
+                            );
                             changes[changedDocument.FilePath] = modifiedFileResponse;
                         }
 
@@ -80,12 +95,20 @@ namespace OmniSharp.Roslyn.CSharp.Services.Refactoring
                         }
                         else
                         {
-                            var originalDocument = _workspace.CurrentSolution.GetDocument(changedDocumentId);
-                            var linePositionSpanTextChanges = await TextChanges.GetAsync(changedDocument, originalDocument);
+                            var originalDocument = _workspace.CurrentSolution.GetDocument(
+                                changedDocumentId
+                            );
+                            var linePositionSpanTextChanges = await TextChanges.GetAsync(
+                                changedDocument,
+                                originalDocument
+                            );
 
-                            modifiedFileResponse.Changes = modifiedFileResponse.Changes != null
-                                ? modifiedFileResponse.Changes.Union(linePositionSpanTextChanges)
-                                : linePositionSpanTextChanges;
+                            modifiedFileResponse.Changes =
+                                modifiedFileResponse.Changes != null
+                                    ? modifiedFileResponse.Changes.Union(
+                                        linePositionSpanTextChanges
+                                    )
+                                    : linePositionSpanTextChanges;
                         }
                     }
                 }

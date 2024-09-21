@@ -11,19 +11,17 @@ namespace OmniSharp.Cake.Services.RequestHandlers.Navigation
     public class FindUsagesHandler : CakeRequestHandler<FindUsagesRequest, QuickFixResponse>
     {
         [ImportingConstructor]
-        public FindUsagesHandler(
-            OmniSharpWorkspace workspace)
-            : base(workspace)
-        {
-        }
+        public FindUsagesHandler(OmniSharpWorkspace workspace)
+            : base(workspace) { }
 
-        protected override async Task<QuickFixResponse> TranslateResponse(QuickFixResponse response, FindUsagesRequest request)
+        protected override async Task<QuickFixResponse> TranslateResponse(
+            QuickFixResponse response,
+            FindUsagesRequest request
+        )
         {
             response = await response.TranslateAsync(Workspace, request, removeGenerated: true);
 
-            return request.OnlyThisFile ?
-                response.OnlyThisFile(request.FileName) :
-                response;
+            return request.OnlyThisFile ? response.OnlyThisFile(request.FileName) : response;
         }
     }
 }

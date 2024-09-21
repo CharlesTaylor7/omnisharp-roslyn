@@ -1,4 +1,4 @@
-﻿// Adapted from ExtensionOrderer in Roslyn
+// Adapted from ExtensionOrderer in Roslyn
 using System;
 using System.Collections.Generic;
 using System.Reflection;
@@ -16,7 +16,11 @@ namespace OmniSharp.Utilities
             public TNode Extension { get; set; }
             public HashSet<Node<TNode>> NodesBeforeMeSet { get; set; }
 
-            public static Node<TNode> From<TNodeAttribute>(TNode extension, Func<TNodeAttribute, string> nameExtractor) where TNodeAttribute : Attribute
+            public static Node<TNode> From<TNodeAttribute>(
+                TNode extension,
+                Func<TNodeAttribute, string> nameExtractor
+            )
+                where TNodeAttribute : Attribute
             {
                 string name = string.Empty;
                 var attribute = extension.GetType().GetCustomAttribute<TNodeAttribute>();
@@ -24,11 +28,17 @@ namespace OmniSharp.Utilities
                 {
                     name = nameExtractor(attribute);
                 }
-                var orderAttributes = extension.GetType().GetCustomAttributes<ExtensionOrderAttribute>(true);
+                var orderAttributes = extension
+                    .GetType()
+                    .GetCustomAttributes<ExtensionOrderAttribute>(true);
                 return new Node<TNode>(extension, name, orderAttributes);
             }
 
-            private Node(TNode extension, string name, IEnumerable<ExtensionOrderAttribute> orderAttributes)
+            private Node(
+                TNode extension,
+                string name,
+                IEnumerable<ExtensionOrderAttribute> orderAttributes
+            )
             {
                 Extension = extension;
                 Name = name;

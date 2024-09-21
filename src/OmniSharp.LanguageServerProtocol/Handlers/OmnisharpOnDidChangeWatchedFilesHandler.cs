@@ -1,4 +1,4 @@
-﻿using System.ComponentModel.Design;
+using System.ComponentModel.Design;
 using System.Threading;
 using System.Threading.Tasks;
 using MediatR;
@@ -19,7 +19,10 @@ namespace OmniSharp.LanguageServerProtocol.Handlers
             _fileSystemNotifier = fileSystemNotifier;
         }
 
-        public override Task<Unit> Handle(DidChangeWatchedFilesParams request, CancellationToken cancellationToken)
+        public override Task<Unit> Handle(
+            DidChangeWatchedFilesParams request,
+            CancellationToken cancellationToken
+        )
         {
             foreach (var change in request.Changes)
             {
@@ -28,7 +31,7 @@ namespace OmniSharp.LanguageServerProtocol.Handlers
                     { Type: FileChangeType.Changed } => FileWatching.FileChangeType.Change,
                     { Type: FileChangeType.Created } => FileWatching.FileChangeType.Create,
                     { Type: FileChangeType.Deleted } => FileWatching.FileChangeType.Delete,
-                    _ => FileWatching.FileChangeType.Unspecified
+                    _ => FileWatching.FileChangeType.Unspecified,
                 };
                 _fileSystemNotifier.Notify(change.Uri.GetFileSystemPath(), changeType);
 
@@ -39,25 +42,31 @@ namespace OmniSharp.LanguageServerProtocol.Handlers
                 // extension, we can't make this assumption with files that not yet exist on disc, vscode has Untitled-x)
                 if (change.Type == FileChangeType.Deleted)
                 {
-                    _fileSystemNotifier.Notify(change.Uri.GetFileSystemPath(), FileWatching.FileChangeType.DirectoryDelete);
+                    _fileSystemNotifier.Notify(
+                        change.Uri.GetFileSystemPath(),
+                        FileWatching.FileChangeType.DirectoryDelete
+                    );
                 }
             }
 
             return Unit.Task;
         }
 
-        protected override DidChangeWatchedFilesRegistrationOptions CreateRegistrationOptions(DidChangeWatchedFilesCapability capability, ClientCapabilities clientCapabilities)
+        protected override DidChangeWatchedFilesRegistrationOptions CreateRegistrationOptions(
+            DidChangeWatchedFilesCapability capability,
+            ClientCapabilities clientCapabilities
+        )
         {
             return new DidChangeWatchedFilesRegistrationOptions()
-                {
-                    Watchers = new Container<FileSystemWatcher>(
-                        new FileSystemWatcher()
-                        {
-                            Kind = WatchKind.Create | WatchKind.Change | WatchKind.Delete,
-                            GlobPattern = "**/*.*"
-                        }
-                    )
-                };
+            {
+                Watchers = new Container<FileSystemWatcher>(
+                    new FileSystemWatcher()
+                    {
+                        Kind = WatchKind.Create | WatchKind.Change | WatchKind.Delete,
+                        GlobPattern = "**/*.*",
+                    }
+                ),
+            };
         }
     }
 }

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Text.RegularExpressions;
 
 namespace OmniSharp.MSBuild.SolutionParsing
@@ -8,17 +8,18 @@ namespace OmniSharp.MSBuild.SolutionParsing
         // An example of a property line looks like this:
         //      AspNetCompiler.VirtualPath = "/webprecompile"
         // Because website projects now include the target framework moniker as
-        // one of their properties, <PROPERTYVALUE> may have an '=' in it. 
+        // one of their properties, <PROPERTYVALUE> may have an '=' in it.
         private static readonly Lazy<Regex> s_lazyPropertyLine = new Lazy<Regex>(
-            () => new Regex
-                (
-                "^" // Beginning of line
-                + "(?<PROPERTYNAME>[^=]*)"
-                + "\\s*=\\s*" // Any amount of whitespace plus "=" plus any amount of whitespace
-                + "(?<PROPERTYVALUE>.*)"
-                + "$", // End-of-line
-                RegexOptions.Compiled)
-            );
+            () =>
+                new Regex(
+                    "^" // Beginning of line
+                        + "(?<PROPERTYNAME>[^=]*)"
+                        + "\\s*=\\s*" // Any amount of whitespace plus "=" plus any amount of whitespace
+                        + "(?<PROPERTYVALUE>.*)"
+                        + "$", // End-of-line
+                    RegexOptions.Compiled
+                )
+        );
 
         public string Name { get; }
         public string Value { get; }

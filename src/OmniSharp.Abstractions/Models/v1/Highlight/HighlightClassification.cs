@@ -11,6 +11,6 @@ namespace OmniSharp.Models.Highlight
         Number = 7,
         Identifier = 8,
         PreprocessorKeyword = 9,
-        ExcludedCode = 10
+        ExcludedCode = 10,
     }
 }

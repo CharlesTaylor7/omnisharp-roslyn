@@ -36,27 +36,37 @@ namespace OmniSharp.Roslyn.CSharp.Tests
 
                 string textBeforeFix = await GetContentOfDocumentFromWorkspace(host, testFilePath);
 
-                var handler = host.GetRequestHandler<RunFixAllCodeActionService>(OmniSharpEndpoints.RunFixAll);
+                var handler = host.GetRequestHandler<RunFixAllCodeActionService>(
+                    OmniSharpEndpoints.RunFixAll
+                );
 
-                var response = await handler.Handle(new RunFixAllRequest
-                {
-                    Scope = FixAllScope.Document,
-                    FileName = testFilePath,
-                    WantsTextChanges = true,
-                    WantsAllCodeActionOperations = true
-                });
+                var response = await handler.Handle(
+                    new RunFixAllRequest
+                    {
+                        Scope = FixAllScope.Document,
+                        FileName = testFilePath,
+                        WantsTextChanges = true,
+                        WantsAllCodeActionOperations = true,
+                    }
+                );
 
                 string textAfterFix = await GetContentOfDocumentFromWorkspace(host, testFilePath);
                 AssertUtils.AssertIgnoringIndent(expectedText, textAfterFix);
 
-                var internalClassChange = response.Changes.OfType<ModifiedFileResponse>().Single().Changes.Single(x => x.NewText == "internal ");
+                var internalClassChange = response
+                    .Changes.OfType<ModifiedFileResponse>()
+                    .Single()
+                    .Changes.Single(x => x.NewText == "internal ");
 
                 Assert.Equal(0, internalClassChange.StartLine);
                 Assert.Equal(0, internalClassChange.StartColumn);
                 Assert.Equal(0, internalClassChange.EndLine);
                 Assert.Equal(0, internalClassChange.EndColumn);
 
-                var formatFix = response.Changes.OfType<ModifiedFileResponse>().Single().Changes.Single(x => x.NewText == " ");
+                var formatFix = response
+                    .Changes.OfType<ModifiedFileResponse>()
+                    .Single()
+                    .Changes.Single(x => x.NewText == " ");
 
                 Assert.Equal(0, formatFix.StartLine);
                 Assert.Equal(9, formatFix.StartColumn);
@@ -77,39 +87,48 @@ namespace OmniSharp.Roslyn.CSharp.Tests
 
                 var testFilePath = CreateTestProjectWithDocument(host, originalText);
 
-                var handler = host.GetRequestHandler<RunFixAllCodeActionService>(OmniSharpEndpoints.RunFixAll);
+                var handler = host.GetRequestHandler<RunFixAllCodeActionService>(
+                    OmniSharpEndpoints.RunFixAll
+                );
 
-                var response = await handler.Handle(new RunFixAllRequest
-                {
-                    Scope = FixAllScope.Document,
-                    FileName = testFilePath,
-                    FixAllFilter = new[] { new FixAllItem("IDE0055", "Fix formatting") },
-                    WantsTextChanges = true,
-                    WantsAllCodeActionOperations = true
-                });
+                var response = await handler.Handle(
+                    new RunFixAllRequest
+                    {
+                        Scope = FixAllScope.Document,
+                        FileName = testFilePath,
+                        FixAllFilter = new[] { new FixAllItem("IDE0055", "Fix formatting") },
+                        WantsTextChanges = true,
+                        WantsAllCodeActionOperations = true,
+                    }
+                );
 
                 string textAfterFix = await GetContentOfDocumentFromWorkspace(host, testFilePath);
 
                 Assert.Equal("class C { }", textAfterFix);
 
-                Assert.Equal("class C { ", ((ModifiedFileResponse)response.Changes.Single()).Changes.Single().NewText);
+                Assert.Equal(
+                    "class C { ",
+                    ((ModifiedFileResponse)response.Changes.Single()).Changes.Single().NewText
+                );
             }
         }
 
         [Theory]
         [InlineData(FixAllScope.Document)]
         [InlineData(FixAllScope.Project)]
-        public async Task WhenFixAllIsScopedToDocumentAndProject_ThenOnlyFixInScopeInsteadOfEverything_DifferentProjects(FixAllScope scope)
+        public async Task WhenFixAllIsScopedToDocumentAndProject_ThenOnlyFixInScopeInsteadOfEverything_DifferentProjects(
+            FixAllScope scope
+        )
         {
             using (var host = GetHost(true))
             {
                 var originalIde0055Text =
-                @"
+                    @"
                     internal class InvalidFormatIDE0055ExpectedHere{}
                 ";
 
                 var expectedIde0055TextWithFixedFormat =
-                @"
+                    @"
                     internal class InvalidFormatIDE0055ExpectedHere { }
                 ";
 
@@ -117,21 +136,34 @@ namespace OmniSharp.Roslyn.CSharp.Tests
 
                 var fileNotInScope = CreateTestProjectWithDocument(host, originalIde0055Text);
 
-                var handler = host.GetRequestHandler<RunFixAllCodeActionService>(OmniSharpEndpoints.RunFixAll);
+                var handler = host.GetRequestHandler<RunFixAllCodeActionService>(
+                    OmniSharpEndpoints.RunFixAll
+                );
 
-                await handler.Handle(new RunFixAllRequest
-                {
-                    Scope = scope,
-                    FileName = fileInScope,
-                    FixAllFilter = new[] { new FixAllItem("IDE0055", "Fix formatting") },
-                    WantsTextChanges = true,
-                    WantsAllCodeActionOperations = true
-                });
+                await handler.Handle(
+                    new RunFixAllRequest
+                    {
+                        Scope = scope,
+                        FileName = fileInScope,
+                        FixAllFilter = new[] { new FixAllItem("IDE0055", "Fix formatting") },
+                        WantsTextChanges = true,
+                        WantsAllCodeActionOperations = true,
+                    }
+                );
 
-                string textAfterFixInScope = await GetContentOfDocumentFromWorkspace(host, fileInScope);
-                string textAfterNotInScope = await GetContentOfDocumentFromWorkspace(host, fileNotInScope);
+                string textAfterFixInScope = await GetContentOfDocumentFromWorkspace(
+                    host,
+                    fileInScope
+                );
+                string textAfterNotInScope = await GetContentOfDocumentFromWorkspace(
+                    host,
+                    fileNotInScope
+                );
 
-                AssertUtils.AssertIgnoringIndent(expectedIde0055TextWithFixedFormat, textAfterFixInScope);
+                AssertUtils.AssertIgnoringIndent(
+                    expectedIde0055TextWithFixedFormat,
+                    textAfterFixInScope
+                );
                 AssertUtils.AssertIgnoringIndent(originalIde0055Text, textAfterNotInScope);
             }
         }
@@ -139,11 +171,13 @@ namespace OmniSharp.Roslyn.CSharp.Tests
         [Fact]
         public async Task WhenFixAllIsScopedToDocumentAndProject_ThenOnlyFixInScopeInsteadOfEverything_DifferentDocuments()
         {
-            const string UnformattedString = @"
+            const string UnformattedString =
+                @"
 partial class C {}
 ";
 
-            const string FormattedString = @"
+            const string FormattedString =
+                @"
 internal partial class C {}
 ";
 
@@ -151,19 +185,27 @@ internal partial class C {}
             const string File2 = "file2.cs";
 
             using var host = GetHost(true);
-            var projectId = host.AddFilesToWorkspace(new TestFile(File1, UnformattedString), new TestFile(File2, UnformattedString)).First();
+            var projectId = host.AddFilesToWorkspace(
+                    new TestFile(File1, UnformattedString),
+                    new TestFile(File2, UnformattedString)
+                )
+                .First();
             var project = host.Workspace.CurrentSolution.GetProject(projectId);
 
-            var handler = host.GetRequestHandler<RunFixAllCodeActionService>(OmniSharpEndpoints.RunFixAll);
+            var handler = host.GetRequestHandler<RunFixAllCodeActionService>(
+                OmniSharpEndpoints.RunFixAll
+            );
 
-            await handler.Handle(new RunFixAllRequest
-            {
-                Scope = FixAllScope.Document,
-                FileName = File1,
-                FixAllFilter = new[] { new FixAllItem("IDE0040", "Fix formatting") },
-                WantsTextChanges = true,
-                WantsAllCodeActionOperations = true
-            });
+            await handler.Handle(
+                new RunFixAllRequest
+                {
+                    Scope = FixAllScope.Document,
+                    FileName = File1,
+                    FixAllFilter = new[] { new FixAllItem("IDE0040", "Fix formatting") },
+                    WantsTextChanges = true,
+                    WantsAllCodeActionOperations = true,
+                }
+            );
 
             var file1Content = await GetContentOfDocumentFromWorkspace(host, File1);
             Assert.Equal(FormattedString, file1Content);
@@ -175,12 +217,13 @@ internal partial class C {}
         [Fact]
         public async Task WhenFixAllIsScopedToSolution_ThenFixInSolution()
         {
-
-            const string UnformattedString = @"
+            const string UnformattedString =
+                @"
 partial class C {}
 ";
 
-            const string FormattedString = @"
+            const string FormattedString =
+                @"
 internal partial class C {}
 ";
 
@@ -188,16 +231,20 @@ internal partial class C {}
             var file1 = CreateTestProjectWithDocument(host, UnformattedString);
             var file2 = CreateTestProjectWithDocument(host, UnformattedString);
 
-            var handler = host.GetRequestHandler<RunFixAllCodeActionService>(OmniSharpEndpoints.RunFixAll);
+            var handler = host.GetRequestHandler<RunFixAllCodeActionService>(
+                OmniSharpEndpoints.RunFixAll
+            );
 
-            await handler.Handle(new RunFixAllRequest
-            {
-                Scope = FixAllScope.Solution,
-                FileName = file1,
-                FixAllFilter = new[] { new FixAllItem("IDE0040", "Fix formatting") },
-                WantsTextChanges = true,
-                WantsAllCodeActionOperations = true
-            });
+            await handler.Handle(
+                new RunFixAllRequest
+                {
+                    Scope = FixAllScope.Solution,
+                    FileName = file1,
+                    FixAllFilter = new[] { new FixAllItem("IDE0040", "Fix formatting") },
+                    WantsTextChanges = true,
+                    WantsAllCodeActionOperations = true,
+                }
+            );
 
             var file1Content = await GetContentOfDocumentFromWorkspace(host, file1);
             Assert.Equal(FormattedString, file1Content);
@@ -211,28 +258,38 @@ internal partial class C {}
         {
             using var host = GetHost(true);
 
-            var file = CreateTestProjectWithDocument(host, @"
+            var file = CreateTestProjectWithDocument(
+                host,
+                @"
 class C
 {
     object o = 1;
-}");
+}"
+            );
 
-            var handler = host.GetRequestHandler<RunFixAllCodeActionService>(OmniSharpEndpoints.RunFixAll);
+            var handler = host.GetRequestHandler<RunFixAllCodeActionService>(
+                OmniSharpEndpoints.RunFixAll
+            );
 
-            await handler.Handle(new RunFixAllRequest
-            {
-                Scope = FixAllScope.Document,
-                FileName = file,
-                WantsTextChanges = true,
-                WantsAllCodeActionOperations = true
-            });
+            await handler.Handle(
+                new RunFixAllRequest
+                {
+                    Scope = FixAllScope.Document,
+                    FileName = file,
+                    WantsTextChanges = true,
+                    WantsAllCodeActionOperations = true,
+                }
+            );
 
             var file1Content = await GetContentOfDocumentFromWorkspace(host, file);
-            Assert.Equal(@"
+            Assert.Equal(
+                @"
 internal class C
 {
     private readonly object o = 1;
-}", file1Content);
+}",
+                file1Content
+            );
         }
 
         [Fact]
@@ -242,7 +299,7 @@ internal class C
             using (var host = GetHost(true))
             {
                 var originalText =
-                @"
+                    @"
                     using System.IO;
                 ";
 
@@ -250,15 +307,19 @@ internal class C
 
                 var testFilePath = CreateTestProjectWithDocument(host, originalText);
 
-                var handler = host.GetRequestHandler<RunFixAllCodeActionService>(OmniSharpEndpoints.RunFixAll);
+                var handler = host.GetRequestHandler<RunFixAllCodeActionService>(
+                    OmniSharpEndpoints.RunFixAll
+                );
 
-                await handler.Handle(new RunFixAllRequest
-                {
-                    Scope = FixAllScope.Document,
-                    FileName = testFilePath,
-                    WantsTextChanges = true,
-                    WantsAllCodeActionOperations = true
-                });
+                await handler.Handle(
+                    new RunFixAllRequest
+                    {
+                        Scope = FixAllScope.Document,
+                        FileName = testFilePath,
+                        WantsTextChanges = true,
+                        WantsAllCodeActionOperations = true,
+                    }
+                );
 
                 string textAfterFix = await GetContentOfDocumentFromWorkspace(host, testFilePath);
 
@@ -272,26 +333,30 @@ internal class C
             using (var host = GetHost(true))
             {
                 var originalText =
-                @"
+                    @"
                     invalidSyntaxThatCannotBeFixedHere
                 ";
 
                 var expectedText =
-                @"
+                    @"
                     invalidSyntaxThatCannotBeFixedHere
                 ";
 
                 var testFilePath = CreateTestProjectWithDocument(host, originalText);
 
-                var handler = host.GetRequestHandler<RunFixAllCodeActionService>(OmniSharpEndpoints.RunFixAll);
+                var handler = host.GetRequestHandler<RunFixAllCodeActionService>(
+                    OmniSharpEndpoints.RunFixAll
+                );
 
-                await handler.Handle(new RunFixAllRequest
-                {
-                    Scope = FixAllScope.Document,
-                    FileName = testFilePath,
-                    WantsTextChanges = true,
-                    WantsAllCodeActionOperations = true
-                });
+                await handler.Handle(
+                    new RunFixAllRequest
+                    {
+                        Scope = FixAllScope.Document,
+                        FileName = testFilePath,
+                        WantsTextChanges = true,
+                        WantsAllCodeActionOperations = true,
+                    }
+                );
 
                 string textAfterFix = await GetContentOfDocumentFromWorkspace(host, testFilePath);
 
@@ -304,12 +369,18 @@ internal class C
         {
             using (var host = GetHost(true))
             {
-                var ide0055File = CreateTestProjectWithDocument(host,
+                var ide0055File = CreateTestProjectWithDocument(
+                    host,
                     @"
                         internal class InvalidFormatIDE0055ExpectedHere{}
-                    ");
+                    "
+                );
 
-                var resultFromDocument = await GetFixAllTargets(host, ide0055File, FixAllScope.Document);
+                var resultFromDocument = await GetFixAllTargets(
+                    host,
+                    ide0055File,
+                    FixAllScope.Document
+                );
 
                 Assert.Contains(resultFromDocument.Items, x => x.Id == "IDE0055");
                 Assert.DoesNotContain(resultFromDocument.Items, x => x.Id == "IDE0040");
@@ -319,19 +390,25 @@ internal class C
         [Theory]
         [InlineData(FixAllScope.Document)]
         [InlineData(FixAllScope.Project)]
-        public async Task WhenGetActionIsScoped_ThenReturnOnlyItemsFromCorrectScope(FixAllScope scope)
+        public async Task WhenGetActionIsScoped_ThenReturnOnlyItemsFromCorrectScope(
+            FixAllScope scope
+        )
         {
             using (var host = GetHost(true))
             {
-                var inScopeFile = CreateTestProjectWithDocument(host,
-                @"
+                var inScopeFile = CreateTestProjectWithDocument(
+                    host,
+                    @"
                     internal class InvalidFormatIDE0055ExpectedHere{}
-                ");
+                "
+                );
 
-                var notInScopeFile = CreateTestProjectWithDocument(host,
-                @"
+                var notInScopeFile = CreateTestProjectWithDocument(
+                    host,
+                    @"
                     class NonInternalIDEIDE0040 { }
-                ");
+                "
+                );
 
                 var resultFromDocument = await GetFixAllTargets(host, inScopeFile, scope);
 
@@ -347,40 +424,58 @@ internal class C
             using (var host = GetHost(true))
             {
                 var textWithFormattingProblem =
-                @"
+                    @"
                     class C{}
                 ";
 
                 var testFilePath = CreateTestProjectWithDocument(host, textWithFormattingProblem);
 
-                var handler = host.GetRequestHandler<RunFixAllCodeActionService>(OmniSharpEndpoints.RunFixAll);
+                var handler = host.GetRequestHandler<RunFixAllCodeActionService>(
+                    OmniSharpEndpoints.RunFixAll
+                );
 
-                await handler.Handle(new RunFixAllRequest
-                {
-                    Scope = FixAllScope.Document,
-                    FileName = testFilePath,
-                    WantsTextChanges = true,
-                    WantsAllCodeActionOperations = true,
-                    FixAllFilter = null // This means: try fix everything.
-                });
+                await handler.Handle(
+                    new RunFixAllRequest
+                    {
+                        Scope = FixAllScope.Document,
+                        FileName = testFilePath,
+                        WantsTextChanges = true,
+                        WantsAllCodeActionOperations = true,
+                        FixAllFilter =
+                            null // This means: try fix everything.
+                        ,
+                    }
+                );
 
-                await Assert.ThrowsAsync<NotImplementedException>(async () => await handler.Handle(new RunFixAllRequest
-                {
-                    Scope = FixAllScope.Project,
-                    FileName = testFilePath,
-                    WantsTextChanges = true,
-                    WantsAllCodeActionOperations = true,
-                    FixAllFilter = null // This means: try fix everything.
-                }));
+                await Assert.ThrowsAsync<NotImplementedException>(
+                    async () =>
+                        await handler.Handle(
+                            new RunFixAllRequest
+                            {
+                                Scope = FixAllScope.Project,
+                                FileName = testFilePath,
+                                WantsTextChanges = true,
+                                WantsAllCodeActionOperations = true,
+                                FixAllFilter =
+                                    null // This means: try fix everything.
+                                ,
+                            }
+                        )
+                );
 
-                await Assert.ThrowsAsync<NotImplementedException>(async () => await handler.Handle(new RunFixAllRequest
-                {
-                    Scope = FixAllScope.Solution,
-                    FileName = testFilePath,
-                    WantsTextChanges = true,
-                    WantsAllCodeActionOperations = true,
-                    FixAllFilter = null
-                }));
+                await Assert.ThrowsAsync<NotImplementedException>(
+                    async () =>
+                        await handler.Handle(
+                            new RunFixAllRequest
+                            {
+                                Scope = FixAllScope.Solution,
+                                FileName = testFilePath,
+                                WantsTextChanges = true,
+                                WantsAllCodeActionOperations = true,
+                                FixAllFilter = null,
+                            }
+                        )
+                );
             }
         }
 
@@ -392,29 +487,42 @@ internal class C
             using var host = GetHost(roslynAnalyzersEnabled: true);
             var file = CreateTestProjectWithDocument(host, OriginalContent);
 
-            var handler = host.GetRequestHandler<RunFixAllCodeActionService>(OmniSharpEndpoints.RunFixAll);
+            var handler = host.GetRequestHandler<RunFixAllCodeActionService>(
+                OmniSharpEndpoints.RunFixAll
+            );
 
-            var response = await handler.Handle(new RunFixAllRequest
-            {
-                Scope = FixAllScope.Document,
-                FileName = file,
-                WantsTextChanges = true,
-                WantsAllCodeActionOperations = true,
-                FixAllFilter = null, // This means: try fix everything.
-                ApplyChanges = false
-            });
+            var response = await handler.Handle(
+                new RunFixAllRequest
+                {
+                    Scope = FixAllScope.Document,
+                    FileName = file,
+                    WantsTextChanges = true,
+                    WantsAllCodeActionOperations = true,
+                    FixAllFilter = null, // This means: try fix everything.
+                    ApplyChanges = false,
+                }
+            );
 
             string textAfterFix = await GetContentOfDocumentFromWorkspace(host, file);
             Assert.Equal(OriginalContent, textAfterFix);
 
-            Assert.Equal(ExpectedResponseContent, ((ModifiedFileResponse)response.Changes.Single()).Changes.Single().NewText);
+            Assert.Equal(
+                ExpectedResponseContent,
+                ((ModifiedFileResponse)response.Changes.Single()).Changes.Single().NewText
+            );
         }
 
         private OmniSharpTestHost GetHost(bool roslynAnalyzersEnabled)
         {
             return OmniSharpTestHost.Create(
                 testOutput: _testOutput,
-                configurationData: new Dictionary<string, string>() { { "RoslynExtensionsOptions:EnableAnalyzersSupport", roslynAnalyzersEnabled.ToString() } }.ToConfiguration(),
+                configurationData: new Dictionary<string, string>()
+                {
+                    {
+                        "RoslynExtensionsOptions:EnableAnalyzersSupport",
+                        roslynAnalyzersEnabled.ToString()
+                    },
+                }.ToConfiguration(),
                 eventEmitter: _analysisEventListener
             );
         }
@@ -426,20 +534,29 @@ internal class C
             return host.Workspace.CurrentSolution.GetProject(projectId).Documents.Single().FilePath;
         }
 
-        private static async Task<GetFixAllResponse> GetFixAllTargets(OmniSharpTestHost host, string fileName, FixAllScope scope)
+        private static async Task<GetFixAllResponse> GetFixAllTargets(
+            OmniSharpTestHost host,
+            string fileName,
+            FixAllScope scope
+        )
         {
-            var handler = host.GetRequestHandler<GetFixAllCodeActionService>(OmniSharpEndpoints.GetFixAll);
+            var handler = host.GetRequestHandler<GetFixAllCodeActionService>(
+                OmniSharpEndpoints.GetFixAll
+            );
 
-            return await handler.Handle(new GetFixAllRequest()
-            {
-                FileName = fileName,
-                Scope = scope
-            });
+            return await handler.Handle(
+                new GetFixAllRequest() { FileName = fileName, Scope = scope }
+            );
         }
 
-        private static async Task<string> GetContentOfDocumentFromWorkspace(OmniSharpTestHost host, string testFilePath)
+        private static async Task<string> GetContentOfDocumentFromWorkspace(
+            OmniSharpTestHost host,
+            string testFilePath
+        )
         {
-            var docAfterUpdate = host.Workspace.CurrentSolution.Projects.SelectMany(x => x.Documents).First(x => x.FilePath == testFilePath);
+            var docAfterUpdate = host
+                .Workspace.CurrentSolution.Projects.SelectMany(x => x.Documents)
+                .First(x => x.FilePath == testFilePath);
             return (await docAfterUpdate.GetTextAsync()).ToString();
         }
     }

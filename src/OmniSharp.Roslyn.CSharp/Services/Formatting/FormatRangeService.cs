@@ -37,12 +37,14 @@ namespace OmniSharp.Roslyn.CSharp.Services.Formatting
             var end = text.Lines.GetPosition(new LinePosition(request.EndLine, request.EndColumn));
             var syntaxTree = await document.GetSyntaxRootAsync();
             var tokenStart = syntaxTree.FindToken(start).FullSpan.Start;
-            var changes = await FormattingWorker.GetFormattingChanges(document, tokenStart, end, _omnisharpOptions);
+            var changes = await FormattingWorker.GetFormattingChanges(
+                document,
+                tokenStart,
+                end,
+                _omnisharpOptions
+            );
 
-            return new FormatRangeResponse()
-            {
-                Changes = changes
-            };
+            return new FormatRangeResponse() { Changes = changes };
         }
     }
 }

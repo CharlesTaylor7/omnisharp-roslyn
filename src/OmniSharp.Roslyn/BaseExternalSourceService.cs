@@ -1,4 +1,4 @@
-﻿using System.Collections.Concurrent;
+using System.Collections.Concurrent;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
@@ -8,11 +8,10 @@ namespace OmniSharp.Roslyn
 {
     public abstract class BaseExternalSourceService
     {
-        protected ConcurrentDictionary<string, Document> _cache = new ConcurrentDictionary<string, Document>();
+        protected ConcurrentDictionary<string, Document> _cache =
+            new ConcurrentDictionary<string, Document>();
 
-        protected BaseExternalSourceService()
-        {
-        }
+        protected BaseExternalSourceService() { }
 
         public Document FindDocumentInCache(string fileName)
         {
@@ -24,7 +23,15 @@ namespace OmniSharp.Roslyn
             return null;
         }
 
-        public Task<Location> GetExternalSymbolLocation(ISymbol symbol, Document metadataDocument, CancellationToken cancellationToken = new CancellationToken())
-            => OmniSharpMetadataAsSourceHelpers.GetLocationInGeneratedSourceAsync(symbol, metadataDocument, cancellationToken);
+        public Task<Location> GetExternalSymbolLocation(
+            ISymbol symbol,
+            Document metadataDocument,
+            CancellationToken cancellationToken = new CancellationToken()
+        ) =>
+            OmniSharpMetadataAsSourceHelpers.GetLocationInGeneratedSourceAsync(
+                symbol,
+                metadataDocument,
+                cancellationToken
+            );
     }
 }

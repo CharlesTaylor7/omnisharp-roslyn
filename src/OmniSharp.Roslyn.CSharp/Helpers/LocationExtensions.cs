@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -16,11 +16,13 @@ namespace OmniSharp.Helpers
             if (!location.IsInSource)
                 throw new Exception("Location is not in the source tree");
 
-            var lineSpan = Path.GetExtension(location.SourceTree.FilePath).Equals(".cake", StringComparison.OrdinalIgnoreCase) ||
-                location.SourceTree.FilePath.EndsWith("razor__virtual.cs") ||
-                location.SourceTree.FilePath.EndsWith("cshtml__virtual.cs")
-                ? location.GetLineSpan()
-                : location.GetMappedLineSpan();
+            var lineSpan =
+                Path.GetExtension(location.SourceTree.FilePath)
+                    .Equals(".cake", StringComparison.OrdinalIgnoreCase)
+                || location.SourceTree.FilePath.EndsWith("razor__virtual.cs")
+                || location.SourceTree.FilePath.EndsWith("cshtml__virtual.cs")
+                    ? location.GetLineSpan()
+                    : location.GetMappedLineSpan();
 
             var documents = workspace.GetDocuments(lineSpan.Path);
             var sourceText = GetSourceText(location, documents, lineSpan.HasMappedPath);
@@ -28,13 +30,18 @@ namespace OmniSharp.Helpers
 
             var generatedInfo = workspace.CurrentSolution.GetSourceGeneratedFileInfo(location);
 
-            var fileName = Path.IsPathRooted(lineSpan.Path) || generatedInfo != null
-                // If there is generated file information, the path is not rooted, but we don't want to try and locate it as it doesn't
-                // exist on disk
-                ? lineSpan.Path
-                // when a #line directive maps into a separate file using a relative path, get the full path relative to the folder containing the source tree
-                : Path.GetFullPath(Path.Combine(Path.GetDirectoryName(location.SourceTree.FilePath), lineSpan.Path));
-
+            var fileName =
+                Path.IsPathRooted(lineSpan.Path) || generatedInfo != null
+                    // If there is generated file information, the path is not rooted, but we don't want to try and locate it as it doesn't
+                    // exist on disk
+                    ? lineSpan.Path
+                    // when a #line directive maps into a separate file using a relative path, get the full path relative to the folder containing the source tree
+                    : Path.GetFullPath(
+                        Path.Combine(
+                            Path.GetDirectoryName(location.SourceTree.FilePath),
+                            lineSpan.Path
+                        )
+                    );
 
             return new SymbolLocation
             {
@@ -45,17 +52,25 @@ namespace OmniSharp.Helpers
                 EndLine = lineSpan.EndLinePosition.Line,
                 EndColumn = lineSpan.HasMappedPath ? 0 : lineSpan.EndLinePosition.Character,
                 Projects = documents.Select(document => document.Project.Name).ToArray(),
-                GeneratedFileInfo = generatedInfo
+                GeneratedFileInfo = generatedInfo,
             };
 
-            static SourceText GetSourceText(Location location, IEnumerable<Document> documents, bool hasMappedPath)
+            static SourceText GetSourceText(
+                Location location,
+                IEnumerable<Document> documents,
+                bool hasMappedPath
+            )
             {
                 // if we have a mapped linespan and we found a corresponding document, pick that one
                 // otherwise use the SourceText of current location
                 if (hasMappedPath)
                 {
                     SourceText source = null;
-                    if (documents != null && documents.FirstOrDefault(d => d != null && d.TryGetText(out source)) != null)
+                    if (
+                        documents != null
+                        && documents.FirstOrDefault(d => d != null && d.TryGetText(out source))
+                            != null
+                    )
                     {
                         // we have a mapped document that exists in workspace
                         return source;
@@ -80,7 +95,10 @@ namespace OmniSharp.Helpers
 
                 // in case we fall out of bounds, we shouldn't crash, fallback to text from the unmapped span and the current file
                 var fallBackLineSpan = location.GetLineSpan();
-                return location.SourceTree.GetText().Lines[fallBackLineSpan.StartLinePosition.Line].ToString();
+                return location
+                    .SourceTree.GetText()
+                    .Lines[fallBackLineSpan.StartLinePosition.Line]
+                    .ToString();
             }
         }
     }

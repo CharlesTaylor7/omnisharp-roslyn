@@ -34,16 +34,20 @@ Task(""Foobar"")
 
 RunTarget(target);";
 
-        public UpdateBufferFacts(ITestOutputHelper testOutput) : base(testOutput)
-        {
-        }
+        public UpdateBufferFacts(ITestOutputHelper testOutput)
+            : base(testOutput) { }
 
         protected override string EndpointName => OmniSharpEndpoints.UpdateBuffer;
 
         [Fact]
         public async Task ShouldSupportIncrementalChanges()
         {
-            using (var testProject = await TestAssets.Instance.GetTestProjectAsync("CakeProject", shadowCopy: false))
+            using (
+                var testProject = await TestAssets.Instance.GetTestProjectAsync(
+                    "CakeProject",
+                    shadowCopy: false
+                )
+            )
             using (var host = CreateOmniSharpHost(testProject.Directory))
             {
                 var fileName = Path.Combine(testProject.Directory, "build.cake");
@@ -52,7 +56,7 @@ RunTarget(target);";
                 {
                     FileName = fileName,
                     Buffer = CakeBuildSrc,
-                    FromDisk = false
+                    FromDisk = false,
                 };
                 await GetUpdateBufferHandler(host).Handle(updateBufferRequest);
 
@@ -68,7 +72,7 @@ RunTarget(target);";
                             StartColumn = 33,
                             EndLine = 0,
                             EndColumn = 40,
-                            NewText = "Foobar"
+                            NewText = "Foobar",
                         },
                         new LinePositionSpanTextChange
                         {
@@ -76,7 +80,7 @@ RunTarget(target);";
                             StartColumn = 6,
                             EndLine = 2,
                             EndColumn = 13,
-                            NewText = "Foobar"
+                            NewText = "Foobar",
                         },
                         new LinePositionSpanTextChange
                         {
@@ -84,9 +88,9 @@ RunTarget(target);";
                             StartColumn = 2,
                             EndLine = 5,
                             EndColumn = 13,
-                            NewText = "Verbose"
-                        }
-                    }
+                            NewText = "Verbose",
+                        },
+                    },
                 };
                 await GetUpdateBufferHandler(host).Handle(updateBufferRequest);
 
@@ -107,7 +111,10 @@ RunTarget(target);";
                 var expectedLines = CakeBuildModified.Split('\n').ToList();
                 for (var i = 0; i < expectedLines.Count; i++)
                 {
-                    Assert.Equal(sourceText.Lines[startIndex + i].ToString(), expectedLines[i].TrimEnd('\r', '\n'));
+                    Assert.Equal(
+                        sourceText.Lines[startIndex + i].ToString(),
+                        expectedLines[i].TrimEnd('\r', '\n')
+                    );
                 }
             }
         }

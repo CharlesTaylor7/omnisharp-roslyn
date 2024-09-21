@@ -27,10 +27,7 @@ namespace Main.Test
             Assert.True(i >= 0);
         }
 
-        private void UtilityFunction()
-        {
-
-        }
+        private void UtilityFunction() { }
 
         [Fact(DisplayName = "My Test Name")]
         public void UsesDisplayName()
@@ -59,25 +56,20 @@ namespace Main.Test
         [Fact]
         public void CheckStandardOutput()
         {
-            int a = 1, b = 1;
+            int a = 1,
+                b = 1;
             Console.WriteLine($"a = {a}, b = {b}");
-            Assert.Equal(a,b);
+            Assert.Equal(a, b);
         }
 
         private class NestedClass
         {
-            public void M()
-            {
-
-            }
+            public void M() { }
         }
     }
 
     public class NoTests
     {
-        public void M()
-        {
-
-        }
+        public void M() { }
     }
 }

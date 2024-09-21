@@ -1,4 +1,4 @@
-﻿using System.Diagnostics;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Text;
 
@@ -8,7 +8,12 @@ namespace Microsoft.Extensions.Logging
 {
     public static class LoggingExtensions
     {
-        public static void Log(this ILogger logger, LogLevel logLevel, [InterpolatedStringHandlerArgument("logger", "logLevel")] LoggerInterpolatedStringHandler handler)
+        public static void Log(
+            this ILogger logger,
+            LogLevel logLevel,
+            [InterpolatedStringHandlerArgument("logger", "logLevel")]
+                LoggerInterpolatedStringHandler handler
+        )
         {
             logger.Log(logLevel, handler.ToString());
         }
@@ -18,7 +23,14 @@ namespace Microsoft.Extensions.Logging
     public struct LoggerInterpolatedStringHandler
     {
         private readonly StringBuilder? _builder;
-        public LoggerInterpolatedStringHandler(int literalLength, int formattedCount, ILogger logger, LogLevel level, out bool shouldAppend)
+
+        public LoggerInterpolatedStringHandler(
+            int literalLength,
+            int formattedCount,
+            ILogger logger,
+            LogLevel level,
+            out bool shouldAppend
+        )
         {
             if (logger.IsEnabled(level))
             {
@@ -60,16 +72,21 @@ namespace Microsoft.Extensions.Logging
 #if !NET6_0_OR_GREATER
 namespace System.Runtime.CompilerServices
 {
-    [AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct, AllowMultiple = false, Inherited = false)]
-    internal sealed class InterpolatedStringHandlerAttribute : Attribute
-    {
-    }
+    [AttributeUsage(
+        AttributeTargets.Class | AttributeTargets.Struct,
+        AllowMultiple = false,
+        Inherited = false
+    )]
+    internal sealed class InterpolatedStringHandlerAttribute : Attribute { }
+
     [AttributeUsage(AttributeTargets.Parameter, AllowMultiple = false, Inherited = false)]
     internal sealed class InterpolatedStringHandlerArgumentAttribute : Attribute
     {
-        public InterpolatedStringHandlerArgumentAttribute(string argument) => Arguments = new string[] { argument };
+        public InterpolatedStringHandlerArgumentAttribute(string argument) =>
+            Arguments = new string[] { argument };
 
-        public InterpolatedStringHandlerArgumentAttribute(params string[] arguments) => Arguments = arguments;
+        public InterpolatedStringHandlerArgumentAttribute(params string[] arguments) =>
+            Arguments = arguments;
 
         public string[] Arguments { get; }
     }

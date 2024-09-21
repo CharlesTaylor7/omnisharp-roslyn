@@ -16,13 +16,15 @@ namespace OmniSharp
             _options = options;
         }
 
-        OmniSharpLineFormattingOptions IOmniSharpLineFormattingOptionsProvider.GetLineFormattingOptions()
-            => _options is null
+        OmniSharpLineFormattingOptions IOmniSharpLineFormattingOptionsProvider.GetLineFormattingOptions() =>
+            _options is null
                 ? new OmniSharpLineFormattingOptions()
                 : CreateFromOptions(_options.CurrentValue);
 
-        internal static OmniSharpLineFormattingOptions CreateFromOptions(OmniSharpOptions options)
-            => new()
+        internal static OmniSharpLineFormattingOptions CreateFromOptions(
+            OmniSharpOptions options
+        ) =>
+            new()
             {
                 IndentationSize = options.FormattingOptions.IndentationSize,
                 TabSize = options.FormattingOptions.TabSize,

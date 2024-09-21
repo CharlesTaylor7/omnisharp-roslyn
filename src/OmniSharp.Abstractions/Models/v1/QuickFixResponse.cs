@@ -11,9 +11,7 @@ namespace OmniSharp.Models
             QuickFixes = quickFixes;
         }
 
-        public QuickFixResponse()
-        {
-        }
+        public QuickFixResponse() { }
 
         public IEnumerable<QuickFix> QuickFixes { get; set; }
 

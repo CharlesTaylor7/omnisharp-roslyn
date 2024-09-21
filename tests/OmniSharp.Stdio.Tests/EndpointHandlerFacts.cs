@@ -21,7 +21,8 @@ namespace OmniSharp.Stdio.Tests
 {
     public class EndpointHandlerFacts
     {
-        private abstract class FakeFindSymbolsServiceBase : IRequestHandler<FindSymbolsRequest, QuickFixResponse>
+        private abstract class FakeFindSymbolsServiceBase
+            : IRequestHandler<FindSymbolsRequest, QuickFixResponse>
         {
             private readonly string _name;
 
@@ -32,10 +33,11 @@ namespace OmniSharp.Stdio.Tests
 
             public Task<QuickFixResponse> Handle(FindSymbolsRequest request = null)
             {
-                return Task.FromResult(new QuickFixResponse
-                {
-                    QuickFixes = new[]
+                return Task.FromResult(
+                    new QuickFixResponse
                     {
+                        QuickFixes = new[]
+                        {
                             new QuickFix
                             {
                                 FileName = $"{_name}.cs",
@@ -43,29 +45,34 @@ namespace OmniSharp.Stdio.Tests
                                 Column = 1,
                                 EndLine = 1,
                                 EndColumn = 4,
-                                Text = _name
-                            }
-                        }
-                });
+                                Text = _name,
+                            },
+                        },
+                    }
+                );
             }
         }
 
         private class AAAFakeFindSymbolsService : FakeFindSymbolsServiceBase
         {
-            public AAAFakeFindSymbolsService() : base(nameof(AAAFakeFindSymbolsService)) { }
+            public AAAFakeFindSymbolsService()
+                : base(nameof(AAAFakeFindSymbolsService)) { }
         }
 
         private class BBBFakeFindSymbolsService : FakeFindSymbolsServiceBase
         {
-            public BBBFakeFindSymbolsService() : base(nameof(BBBFakeFindSymbolsService)) { }
+            public BBBFakeFindSymbolsService()
+                : base(nameof(BBBFakeFindSymbolsService)) { }
         }
 
         private class CCCFakeFindSymbolsService : FakeFindSymbolsServiceBase
         {
-            public CCCFakeFindSymbolsService() : base(nameof(CCCFakeFindSymbolsService)) { }
+            public CCCFakeFindSymbolsService()
+                : base(nameof(CCCFakeFindSymbolsService)) { }
         }
 
-        private class FakeGotoDefinitionService : IRequestHandler<GotoDefinitionRequest, GotoDefinitionResponse>
+        private class FakeGotoDefinitionService
+            : IRequestHandler<GotoDefinitionRequest, GotoDefinitionResponse>
         {
             private readonly string _name;
             private readonly bool _returnEmptyResponse;
@@ -83,12 +90,14 @@ namespace OmniSharp.Stdio.Tests
                     Task.FromResult(new GotoDefinitionResponse());
                 }
 
-                return Task.FromResult(new GotoDefinitionResponse
-                {
-                    FileName = $"{_name}.cs",
-                    Line = 1,
-                    Column = 2
-                });
+                return Task.FromResult(
+                    new GotoDefinitionResponse
+                    {
+                        FileName = $"{_name}.cs",
+                        Line = 1,
+                        Column = 2,
+                    }
+                );
             }
         }
 
@@ -116,9 +125,7 @@ namespace OmniSharp.Stdio.Tests
                 throw new NotImplementedException();
             }
 
-            public void Initalize(IConfiguration configuration)
-            {
-            }
+            public void Initalize(IConfiguration configuration) { }
         }
 
         private class TestRequestPacket : RequestPacket
@@ -133,7 +140,9 @@ namespace OmniSharp.Stdio.Tests
             {
                 Seq = 99,
                 Command = OmniSharpEndpoints.FindSymbols,
-                Arguments = JsonConvert.SerializeObject(new FindSymbolsRequest { Language = LanguageNames.CSharp })
+                Arguments = JsonConvert.SerializeObject(
+                    new FindSymbolsRequest { Language = LanguageNames.CSharp }
+                ),
             };
 
             var writer = new TestTextWriter(
@@ -152,9 +161,18 @@ namespace OmniSharp.Stdio.Tests
                     Assert.Null(packet.Message);
                     var quickFixResponse = ((JObject)packet.Body).ToObject<QuickFixResponse>();
                     Assert.Equal(3, quickFixResponse.QuickFixes.Count());
-                    Assert.Equal("AAAFakeFindSymbolsService", quickFixResponse.QuickFixes.ElementAt(0).Text);
-                    Assert.Equal("BBBFakeFindSymbolsService", quickFixResponse.QuickFixes.ElementAt(1).Text);
-                    Assert.Equal("CCCFakeFindSymbolsService", quickFixResponse.QuickFixes.ElementAt(2).Text);
+                    Assert.Equal(
+                        "AAAFakeFindSymbolsService",
+                        quickFixResponse.QuickFixes.ElementAt(0).Text
+                    );
+                    Assert.Equal(
+                        "BBBFakeFindSymbolsService",
+                        quickFixResponse.QuickFixes.ElementAt(1).Text
+                    );
+                    Assert.Equal(
+                        "CCCFakeFindSymbolsService",
+                        quickFixResponse.QuickFixes.ElementAt(2).Text
+                    );
                 }
             );
 
@@ -162,16 +180,37 @@ namespace OmniSharp.Stdio.Tests
             {
                 MefValueProvider.From<IRequestHandler>(
                     new BBBFakeFindSymbolsService(),
-                    new Dictionary<string, object> { ["EndpointName"] = OmniSharpEndpoints.FindSymbols, ["Language"] = LanguageNames.CSharp }),
+                    new Dictionary<string, object>
+                    {
+                        ["EndpointName"] = OmniSharpEndpoints.FindSymbols,
+                        ["Language"] = LanguageNames.CSharp,
+                    }
+                ),
                 MefValueProvider.From<IRequestHandler>(
                     new CCCFakeFindSymbolsService(),
-                    new Dictionary<string, object> { ["EndpointName"] = OmniSharpEndpoints.FindSymbols, ["Language"] = LanguageNames.CSharp }),
+                    new Dictionary<string, object>
+                    {
+                        ["EndpointName"] = OmniSharpEndpoints.FindSymbols,
+                        ["Language"] = LanguageNames.CSharp,
+                    }
+                ),
                 MefValueProvider.From<IRequestHandler>(
                     new AAAFakeFindSymbolsService(),
-                    new Dictionary<string, object> { ["EndpointName"] = OmniSharpEndpoints.FindSymbols, ["Language"] = LanguageNames.CSharp }),
+                    new Dictionary<string, object>
+                    {
+                        ["EndpointName"] = OmniSharpEndpoints.FindSymbols,
+                        ["Language"] = LanguageNames.CSharp,
+                    }
+                ),
             };
 
-            using (StdioServerFacts.BuildTestServerAndStart(new StringReader(JsonConvert.SerializeObject(request) + "\r\n"), writer, additionalExports: exports))
+            using (
+                StdioServerFacts.BuildTestServerAndStart(
+                    new StringReader(JsonConvert.SerializeObject(request) + "\r\n"),
+                    writer,
+                    additionalExports: exports
+                )
+            )
             {
                 Assert.True(writer.Completion.WaitOne(TimeSpan.FromSeconds(60)), "Timeout");
                 Assert.Null(writer.Exception);
@@ -185,7 +224,7 @@ namespace OmniSharp.Stdio.Tests
             {
                 Seq = 99,
                 Command = OmniSharpEndpoints.FindSymbols,
-                Arguments = JsonConvert.SerializeObject(new FindSymbolsRequest())
+                Arguments = JsonConvert.SerializeObject(new FindSymbolsRequest()),
             };
 
             var writer = new TestTextWriter(
@@ -204,9 +243,18 @@ namespace OmniSharp.Stdio.Tests
                     Assert.Null(packet.Message);
                     var quickFixResponse = ((JObject)packet.Body).ToObject<QuickFixResponse>();
                     Assert.Equal(3, quickFixResponse.QuickFixes.Count());
-                    Assert.Equal("AAAFakeFindSymbolsService", quickFixResponse.QuickFixes.ElementAt(0).Text);
-                    Assert.Equal("BBBFakeFindSymbolsService", quickFixResponse.QuickFixes.ElementAt(1).Text);
-                    Assert.Equal("CCCFakeFindSymbolsService", quickFixResponse.QuickFixes.ElementAt(2).Text);
+                    Assert.Equal(
+                        "AAAFakeFindSymbolsService",
+                        quickFixResponse.QuickFixes.ElementAt(0).Text
+                    );
+                    Assert.Equal(
+                        "BBBFakeFindSymbolsService",
+                        quickFixResponse.QuickFixes.ElementAt(1).Text
+                    );
+                    Assert.Equal(
+                        "CCCFakeFindSymbolsService",
+                        quickFixResponse.QuickFixes.ElementAt(2).Text
+                    );
                 }
             );
 
@@ -214,16 +262,37 @@ namespace OmniSharp.Stdio.Tests
             {
                 MefValueProvider.From<IRequestHandler>(
                     new BBBFakeFindSymbolsService(),
-                    new Dictionary<string, object> { ["EndpointName"] = OmniSharpEndpoints.FindSymbols, ["Language"] = LanguageNames.CSharp }),
+                    new Dictionary<string, object>
+                    {
+                        ["EndpointName"] = OmniSharpEndpoints.FindSymbols,
+                        ["Language"] = LanguageNames.CSharp,
+                    }
+                ),
                 MefValueProvider.From<IRequestHandler>(
                     new CCCFakeFindSymbolsService(),
-                    new Dictionary<string, object> { ["EndpointName"] = OmniSharpEndpoints.FindSymbols, ["Language"] = LanguageNames.VisualBasic }),
+                    new Dictionary<string, object>
+                    {
+                        ["EndpointName"] = OmniSharpEndpoints.FindSymbols,
+                        ["Language"] = LanguageNames.VisualBasic,
+                    }
+                ),
                 MefValueProvider.From<IRequestHandler>(
                     new AAAFakeFindSymbolsService(),
-                    new Dictionary<string, object> { ["EndpointName"] = OmniSharpEndpoints.FindSymbols, ["Language"] = LanguageNames.CSharp }),
+                    new Dictionary<string, object>
+                    {
+                        ["EndpointName"] = OmniSharpEndpoints.FindSymbols,
+                        ["Language"] = LanguageNames.CSharp,
+                    }
+                ),
             };
 
-            using (StdioServerFacts.BuildTestServerAndStart(new StringReader(JsonConvert.SerializeObject(request) + "\r\n"), writer, additionalExports: exports))
+            using (
+                StdioServerFacts.BuildTestServerAndStart(
+                    new StringReader(JsonConvert.SerializeObject(request) + "\r\n"),
+                    writer,
+                    additionalExports: exports
+                )
+            )
             {
                 Assert.True(writer.Completion.WaitOne(TimeSpan.FromSeconds(60)), "Timeout");
                 Assert.Null(writer.Exception);
@@ -237,7 +306,9 @@ namespace OmniSharp.Stdio.Tests
             {
                 Seq = 99,
                 Command = OmniSharpEndpoints.GotoDefinition,
-                Arguments = JsonConvert.SerializeObject(new GotoDefinitionRequest { FileName = "foo.cs" })
+                Arguments = JsonConvert.SerializeObject(
+                    new GotoDefinitionRequest { FileName = "foo.cs" }
+                ),
             };
 
             var writer = new TestTextWriter(
@@ -254,7 +325,9 @@ namespace OmniSharp.Stdio.Tests
                     Assert.True(packet.Success);
                     Assert.True(packet.Running);
                     Assert.Null(packet.Message);
-                    var gotoDefinitionResponse = ((JObject)packet.Body).ToObject<GotoDefinitionResponse>();
+                    var gotoDefinitionResponse = (
+                        (JObject)packet.Body
+                    ).ToObject<GotoDefinitionResponse>();
                     Assert.Equal("ZZZFake.cs", gotoDefinitionResponse.FileName);
                 }
             );
@@ -264,13 +337,29 @@ namespace OmniSharp.Stdio.Tests
                 MefValueProvider.From<IProjectSystem>(new FakeProjectSystem()),
                 MefValueProvider.From<IRequestHandler>(
                     new FakeGotoDefinitionService("ZZZFake", false),
-                    new Dictionary<string, object> { ["EndpointName"] = OmniSharpEndpoints.GotoDefinition, ["Language"] = LanguageNames.CSharp }),
+                    new Dictionary<string, object>
+                    {
+                        ["EndpointName"] = OmniSharpEndpoints.GotoDefinition,
+                        ["Language"] = LanguageNames.CSharp,
+                    }
+                ),
                 MefValueProvider.From<IRequestHandler>(
                     new FakeGotoDefinitionService("AAAFake", true),
-                    new Dictionary<string, object> { ["EndpointName"] = OmniSharpEndpoints.GotoDefinition, ["Language"] = LanguageNames.CSharp }),
+                    new Dictionary<string, object>
+                    {
+                        ["EndpointName"] = OmniSharpEndpoints.GotoDefinition,
+                        ["Language"] = LanguageNames.CSharp,
+                    }
+                ),
             };
 
-            using (StdioServerFacts.BuildTestServerAndStart(new StringReader(JsonConvert.SerializeObject(request) + "\r\n"), writer, additionalExports: exports))
+            using (
+                StdioServerFacts.BuildTestServerAndStart(
+                    new StringReader(JsonConvert.SerializeObject(request) + "\r\n"),
+                    writer,
+                    additionalExports: exports
+                )
+            )
             {
                 Assert.True(writer.Completion.WaitOne(TimeSpan.FromSeconds(60)), "Timeout");
                 Assert.Null(writer.Exception);

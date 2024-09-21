@@ -12,17 +12,19 @@ namespace OmniSharp.Roslyn.CSharp.Tests
 {
     public class RenameFacts : AbstractSingleRequestHandlerTestFixture<RenameService>
     {
-        public RenameFacts(ITestOutputHelper output, SharedOmniSharpHostFixture sharedOmniSharpHostFixture)
-            : base(output, sharedOmniSharpHostFixture)
-        {
-        }
+        public RenameFacts(
+            ITestOutputHelper output,
+            SharedOmniSharpHostFixture sharedOmniSharpHostFixture
+        )
+            : base(output, sharedOmniSharpHostFixture) { }
 
         protected override string EndpointName => OmniSharpEndpoints.Rename;
 
         [Fact]
         public async Task Rename_UpdatesWorkspaceAndDocumentText()
         {
-            const string code = @"
+            const string code =
+                @"
 using System;
 
 namespace OmniSharp.Models
@@ -33,7 +35,8 @@ namespace OmniSharp.Models
     }
 }";
 
-            const string expectedCode = @"
+            const string expectedCode =
+                @"
 using System;
 
 namespace OmniSharp.Models
@@ -48,14 +51,20 @@ namespace OmniSharp.Models
 
             using (var host = CreateOmniSharpHost(testFile))
             {
-                await ValidateRename(host, testFile, expectedCode, async () => await PerformRename(host, testFile, "foo", applyTextChanges: true));
+                await ValidateRename(
+                    host,
+                    testFile,
+                    expectedCode,
+                    async () => await PerformRename(host, testFile, "foo", applyTextChanges: true)
+                );
             }
         }
 
         [Fact]
         public async Task Rename_DoesNotUpdatesWorkspace()
         {
-            const string fileContent = @"
+            const string fileContent =
+                @"
 using System;
 
 namespace OmniSharp.Models
@@ -86,12 +95,14 @@ namespace OmniSharp.Models
         {
             const string code1 = "public class F$$oo {}";
 
-            const string code2 = @"
+            const string code2 =
+                @"
 public class Bar {
     public Foo Property {get; set;}
 }";
 
-            const string expectedCode = @"
+            const string expectedCode =
+                @"
 public class Bar {
     public xxx Property {get; set;}
 }";
@@ -99,7 +110,7 @@ public class Bar {
             var testFiles = new[]
             {
                 new TestFile("test1.cs", code1),
-                new TestFile("test2.cs", code2)
+                new TestFile("test2.cs", code2),
             };
 
             using (var host = CreateOmniSharpHost(testFiles))
@@ -107,10 +118,14 @@ public class Bar {
                 var result = await PerformRename(host, testFiles, "xxx");
 
                 var solution = host.Workspace.CurrentSolution;
-                var documentId1 = solution.GetDocumentIdsWithFilePath(testFiles[0].FileName).First();
+                var documentId1 = solution
+                    .GetDocumentIdsWithFilePath(testFiles[0].FileName)
+                    .First();
                 var document1 = solution.GetDocument(documentId1);
                 var sourceText1 = await document1.GetTextAsync();
-                var documentId2 = solution.GetDocumentIdsWithFilePath(testFiles[1].FileName).First();
+                var documentId2 = solution
+                    .GetDocumentIdsWithFilePath(testFiles[1].FileName)
+                    .First();
                 var document2 = solution.GetDocument(documentId2);
                 var sourceText2 = await document2.GetTextAsync();
 
@@ -140,7 +155,8 @@ public class Bar {
         public async Task Rename_UpdatesMultipleDocumentsIfNecessaryAndProducesTextChangesIfAsked()
         {
             const string code1 = "public class F$$oo {}";
-            const string code2 = @"
+            const string code2 =
+                @"
 public class Bar {
     public Foo Property {get; set;}
 }";
@@ -148,7 +164,7 @@ public class Bar {
             var testFiles = new[]
             {
                 new TestFile("test1.cs", code1),
-                new TestFile("test2.cs", code2)
+                new TestFile("test2.cs", code2),
             };
 
             var result = await PerformRename(testFiles, "xxx", wantsTextChanges: true);
@@ -194,7 +210,8 @@ public class Bar {
         [Fact]
         public async Task Rename_DoesNotExplodeWhenAttemptingToRenameALibrarySymbol()
         {
-            const string fileContent = @"
+            const string fileContent =
+                @"
 using System;
 public class Program
 {
@@ -214,7 +231,8 @@ public class Program
         [Fact]
         public async Task Rename_DoesNotDuplicateRenamesWithMultipleFrameworks()
         {
-            const string fileContent = @"
+            const string fileContent =
+                @"
 using System;
 public class Program
 {
@@ -237,7 +255,8 @@ public class Program
         [Fact]
         public async Task Rename_CanRenameInComments()
         {
-            const string code = @"
+            const string code =
+                @"
 using System;
 
 namespace ConsoleApplication
@@ -251,7 +270,8 @@ namespace ConsoleApplication
     }
 }";
 
-            const string expectedCode = @"
+            const string expectedCode =
+                @"
 using System;
 
 namespace ConsoleApplication
@@ -266,19 +286,27 @@ namespace ConsoleApplication
 }";
 
             var testFile = new TestFile("test.cs", code);
-            using (var host = CreateOmniSharpHost(new[] { testFile }, new Dictionary<string, string>
+            using (
+                var host = CreateOmniSharpHost(
+                    new[] { testFile },
+                    new Dictionary<string, string> { ["RenameOptions:RenameInComments"] = "true" }
+                )
+            )
             {
-                ["RenameOptions:RenameInComments"] = "true"
-            }))
-            {
-                await ValidateRename(host, testFile, expectedCode, async () => await PerformRename(host, testFile, "Foo", applyTextChanges: true));
+                await ValidateRename(
+                    host,
+                    testFile,
+                    expectedCode,
+                    async () => await PerformRename(host, testFile, "Foo", applyTextChanges: true)
+                );
             }
         }
 
         [Fact]
         public async Task Rename_CanRenameInOverloads()
         {
-            const string code = @"
+            const string code =
+                @"
 public class Foo
 {
     public void Do$$Stuff() {}
@@ -288,7 +316,8 @@ public class Foo
     public void DoStuff(int foo, int bar) {}
 }";
 
-            const string expectedCode = @"
+            const string expectedCode =
+                @"
 public class Foo
 {
     public void DoFunnyStuff() {}
@@ -299,19 +328,28 @@ public class Foo
 }";
 
             var testFile = new TestFile("test.cs", code);
-            using (var host = CreateOmniSharpHost(new[] { testFile }, new Dictionary<string, string>
+            using (
+                var host = CreateOmniSharpHost(
+                    new[] { testFile },
+                    new Dictionary<string, string> { ["RenameOptions:RenameOverloads"] = "true" }
+                )
+            )
             {
-                ["RenameOptions:RenameOverloads"] = "true"
-            }))
-            {
-                await ValidateRename(host, testFile, expectedCode, async () => await PerformRename(host, testFile, "DoFunnyStuff", applyTextChanges: true));
+                await ValidateRename(
+                    host,
+                    testFile,
+                    expectedCode,
+                    async () =>
+                        await PerformRename(host, testFile, "DoFunnyStuff", applyTextChanges: true)
+                );
             }
         }
 
         [Fact]
         public async Task Rename_CanRenameInStrings()
         {
-            const string code = @"
+            const string code =
+                @"
 namespace ConsoleApplication
 {
     public class Ba$$r
@@ -320,7 +358,8 @@ namespace ConsoleApplication
     }
 }";
 
-            const string expectedCode = @"
+            const string expectedCode =
+                @"
 namespace ConsoleApplication
 {
     public class Foo
@@ -330,16 +369,28 @@ namespace ConsoleApplication
 }";
 
             var testFile = new TestFile("test.cs", code);
-            using (var host = CreateOmniSharpHost(new[] { testFile }, new Dictionary<string, string>
+            using (
+                var host = CreateOmniSharpHost(
+                    new[] { testFile },
+                    new Dictionary<string, string> { ["RenameOptions:RenameInStrings"] = "true" }
+                )
+            )
             {
-                ["RenameOptions:RenameInStrings"] = "true"
-            }))
-            {
-                await ValidateRename(host, testFile, expectedCode, async () => await PerformRename(host, testFile, "Foo", applyTextChanges: true));
+                await ValidateRename(
+                    host,
+                    testFile,
+                    expectedCode,
+                    async () => await PerformRename(host, testFile, "Foo", applyTextChanges: true)
+                );
             }
         }
 
-        private async Task ValidateRename(OmniSharpTestHost host, TestFile testFile, string expectedCode, Func<Task<RenameResponse>> rename)
+        private async Task ValidateRename(
+            OmniSharpTestHost host,
+            TestFile testFile,
+            string expectedCode,
+            Func<Task<RenameResponse>> rename
+        )
         {
             var result = await rename();
 
@@ -361,38 +412,68 @@ namespace ConsoleApplication
         }
 
         private Task<RenameResponse> PerformRename(
-            TestFile testFile, string renameTo,
+            TestFile testFile,
+            string renameTo,
             bool wantsTextChanges = false,
             bool applyTextChanges = true,
-            bool updateBuffer = false)
+            bool updateBuffer = false
+        )
         {
-            return PerformRename(new[] { testFile }, renameTo, wantsTextChanges, applyTextChanges, updateBuffer);
+            return PerformRename(
+                new[] { testFile },
+                renameTo,
+                wantsTextChanges,
+                applyTextChanges,
+                updateBuffer
+            );
         }
 
         private async Task<RenameResponse> PerformRename(
-            TestFile[] testFiles, string renameTo,
+            TestFile[] testFiles,
+            string renameTo,
             bool wantsTextChanges = false,
             bool applyTextChanges = true,
-            bool updateBuffer = false)
+            bool updateBuffer = false
+        )
         {
             SharedOmniSharpTestHost.AddFilesToWorkspace(testFiles);
-            return await PerformRename(SharedOmniSharpTestHost, testFiles, renameTo, wantsTextChanges, applyTextChanges, updateBuffer);
+            return await PerformRename(
+                SharedOmniSharpTestHost,
+                testFiles,
+                renameTo,
+                wantsTextChanges,
+                applyTextChanges,
+                updateBuffer
+            );
         }
 
         private Task<RenameResponse> PerformRename(
-            OmniSharpTestHost host, TestFile testFile, string renameTo,
+            OmniSharpTestHost host,
+            TestFile testFile,
+            string renameTo,
             bool wantsTextChanges = false,
             bool applyTextChanges = true,
-            bool updateBuffer = false)
+            bool updateBuffer = false
+        )
         {
-            return PerformRename(host, new[] { testFile }, renameTo, wantsTextChanges, applyTextChanges, updateBuffer);
+            return PerformRename(
+                host,
+                new[] { testFile },
+                renameTo,
+                wantsTextChanges,
+                applyTextChanges,
+                updateBuffer
+            );
         }
 
         private async Task<RenameResponse> PerformRename(
-            OmniSharpTestHost host, TestFile[] testFiles, string renameTo,
+            OmniSharpTestHost host,
+            TestFile[] testFiles,
+            string renameTo,
             bool wantsTextChanges = false,
             bool applyTextChanges = true,
-            bool updateBuffer = false)
+            bool updateBuffer = false
+        )
         {
             var activeFile = testFiles.Single(tf => tf.Content.HasPosition);
             var point = activeFile.Content.GetPointFromPosition();
@@ -405,7 +486,7 @@ namespace ConsoleApplication
                 FileName = activeFile.FileName,
                 Buffer = activeFile.Content.Code,
                 WantsTextChanges = wantsTextChanges,
-                ApplyTextChanges = applyTextChanges
+                ApplyTextChanges = applyTextChanges,
             };
 
             var requestHandler = GetRequestHandler(host);

@@ -1,4 +1,4 @@
-﻿#nullable enable
+#nullable enable
 
 using System.Collections.Generic;
 using System.Composition;
@@ -16,10 +16,10 @@ namespace OmniSharp.Roslyn.CSharp.Services.Navigation
     [OmniSharpHandler(OmniSharpEndpoints.SourceGeneratedFile, LanguageNames.CSharp)]
     [OmniSharpHandler(OmniSharpEndpoints.UpdateSourceGeneratedFile, LanguageNames.CSharp)]
     [OmniSharpHandler(OmniSharpEndpoints.SourceGeneratedFileClosed, LanguageNames.CSharp)]
-    public class SourceGeneratedFileService :
-        IRequestHandler<SourceGeneratedFileRequest, SourceGeneratedFileResponse>,
-        IRequestHandler<UpdateSourceGeneratedFileRequest, UpdateSourceGeneratedFileResponse>,
-        IRequestHandler<SourceGeneratedFileClosedRequest, SourceGeneratedFileClosedResponse>
+    public class SourceGeneratedFileService
+        : IRequestHandler<SourceGeneratedFileRequest, SourceGeneratedFileResponse>,
+            IRequestHandler<UpdateSourceGeneratedFileRequest, UpdateSourceGeneratedFileResponse>,
+            IRequestHandler<SourceGeneratedFileClosedRequest, SourceGeneratedFileClosedResponse>
     {
         private readonly OmniSharpWorkspace _workspace;
         private readonly ILogger _logger;
@@ -27,7 +27,10 @@ namespace OmniSharp.Roslyn.CSharp.Services.Navigation
         private readonly object _lock = new();
 
         [ImportingConstructor]
-        public SourceGeneratedFileService(OmniSharpWorkspace workspace, ILoggerFactory loggerFactory)
+        public SourceGeneratedFileService(
+            OmniSharpWorkspace workspace,
+            ILoggerFactory loggerFactory
+        )
         {
             _workspace = workspace;
             _logger = loggerFactory.CreateLogger<SourceGeneratedFileService>();
@@ -37,11 +40,18 @@ namespace OmniSharp.Roslyn.CSharp.Services.Navigation
         {
             var documentId = GetId(request);
 
-            var document = await _workspace.CurrentSolution.GetSourceGeneratedDocumentAsync(documentId, CancellationToken.None);
+            var document = await _workspace.CurrentSolution.GetSourceGeneratedDocumentAsync(
+                documentId,
+                CancellationToken.None
+            );
 
             if (document is null)
             {
-                _logger.LogError("Document with ID {0}:{1} was not found or not a source generated file", request.ProjectGuid, request.DocumentGuid);
+                _logger.LogError(
+                    "Document with ID {0}:{1} was not found or not a source generated file",
+                    request.ProjectGuid,
+                    request.DocumentGuid
+                );
                 return new SourceGeneratedFileResponse();
             }
 
@@ -56,14 +66,19 @@ namespace OmniSharp.Roslyn.CSharp.Services.Navigation
             return new SourceGeneratedFileResponse
             {
                 Source = text.ToString(),
-                SourceName = document.FilePath
+                SourceName = document.FilePath,
             };
         }
 
-        public async Task<UpdateSourceGeneratedFileResponse> Handle(UpdateSourceGeneratedFileRequest request)
+        public async Task<UpdateSourceGeneratedFileResponse> Handle(
+            UpdateSourceGeneratedFileRequest request
+        )
         {
             var documentId = GetId(request);
-            var document = await _workspace.CurrentSolution.GetSourceGeneratedDocumentAsync(documentId, CancellationToken.None);
+            var document = await _workspace.CurrentSolution.GetSourceGeneratedDocumentAsync(
+                documentId,
+                CancellationToken.None
+            );
             if (document == null)
             {
                 lock (_lock)
@@ -76,9 +91,15 @@ namespace OmniSharp.Roslyn.CSharp.Services.Navigation
             var docVersion = await document.GetTextVersionAsync();
             lock (_lock)
             {
-                if (_lastSentVerisons.TryGetValue(documentId, out var lastVersion) && lastVersion == docVersion)
+                if (
+                    _lastSentVerisons.TryGetValue(documentId, out var lastVersion)
+                    && lastVersion == docVersion
+                )
                 {
-                    return new UpdateSourceGeneratedFileResponse() { UpdateType = UpdateType.Unchanged };
+                    return new UpdateSourceGeneratedFileResponse()
+                    {
+                        UpdateType = UpdateType.Unchanged,
+                    };
                 }
 
                 _lastSentVerisons[documentId] = docVersion;
@@ -87,11 +108,13 @@ namespace OmniSharp.Roslyn.CSharp.Services.Navigation
             return new UpdateSourceGeneratedFileResponse()
             {
                 UpdateType = UpdateType.Modified,
-                Source = (await document.GetTextAsync()).ToString()
+                Source = (await document.GetTextAsync()).ToString(),
             };
         }
 
-        public Task<SourceGeneratedFileClosedResponse> Handle(SourceGeneratedFileClosedRequest request)
+        public Task<SourceGeneratedFileClosedResponse> Handle(
+            SourceGeneratedFileClosedRequest request
+        )
         {
             lock (_lock)
             {
@@ -101,10 +124,12 @@ namespace OmniSharp.Roslyn.CSharp.Services.Navigation
             return SourceGeneratedFileClosedResponse.Instance;
         }
 
-        private static DocumentId GetId(SourceGeneratedFileInfo info) => OmniSharpDocumentId.CreateFromSerialized(
-            ProjectId.CreateFromSerialized(info.ProjectGuid),
-            info.DocumentGuid,
-            isSourceGenerated: true,
-            debugName: null);
+        private static DocumentId GetId(SourceGeneratedFileInfo info) =>
+            OmniSharpDocumentId.CreateFromSerialized(
+                ProjectId.CreateFromSerialized(info.ProjectGuid),
+                info.DocumentGuid,
+                isSourceGenerated: true,
+                debugName: null
+            );
     }
 }

@@ -7,7 +7,8 @@ namespace OmniSharp.MSBuild.Tests
     public class SolutionParsingTests
     {
         #region SimpleSolutionContent
-        private const string SimpleSolutionContent = @"
+        private const string SimpleSolutionContent =
+            @"
             Microsoft Visual Studio Solution File, Format Version 9.00
             # Visual Studio 2005
             Project(""{F184B08F-C81C-45F6-A57F-5ABD9991F28F}"") = ""ConsoleApplication1"", ""ConsoleApplication1\ConsoleApplication1.vbproj"", ""{AB3413A6-D689-486D-B7F0-A095371B3F13}""
@@ -41,7 +42,8 @@ namespace OmniSharp.MSBuild.Tests
             EndGlobal";
         #endregion
         #region SimpleSolutionWithDifferentSpacingContent
-        private const string SimpleSolutionWithDifferentSpacingContent = @"
+        private const string SimpleSolutionWithDifferentSpacingContent =
+            @"
             Microsoft Visual Studio Solution File, Format Version 9.00
             # Visual Studio 2005
             Project("" { Project GUID} "")  = "" Project name "",  "" Relative path to project file ""    , "" {0ABED153-9451-483C-8140-9E8D7306B216} ""
@@ -63,7 +65,8 @@ namespace OmniSharp.MSBuild.Tests
             EndGlobal";
         #endregion
         #region UnitySolutionContent
-        private const string UnitySolutionContent = @"
+        private const string UnitySolutionContent =
+            @"
             Microsoft Visual Studio Solution File, Format Version 11.00
             # Visual Studio 2010
             Project(""{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}"") = ""LeopotamGroupLibrary"", ""Assembly-CSharp.csproj"", ""{0279C7A5-B8B1-345F-ED42-A58232A100B3}""
@@ -100,7 +103,8 @@ namespace OmniSharp.MSBuild.Tests
             EndGlobal";
         #endregion
         #region SolutionWithProjectSectionContent
-        private const string SolutionWithProjectSectionContent = @"
+        private const string SolutionWithProjectSectionContent =
+            @"
             Microsoft Visual Studio Solution File, Format Version 12.00
             # Visual Studio 15
             VisualStudioVersion = 15.0.26124.0
@@ -163,7 +167,8 @@ namespace OmniSharp.MSBuild.Tests
             EndGlobal";
         #endregion
         #region LegacyAspNetWebsiteSolutionContent
-        private const string LegacyAspNetWebsiteSolutionContent = @"
+        private const string LegacyAspNetWebsiteSolutionContent =
+            @"
             Microsoft Visual Studio Solution File, Format Version 12.00
             # Visual Studio 2013
             VisualStudioVersion = 12.0.31101.0
@@ -207,20 +212,44 @@ namespace OmniSharp.MSBuild.Tests
 
             Assert.Equal(3, solution.Projects.Length);
 
-            Assert.Equal("{F184B08F-C81C-45F6-A57F-5ABD9991F28F}", solution.Projects[0].ProjectTypeGuid);
+            Assert.Equal(
+                "{F184B08F-C81C-45F6-A57F-5ABD9991F28F}",
+                solution.Projects[0].ProjectTypeGuid
+            );
             Assert.Equal("ConsoleApplication1", solution.Projects[0].ProjectName);
-            Assert.Equal(@"ConsoleApplication1\ConsoleApplication1.vbproj", solution.Projects[0].RelativePath);
-            Assert.Equal("{AB3413A6-D689-486D-B7F0-A095371B3F13}", solution.Projects[0].ProjectGuid);
+            Assert.Equal(
+                @"ConsoleApplication1\ConsoleApplication1.vbproj",
+                solution.Projects[0].RelativePath
+            );
+            Assert.Equal(
+                "{AB3413A6-D689-486D-B7F0-A095371B3F13}",
+                solution.Projects[0].ProjectGuid
+            );
 
-            Assert.Equal("{F184B08F-C81C-45F6-A57F-5ABD9991F28F}", solution.Projects[1].ProjectTypeGuid);
+            Assert.Equal(
+                "{F184B08F-C81C-45F6-A57F-5ABD9991F28F}",
+                solution.Projects[1].ProjectTypeGuid
+            );
             Assert.Equal("vbClassLibrary", solution.Projects[1].ProjectName);
-            Assert.Equal(@"vbClassLibrary\vbClassLibrary.vbproj", solution.Projects[1].RelativePath);
-            Assert.Equal("{BA333A76-4511-47B8-8DF4-CA51C303AD0B}", solution.Projects[1].ProjectGuid);
+            Assert.Equal(
+                @"vbClassLibrary\vbClassLibrary.vbproj",
+                solution.Projects[1].RelativePath
+            );
+            Assert.Equal(
+                "{BA333A76-4511-47B8-8DF4-CA51C303AD0B}",
+                solution.Projects[1].ProjectGuid
+            );
 
-            Assert.Equal("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}", solution.Projects[2].ProjectTypeGuid);
+            Assert.Equal(
+                "{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}",
+                solution.Projects[2].ProjectTypeGuid
+            );
             Assert.Equal("ClassLibrary1", solution.Projects[2].ProjectName);
             Assert.Equal(@"ClassLibrary1\ClassLibrary1.csproj", solution.Projects[2].RelativePath);
-            Assert.Equal("{DEBCE986-61B9-435E-8018-44B9EF751655}", solution.Projects[2].ProjectGuid);
+            Assert.Equal(
+                "{DEBCE986-61B9-435E-8018-44B9EF751655}",
+                solution.Projects[2].ProjectGuid
+            );
 
             Assert.Equal(3, solution.GlobalSections.Length);
             Assert.Equal("SolutionConfigurationPlatforms", solution.GlobalSections[0].Name);
@@ -243,7 +272,10 @@ namespace OmniSharp.MSBuild.Tests
             Assert.Equal("{ Project GUID}", solution.Projects[0].ProjectTypeGuid);
             Assert.Equal("Project name", solution.Projects[0].ProjectName);
             Assert.Equal("Relative path to project file", solution.Projects[0].RelativePath);
-            Assert.Equal("{0ABED153-9451-483C-8140-9E8D7306B216}", solution.Projects[0].ProjectGuid);
+            Assert.Equal(
+                "{0ABED153-9451-483C-8140-9E8D7306B216}",
+                solution.Projects[0].ProjectGuid
+            );
         }
 
         [Fact]
@@ -258,20 +290,38 @@ namespace OmniSharp.MSBuild.Tests
 
             Assert.Equal(3, solution.Projects.Length);
 
-            Assert.Equal("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}", solution.Projects[0].ProjectTypeGuid);
+            Assert.Equal(
+                "{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}",
+                solution.Projects[0].ProjectTypeGuid
+            );
             Assert.Equal("LeopotamGroupLibrary", solution.Projects[0].ProjectName);
             Assert.Equal("Assembly-CSharp.csproj", solution.Projects[0].RelativePath);
-            Assert.Equal("{0279C7A5-B8B1-345F-ED42-A58232A100B3}", solution.Projects[0].ProjectGuid);
+            Assert.Equal(
+                "{0279C7A5-B8B1-345F-ED42-A58232A100B3}",
+                solution.Projects[0].ProjectGuid
+            );
 
-            Assert.Equal("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}", solution.Projects[1].ProjectTypeGuid);
+            Assert.Equal(
+                "{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}",
+                solution.Projects[1].ProjectTypeGuid
+            );
             Assert.Equal("LeopotamGroupLibrary", solution.Projects[1].ProjectName);
             Assert.Equal("Assembly-CSharp-firstpass.csproj", solution.Projects[1].RelativePath);
-            Assert.Equal("{CD80764A-B5E2-C644-F0D0-A85E486306D8}", solution.Projects[1].ProjectGuid);
+            Assert.Equal(
+                "{CD80764A-B5E2-C644-F0D0-A85E486306D8}",
+                solution.Projects[1].ProjectGuid
+            );
 
-            Assert.Equal("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}", solution.Projects[2].ProjectTypeGuid);
+            Assert.Equal(
+                "{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}",
+                solution.Projects[2].ProjectTypeGuid
+            );
             Assert.Equal("LeopotamGroupLibrary", solution.Projects[2].ProjectName);
             Assert.Equal("Assembly-CSharp-Editor.csproj", solution.Projects[2].RelativePath);
-            Assert.Equal("{BEDD06D2-DCFB-A6D5-CAC1-1320A679D62A}", solution.Projects[2].ProjectGuid);
+            Assert.Equal(
+                "{BEDD06D2-DCFB-A6D5-CAC1-1320A679D62A}",
+                solution.Projects[2].ProjectGuid
+            );
 
             Assert.Equal(4, solution.GlobalSections.Length);
             Assert.Equal("SolutionConfigurationPlatforms", solution.GlobalSections[0].Name);
@@ -293,30 +343,66 @@ namespace OmniSharp.MSBuild.Tests
 
             Assert.Equal(5, solution.Projects.Length);
 
-            Assert.Equal("{2150E333-8FDC-42A3-9474-1A3956D46DE8}", solution.Projects[0].ProjectTypeGuid);
+            Assert.Equal(
+                "{2150E333-8FDC-42A3-9474-1A3956D46DE8}",
+                solution.Projects[0].ProjectTypeGuid
+            );
             Assert.Equal("src", solution.Projects[0].ProjectName);
             Assert.Equal("src", solution.Projects[0].RelativePath);
-            Assert.Equal("{3C622F77-3C74-474E-AC38-7F30E9235F63}", solution.Projects[0].ProjectGuid);
+            Assert.Equal(
+                "{3C622F77-3C74-474E-AC38-7F30E9235F63}",
+                solution.Projects[0].ProjectGuid
+            );
 
-            Assert.Equal("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}", solution.Projects[1].ProjectTypeGuid);
+            Assert.Equal(
+                "{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}",
+                solution.Projects[1].ProjectTypeGuid
+            );
             Assert.Equal("GG.Library.ConfigProvider.Vault", solution.Projects[1].ProjectName);
-            Assert.Equal(@"src\GG.Library.ConfigProvider.Vault\GG.Library.ConfigProvider.Vault.csproj", solution.Projects[1].RelativePath);
-            Assert.Equal("{1D50BF95-C9C0-4EF0-B869-0194684E8519}", solution.Projects[1].ProjectGuid);
+            Assert.Equal(
+                @"src\GG.Library.ConfigProvider.Vault\GG.Library.ConfigProvider.Vault.csproj",
+                solution.Projects[1].RelativePath
+            );
+            Assert.Equal(
+                "{1D50BF95-C9C0-4EF0-B869-0194684E8519}",
+                solution.Projects[1].ProjectGuid
+            );
 
-            Assert.Equal("{2150E333-8FDC-42A3-9474-1A3956D46DE8}", solution.Projects[2].ProjectTypeGuid);
+            Assert.Equal(
+                "{2150E333-8FDC-42A3-9474-1A3956D46DE8}",
+                solution.Projects[2].ProjectTypeGuid
+            );
             Assert.Equal("build", solution.Projects[2].ProjectName);
             Assert.Equal("build", solution.Projects[2].RelativePath);
-            Assert.Equal("{4CFA9523-BC33-4C49-BF8E-554943CDC653}", solution.Projects[2].ProjectGuid);
+            Assert.Equal(
+                "{4CFA9523-BC33-4C49-BF8E-554943CDC653}",
+                solution.Projects[2].ProjectGuid
+            );
 
-            Assert.Equal("{2150E333-8FDC-42A3-9474-1A3956D46DE8}", solution.Projects[3].ProjectTypeGuid);
+            Assert.Equal(
+                "{2150E333-8FDC-42A3-9474-1A3956D46DE8}",
+                solution.Projects[3].ProjectTypeGuid
+            );
             Assert.Equal("test", solution.Projects[3].ProjectName);
             Assert.Equal("test", solution.Projects[3].RelativePath);
-            Assert.Equal("{65E7B2FA-C1D0-411C-82D7-0DF418A16555}", solution.Projects[3].ProjectGuid);
+            Assert.Equal(
+                "{65E7B2FA-C1D0-411C-82D7-0DF418A16555}",
+                solution.Projects[3].ProjectGuid
+            );
 
-            Assert.Equal("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}", solution.Projects[4].ProjectTypeGuid);
+            Assert.Equal(
+                "{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}",
+                solution.Projects[4].ProjectTypeGuid
+            );
             Assert.Equal("GG.Library.ConfigProvider.Vault.Test", solution.Projects[4].ProjectName);
-            Assert.Equal(@"test\GG.Library.ConfigProvider.Vault.Test\GG.Library.ConfigProvider.Vault.Test.csproj", solution.Projects[4].RelativePath);
-            Assert.Equal("{0C768495-EA52-4703-AEAF-316A4C0A01CB}", solution.Projects[4].ProjectGuid);
+            Assert.Equal(
+                @"test\GG.Library.ConfigProvider.Vault.Test\GG.Library.ConfigProvider.Vault.Test.csproj",
+                solution.Projects[4].RelativePath
+            );
+            Assert.Equal(
+                "{0C768495-EA52-4703-AEAF-316A4C0A01CB}",
+                solution.Projects[4].ProjectGuid
+            );
 
             Assert.Equal(4, solution.GlobalSections.Length);
             Assert.Equal("SolutionConfigurationPlatforms", solution.GlobalSections[0].Name);

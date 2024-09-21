@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -17,7 +17,10 @@ namespace OmniSharp.LanguageServerProtocol.Handlers
         private readonly Mef.IRequestHandler<RenameRequest, RenameResponse> _renameHandler;
         private readonly TextDocumentSelector _documentSelector;
 
-        public OmniSharpRenameHandler(Mef.IRequestHandler<RenameRequest, RenameResponse> renameHandler, TextDocumentSelector documentSelector)
+        public OmniSharpRenameHandler(
+            Mef.IRequestHandler<RenameRequest, RenameResponse> renameHandler,
+            TextDocumentSelector documentSelector
+        )
         {
             _renameHandler = renameHandler;
             _documentSelector = documentSelector;
@@ -25,13 +28,20 @@ namespace OmniSharp.LanguageServerProtocol.Handlers
 
         public static IEnumerable<IJsonRpcHandler> Enumerate(RequestHandlers handlers)
         {
-            foreach (var (selector, handler) in handlers
-                .OfType<Mef.IRequestHandler<RenameRequest, RenameResponse>>())
+            foreach (
+                var (selector, handler) in handlers.OfType<Mef.IRequestHandler<
+                    RenameRequest,
+                    RenameResponse
+                >>()
+            )
                 if (handler != null)
                     yield return new OmniSharpRenameHandler(handler, selector);
         }
 
-        public override async Task<WorkspaceEdit> Handle(RenameParams request, CancellationToken token)
+        public override async Task<WorkspaceEdit> Handle(
+            RenameParams request,
+            CancellationToken token
+        )
         {
             var omnisharpRequest = new RenameRequest
             {
@@ -41,7 +51,7 @@ namespace OmniSharp.LanguageServerProtocol.Handlers
                 Line = Convert.ToInt32(request.Position.Line),
                 Buffer = request.NewName,
                 WantsTextChanges = true,
-                ApplyTextChanges = false
+                ApplyTextChanges = false,
             };
 
             var omnisharpResponse = await _renameHandler.Handle(omnisharpRequest);
@@ -51,26 +61,31 @@ namespace OmniSharp.LanguageServerProtocol.Handlers
                 return new WorkspaceEdit();
             }
 
-            var changes = omnisharpResponse.Changes.ToDictionary(change =>
-                Helpers.ToUri(change.FileName),
-                x => x.Changes.Select(edit => new TextEdit
-                {
-                    NewText = edit.NewText,
-                    Range = Helpers.ToRange((edit.StartColumn, edit.StartLine), (edit.EndColumn, edit.EndLine))
-                }));
+            var changes = omnisharpResponse.Changes.ToDictionary(
+                change => Helpers.ToUri(change.FileName),
+                x =>
+                    x.Changes.Select(edit => new TextEdit
+                    {
+                        NewText = edit.NewText,
+                        Range = Helpers.ToRange(
+                            (edit.StartColumn, edit.StartLine),
+                            (edit.EndColumn, edit.EndLine)
+                        ),
+                    })
+            );
 
-            return new WorkspaceEdit
-            {
-                Changes = changes
-            };
+            return new WorkspaceEdit { Changes = changes };
         }
 
-        protected override RenameRegistrationOptions CreateRegistrationOptions(RenameCapability capability, ClientCapabilities clientCapabilities)
+        protected override RenameRegistrationOptions CreateRegistrationOptions(
+            RenameCapability capability,
+            ClientCapabilities clientCapabilities
+        )
         {
             return new RenameRegistrationOptions()
             {
                 DocumentSelector = _documentSelector,
-                PrepareProvider = false
+                PrepareProvider = false,
             };
         }
     }

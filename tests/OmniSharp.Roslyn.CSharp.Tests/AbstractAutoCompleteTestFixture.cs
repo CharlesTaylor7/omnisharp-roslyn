@@ -8,17 +8,24 @@ using Xunit.Abstractions;
 namespace OmniSharp.Roslyn.CSharp.Tests
 {
 #pragma warning disable CS0618 // Type or member is obsolete: Keeping the tests until we remove entirely
-    public class AbstractAutoCompleteTestFixture : AbstractSingleRequestHandlerTestFixture<IntellisenseService>
+    public class AbstractAutoCompleteTestFixture
+        : AbstractSingleRequestHandlerTestFixture<IntellisenseService>
 #pragma warning restore CS0618 // Type or member is obsolete
     {
-        protected AbstractAutoCompleteTestFixture(ITestOutputHelper output, SharedOmniSharpHostFixture sharedOmniSharpHostFixture)
-            : base(output, sharedOmniSharpHostFixture)
-        {
-        }
+        protected AbstractAutoCompleteTestFixture(
+            ITestOutputHelper output,
+            SharedOmniSharpHostFixture sharedOmniSharpHostFixture
+        )
+            : base(output, sharedOmniSharpHostFixture) { }
 
         protected override string EndpointName => OmniSharpEndpoints.AutoComplete;
 
-        protected async Task<IEnumerable<AutoCompleteResponse>> FindCompletionsAsync(string filename, string source, bool wantSnippet = false, string triggerChar = null)
+        protected async Task<IEnumerable<AutoCompleteResponse>> FindCompletionsAsync(
+            string filename,
+            string source,
+            bool wantSnippet = false,
+            string triggerChar = null
+        )
         {
             var testFile = new TestFile(filename, source);
             SharedOmniSharpTestHost.AddFilesToWorkspace(testFile);
@@ -34,7 +41,7 @@ namespace OmniSharp.Roslyn.CSharp.Tests
                 WantMethodHeader = true,
                 WantSnippet = wantSnippet,
                 WantReturnType = true,
-                TriggerCharacter = triggerChar
+                TriggerCharacter = triggerChar,
             };
 
             var requestHandler = GetRequestHandler(SharedOmniSharpTestHost);

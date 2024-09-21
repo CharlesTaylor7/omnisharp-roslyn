@@ -26,7 +26,6 @@ namespace OmniSharp.Roslyn.CSharp.Services.Navigation
         {
             _workspace = workspace;
             _logger = loggerFactory.CreateLogger<FindUsagesService>();
-
         }
 
         public async Task<QuickFixResponse> Handle(FindUsagesRequest request)
@@ -41,38 +40,64 @@ namespace OmniSharp.Roslyn.CSharp.Services.Navigation
 
             var semanticModel = await document.GetSemanticModelAsync();
             var sourceText = await document.GetTextAsync();
-            var position = sourceText.Lines.GetPosition(new LinePosition(request.Line, request.Column));
-            var symbol = await SymbolFinder.FindSymbolAtPositionAsync(semanticModel, position, _workspace);
+            var position = sourceText.Lines.GetPosition(
+                new LinePosition(request.Line, request.Column)
+            );
+            var symbol = await SymbolFinder.FindSymbolAtPositionAsync(
+                semanticModel,
+                position,
+                _workspace
+            );
             if (symbol is null)
             {
-                _logger.LogWarning($"No symbol found. File: {request.FileName}, Line: {request.Line}, Column: {request.Column}.");
+                _logger.LogWarning(
+                    $"No symbol found. File: {request.FileName}, Line: {request.Line}, Column: {request.Column}."
+                );
                 return new QuickFixResponse();
             }
 
-            var definition = await SymbolFinder.FindSourceDefinitionAsync(symbol, _workspace.CurrentSolution);
+            var definition = await SymbolFinder.FindSourceDefinitionAsync(
+                symbol,
+                _workspace.CurrentSolution
+            );
             var usages = request.OnlyThisFile
-                ? await SymbolFinder.FindReferencesAsync(definition ?? symbol, _workspace.CurrentSolution, ImmutableHashSet.Create(document))
-                : await SymbolFinder.FindReferencesAsync(definition ?? symbol, _workspace.CurrentSolution);
+                ? await SymbolFinder.FindReferencesAsync(
+                    definition ?? symbol,
+                    _workspace.CurrentSolution,
+                    ImmutableHashSet.Create(document)
+                )
+                : await SymbolFinder.FindReferencesAsync(
+                    definition ?? symbol,
+                    _workspace.CurrentSolution
+                );
             var locations = usages.SelectMany(u => u.Locations).Select(l => l.Location).ToList();
 
             if (!request.ExcludeDefinition)
             {
                 // always skip get/set methods of properties from the list of definition locations.
-                var definitionLocations = usages.Select(u => u.Definition)
-                    .Where(def => !(def is IMethodSymbol method && method.AssociatedSymbol is IPropertySymbol))
+                var definitionLocations = usages
+                    .Select(u => u.Definition)
+                    .Where(def =>
+                        !(def is IMethodSymbol method && method.AssociatedSymbol is IPropertySymbol)
+                    )
                     .SelectMany(def => def.Locations)
-                    .Where(loc => loc.IsInSource && (!request.OnlyThisFile || loc.SourceTree.FilePath == request.FileName));
+                    .Where(loc =>
+                        loc.IsInSource
+                        && (!request.OnlyThisFile || loc.SourceTree.FilePath == request.FileName)
+                    );
 
                 locations.AddRange(definitionLocations);
             }
 
             var quickFixes = locations.Distinct().Select(l => l.GetQuickFix(_workspace));
 
-            return new QuickFixResponse(quickFixes.Distinct()
-                                            .OrderBy(q => q.FileName)
-                                            .ThenBy(q => q.Line)
-                                            .ThenBy(q => q.Column));
-
+            return new QuickFixResponse(
+                quickFixes
+                    .Distinct()
+                    .OrderBy(q => q.FileName)
+                    .ThenBy(q => q.Line)
+                    .ThenBy(q => q.Column)
+            );
         }
     }
 }

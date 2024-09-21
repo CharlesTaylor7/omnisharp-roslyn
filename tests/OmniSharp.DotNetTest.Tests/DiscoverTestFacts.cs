@@ -1,17 +1,15 @@
 using System.Threading.Tasks;
+using OmniSharp.DotNetTest.Models;
 using TestUtility;
 using Xunit;
 using Xunit.Abstractions;
-using OmniSharp.DotNetTest.Models;
 
 namespace OmniSharp.DotNetTest.Tests
 {
     public class DiscoverTestFacts : AbstractDiscoverTestFacts
     {
         public DiscoverTestFacts(ITestOutputHelper testOutput)
-            : base(testOutput)
-        {
-        }
+            : base(testOutput) { }
 
         public override DotNetCliVersion DotNetCliVersion { get; } = DotNetCliVersion.Current;
 
@@ -22,12 +20,13 @@ namespace OmniSharp.DotNetTest.Tests
                 XunitTestProject,
                 testFramework: "xunit",
                 targetFrameworkVersion: ".NETCoreApp,Version=v3.0",
-                new Test 
+                new Test
                 {
                     FullyQualifiedName = "Main.Test.MainTest.UsesDisplayName",
                     DisplayName = "My Test Name",
-                    LineNumber = 37
-                });
+                    LineNumber = 37,
+                }
+            );
         }
 
         [Fact]
@@ -41,8 +40,9 @@ namespace OmniSharp.DotNetTest.Tests
                 {
                     FullyQualifiedName = "Main.Test.MainTest.Test",
                     DisplayName = "Test",
-                    LineNumber = 10
-                });
+                    LineNumber = 10,
+                }
+            );
         }
 
         [Fact]
@@ -56,8 +56,9 @@ namespace OmniSharp.DotNetTest.Tests
                 {
                     FullyQualifiedName = "Main.Test.MainTest.CheckStandardOutput",
                     DisplayName = "CheckStandardOutput",
-                    LineNumber = 41
-                });
+                    LineNumber = 41,
+                }
+            );
         }
     }
 }

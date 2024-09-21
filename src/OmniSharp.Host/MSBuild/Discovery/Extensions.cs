@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using Microsoft.Extensions.Logging;
 using OmniSharp.Services;
@@ -9,12 +9,24 @@ namespace OmniSharp.MSBuild.Discovery
     {
         private static readonly Version s_minimumMSBuildVersion = new Version(16, 3);
 
-        public static void RegisterDefaultInstance(this IMSBuildLocator msbuildLocator, ILogger logger, DotNetInfo dotNetInfo = null)
+        public static void RegisterDefaultInstance(
+            this IMSBuildLocator msbuildLocator,
+            ILogger logger,
+            DotNetInfo dotNetInfo = null
+        )
         {
             var minimumMSBuildVersion = GetSdkMinimumMSBuildVersion(dotNetInfo, logger);
-            logger.LogDebug($".NET SDK requires MSBuild instances version {minimumMSBuildVersion} or higher");
+            logger.LogDebug(
+                $".NET SDK requires MSBuild instances version {minimumMSBuildVersion} or higher"
+            );
 
-            var bestInstanceFound = GetBestInstance(msbuildLocator, minimumMSBuildVersion, logger, out var invalidVSFound, out var vsWithoutSdkResolver);
+            var bestInstanceFound = GetBestInstance(
+                msbuildLocator,
+                minimumMSBuildVersion,
+                logger,
+                out var invalidVSFound,
+                out var vsWithoutSdkResolver
+            );
 
             if (bestInstanceFound != null)
             {
@@ -47,7 +59,9 @@ namespace OmniSharp.MSBuild.Discovery
             }
             else
             {
-                throw new MSBuildNotFoundException("Could not locate MSBuild instance to register with OmniSharp.");
+                throw new MSBuildNotFoundException(
+                    "Could not locate MSBuild instance to register with OmniSharp."
+                );
             }
         }
 
@@ -68,13 +82,26 @@ namespace OmniSharp.MSBuild.Discovery
         /// <summary>
         /// Checks if the discovered Visual Studio instance includes a version of MSBuild lower than our minimum supported version.
         /// </summary>
-        public static bool IsInvalidVisualStudio(this MSBuildInstance instance)
-            => (instance.Version.Major < s_minimumMSBuildVersion.Major ||
-                (instance.Version.Major == s_minimumMSBuildVersion.Major && instance.Version.Minor < s_minimumMSBuildVersion.Minor))
-                && (instance.DiscoveryType == DiscoveryType.DeveloperConsole
-                    || instance.DiscoveryType == DiscoveryType.VisualStudioSetup);
+        public static bool IsInvalidVisualStudio(this MSBuildInstance instance) =>
+            (
+                instance.Version.Major < s_minimumMSBuildVersion.Major
+                || (
+                    instance.Version.Major == s_minimumMSBuildVersion.Major
+                    && instance.Version.Minor < s_minimumMSBuildVersion.Minor
+                )
+            )
+            && (
+                instance.DiscoveryType == DiscoveryType.DeveloperConsole
+                || instance.DiscoveryType == DiscoveryType.VisualStudioSetup
+            );
 
-        public static MSBuildInstance GetBestInstance(this IMSBuildLocator msbuildLocator, Version minimumMSBuildVersion, ILogger logger, out bool invalidVSFound, out bool vsWithoutSdkResolver)
+        public static MSBuildInstance GetBestInstance(
+            this IMSBuildLocator msbuildLocator,
+            Version minimumMSBuildVersion,
+            ILogger logger,
+            out bool invalidVSFound,
+            out bool vsWithoutSdkResolver
+        )
         {
             invalidVSFound = false;
             vsWithoutSdkResolver = false;
@@ -85,14 +112,20 @@ namespace OmniSharp.MSBuild.Discovery
             {
                 var score = GetInstanceFeatureScore(instance, minimumMSBuildVersion);
 
-                logger.LogDebug($"MSBuild instance {instance.Name} {instance.Version} scored at {score}");
+                logger.LogDebug(
+                    $"MSBuild instance {instance.Name} {instance.Version} scored at {score}"
+                );
 
                 invalidVSFound = invalidVSFound || instance.IsInvalidVisualStudio();
-                vsWithoutSdkResolver = vsWithoutSdkResolver || (!instance.IsInvalidVisualStudio() && !instance.HasDotNetSdksResolvers());
+                vsWithoutSdkResolver =
+                    vsWithoutSdkResolver
+                    || (!instance.IsInvalidVisualStudio() && !instance.HasDotNetSdksResolvers());
 
-                if (bestMatchInstance == null ||
-                    score > bestMatchScore ||
-                    score == bestMatchScore && instance.Version > bestMatchInstance.Version)
+                if (
+                    bestMatchInstance == null
+                    || score > bestMatchScore
+                    || score == bestMatchScore && instance.Version > bestMatchInstance.Version
+                )
                 {
                     bestMatchInstance = instance;
                     bestMatchScore = score;
@@ -126,20 +159,28 @@ namespace OmniSharp.MSBuild.Discovery
 
         public static Version GetSdkMinimumMSBuildVersion(DotNetInfo dotNetInfo, ILogger logger)
         {
-            if (dotNetInfo is null
+            if (
+                dotNetInfo is null
                 || string.IsNullOrWhiteSpace(dotNetInfo.SdksPath)
-                || dotNetInfo.SdkVersion is null)
+                || dotNetInfo.SdkVersion is null
+            )
             {
                 return s_minimumMSBuildVersion;
             }
 
             var version = dotNetInfo.SdkVersion;
             var sdksPath = dotNetInfo.SdksPath;
-            var minimumVersionPath = Path.Combine(sdksPath, version.ToString(), "minimumMSBuildVersion");
+            var minimumVersionPath = Path.Combine(
+                sdksPath,
+                version.ToString(),
+                "minimumMSBuildVersion"
+            );
 
             if (!File.Exists(minimumVersionPath))
             {
-                logger.LogDebug($"Unable to locate minimumMSBuildVersion file at '{minimumVersionPath}'");
+                logger.LogDebug(
+                    $"Unable to locate minimumMSBuildVersion file at '{minimumVersionPath}'"
+                );
                 return s_minimumMSBuildVersion;
             }
 

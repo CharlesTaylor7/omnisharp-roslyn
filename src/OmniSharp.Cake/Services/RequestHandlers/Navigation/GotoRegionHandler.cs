@@ -11,11 +11,13 @@ namespace OmniSharp.Cake.Services.RequestHandlers.Navigation
     public class GotoRegionHandler : CakeRequestHandler<GotoRegionRequest, QuickFixResponse>
     {
         [ImportingConstructor]
-        public GotoRegionHandler(OmniSharpWorkspace workspace) : base(workspace)
-        {
-        }
+        public GotoRegionHandler(OmniSharpWorkspace workspace)
+            : base(workspace) { }
 
-        protected override Task<QuickFixResponse> TranslateResponse(QuickFixResponse response, GotoRegionRequest request)
+        protected override Task<QuickFixResponse> TranslateResponse(
+            QuickFixResponse response,
+            GotoRegionRequest request
+        )
         {
             return response.TranslateAsync(Workspace, request);
         }

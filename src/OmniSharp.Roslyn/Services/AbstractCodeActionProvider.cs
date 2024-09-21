@@ -17,17 +17,24 @@ namespace OmniSharp.Services
         public ImmutableArray<DiagnosticAnalyzer> CodeDiagnosticAnalyzerProviders { get; }
         public ImmutableArray<Assembly> Assemblies { get; }
 
-        protected AbstractCodeActionProvider(string providerName, ImmutableArray<Assembly> assemblies)
+        protected AbstractCodeActionProvider(
+            string providerName,
+            ImmutableArray<Assembly> assemblies
+        )
         {
             ProviderName = providerName;
 
             this.Assemblies = assemblies;
 
-            var types = this.Assemblies
-                .SelectMany(assembly => assembly.GetTypes()
-                .Where(type => !type.GetTypeInfo().IsInterface &&
-                               !type.GetTypeInfo().IsAbstract &&
-                               !type.GetTypeInfo().ContainsGenericParameters));
+            var types = this.Assemblies.SelectMany(assembly =>
+                assembly
+                    .GetTypes()
+                    .Where(type =>
+                        !type.GetTypeInfo().IsInterface
+                        && !type.GetTypeInfo().IsAbstract
+                        && !type.GetTypeInfo().ContainsGenericParameters
+                    )
+            );
             // TODO: handle providers with generic params
 
             this.CodeRefactoringProviders = types
@@ -50,4 +57,3 @@ namespace OmniSharp.Services
         }
     }
 }
-

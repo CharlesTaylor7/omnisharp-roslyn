@@ -1,4 +1,4 @@
-﻿#nullable enable
+#nullable enable
 
 namespace OmniSharp.Models.v1.SourceGeneratedFile
 {
@@ -12,6 +12,6 @@ namespace OmniSharp.Models.v1.SourceGeneratedFile
     {
         Unchanged,
         Deleted,
-        Modified
+        Modified,
     }
 }

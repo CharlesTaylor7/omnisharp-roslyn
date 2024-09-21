@@ -21,7 +21,8 @@ namespace OmniSharp
 
         public static async Task<IEnumerable<FileMemberElement>> Compute(
             IEnumerable<Document> documents,
-            IEnumerable<ISyntaxFeaturesDiscover> featureDiscovers)
+            IEnumerable<ISyntaxFeaturesDiscover> featureDiscovers
+        )
         {
             var root = new FileMemberElement() { ChildNodes = new List<FileMemberElement>() };
             var visitor = new StructureComputer(root, featureDiscovers);
@@ -34,10 +35,14 @@ namespace OmniSharp
             return root.ChildNodes;
         }
 
-        public static Task<IEnumerable<FileMemberElement>> Compute(IEnumerable<Document> documents) 
-            => Compute(documents, Enumerable.Empty<ISyntaxFeaturesDiscover>());
+        public static Task<IEnumerable<FileMemberElement>> Compute(
+            IEnumerable<Document> documents
+        ) => Compute(documents, Enumerable.Empty<ISyntaxFeaturesDiscover>());
 
-        private StructureComputer(FileMemberElement root, IEnumerable<ISyntaxFeaturesDiscover> featureDiscovers)
+        private StructureComputer(
+            FileMemberElement root,
+            IEnumerable<ISyntaxFeaturesDiscover> featureDiscovers
+        )
         {
             _featureDiscovers = featureDiscovers ?? Enumerable.Empty<ISyntaxFeaturesDiscover>();
             _roots.Push(root);
@@ -56,7 +61,12 @@ namespace OmniSharp
             (syntaxRoot as CSharpSyntaxNode)?.Accept(this);
         }
 
-        private FileMemberElement AsNode(SyntaxNode node, string text, Location location, TextSpan attributeSpan)
+        private FileMemberElement AsNode(
+            SyntaxNode node,
+            string text,
+            Location location,
+            TextSpan attributeSpan
+        )
         {
             var ret = new FileMemberElement();
             var lineSpan = location.GetLineSpan();
@@ -72,7 +82,7 @@ namespace OmniSharp
                 Line = lineSpan.StartLinePosition.Line,
                 Column = lineSpan.StartLinePosition.Character,
                 EndLine = lineSpan.EndLinePosition.Line,
-                EndColumn = lineSpan.EndLinePosition.Character
+                EndColumn = lineSpan.EndLinePosition.Character,
             };
 
             foreach (var featureDiscover in _featureDiscovers)
@@ -87,7 +97,12 @@ namespace OmniSharp
             return ret;
         }
 
-        private FileMemberElement AsChild(SyntaxNode node, string text, Location location, TextSpan attributeSpan)
+        private FileMemberElement AsChild(
+            SyntaxNode node,
+            string text,
+            Location location,
+            TextSpan attributeSpan
+        )
         {
             var child = AsNode(node, text, location, attributeSpan);
             var childNodes = ((List<FileMemberElement>)_roots.Peek().ChildNodes);
@@ -108,7 +123,13 @@ namespace OmniSharp
             }
         }
 
-        private FileMemberElement AsParent(SyntaxNode node, string text, Action fn, Location location, TextSpan attributeSpan)
+        private FileMemberElement AsParent(
+            SyntaxNode node,
+            string text,
+            Action fn,
+            Location location,
+            TextSpan attributeSpan
+        )
         {
             var child = AsChild(node, text, location, attributeSpan);
             _roots.Push(child);
@@ -119,52 +140,106 @@ namespace OmniSharp
 
         public override void VisitClassDeclaration(ClassDeclarationSyntax node)
         {
-            AsParent(node, node.Identifier.Text, () => base.VisitClassDeclaration(node), node.Identifier.GetLocation(), node.AttributeLists.Span);
+            AsParent(
+                node,
+                node.Identifier.Text,
+                () => base.VisitClassDeclaration(node),
+                node.Identifier.GetLocation(),
+                node.AttributeLists.Span
+            );
         }
 
         public override void VisitInterfaceDeclaration(InterfaceDeclarationSyntax node)
         {
-            AsParent(node, node.Identifier.Text, () => base.VisitInterfaceDeclaration(node), node.Identifier.GetLocation(), node.AttributeLists.Span);
+            AsParent(
+                node,
+                node.Identifier.Text,
+                () => base.VisitInterfaceDeclaration(node),
+                node.Identifier.GetLocation(),
+                node.AttributeLists.Span
+            );
         }
 
         public override void VisitEnumDeclaration(EnumDeclarationSyntax node)
         {
-            AsParent(node, node.Identifier.Text, () => base.VisitEnumDeclaration(node), node.Identifier.GetLocation(), node.AttributeLists.Span);
+            AsParent(
+                node,
+                node.Identifier.Text,
+                () => base.VisitEnumDeclaration(node),
+                node.Identifier.GetLocation(),
+                node.AttributeLists.Span
+            );
         }
 
         public override void VisitEnumMemberDeclaration(EnumMemberDeclarationSyntax node)
         {
-            AsChild(node, node.Identifier.Text, node.Identifier.GetLocation(), node.AttributeLists.Span);
+            AsChild(
+                node,
+                node.Identifier.Text,
+                node.Identifier.GetLocation(),
+                node.AttributeLists.Span
+            );
         }
 
         public override void VisitPropertyDeclaration(PropertyDeclarationSyntax node)
         {
-            AsChild(node, node.Identifier.Text, node.Identifier.GetLocation(), node.AttributeLists.Span);
+            AsChild(
+                node,
+                node.Identifier.Text,
+                node.Identifier.GetLocation(),
+                node.AttributeLists.Span
+            );
         }
 
         public override void VisitMethodDeclaration(MethodDeclarationSyntax node)
         {
-            AsChild(node, node.Identifier.Text, node.Identifier.GetLocation(), node.AttributeLists.Span);
+            AsChild(
+                node,
+                node.Identifier.Text,
+                node.Identifier.GetLocation(),
+                node.AttributeLists.Span
+            );
         }
 
         public override void VisitFieldDeclaration(FieldDeclarationSyntax node)
         {
-            AsChild(node, node.Declaration.Variables.First().Identifier.Text, node.Declaration.Variables.First().Identifier.GetLocation(), node.AttributeLists.Span);
+            AsChild(
+                node,
+                node.Declaration.Variables.First().Identifier.Text,
+                node.Declaration.Variables.First().Identifier.GetLocation(),
+                node.AttributeLists.Span
+            );
         }
 
         public override void VisitEventFieldDeclaration(EventFieldDeclarationSyntax node)
         {
-            AsChild(node, node.Declaration.Variables.First().Identifier.Text, node.Declaration.Variables.First().Identifier.GetLocation(), node.AttributeLists.Span);
+            AsChild(
+                node,
+                node.Declaration.Variables.First().Identifier.Text,
+                node.Declaration.Variables.First().Identifier.GetLocation(),
+                node.AttributeLists.Span
+            );
         }
 
         public override void VisitStructDeclaration(StructDeclarationSyntax node)
         {
-            AsParent(node, node.Identifier.Text, () => base.VisitStructDeclaration(node), node.Identifier.GetLocation(), node.AttributeLists.Span);
+            AsParent(
+                node,
+                node.Identifier.Text,
+                () => base.VisitStructDeclaration(node),
+                node.Identifier.GetLocation(),
+                node.AttributeLists.Span
+            );
         }
 
         public override void VisitConstructorDeclaration(ConstructorDeclarationSyntax node)
         {
-            AsChild(node, node.Identifier.Text, node.Identifier.GetLocation(), node.AttributeLists.Span);
+            AsChild(
+                node,
+                node.Identifier.Text,
+                node.Identifier.GetLocation(),
+                node.AttributeLists.Span
+            );
         }
     }
 }

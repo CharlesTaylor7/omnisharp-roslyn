@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -75,7 +75,10 @@ namespace OmniSharp.DotNetTest.TestFrameworks
             return false;
         }
 
-        public bool IsTestMethod(MethodDeclarationSyntax methodDeclaration, SemanticModel sematicModel)
+        public bool IsTestMethod(
+            MethodDeclarationSyntax methodDeclaration,
+            SemanticModel sematicModel
+        )
         {
             foreach (var attributeList in methodDeclaration.AttributeLists)
             {
@@ -83,7 +86,9 @@ namespace OmniSharp.DotNetTest.TestFrameworks
                 {
                     var typeSymbol = sematicModel.GetTypeInfo(attribute).Type;
 
-                    while (typeSymbol != null && typeSymbol.SpecialType != SpecialType.System_Object)
+                    while (
+                        typeSymbol != null && typeSymbol.SpecialType != SpecialType.System_Object
+                    )
                     {
                         var typeName = !typeSymbol.ContainingNamespace.IsGlobalNamespace
                             ? $"{typeSymbol.ContainingNamespace}.{typeSymbol.Name}"

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Composition;
@@ -32,7 +32,8 @@ namespace OmniSharp.Roslyn.CSharp.Workers.Diagnostics
             ILoggerFactory loggerFactory,
             DiagnosticEventForwarder forwarder,
             IOptionsMonitor<OmniSharpOptions> options,
-            FileSystemHelper fileSystemHelper)
+            FileSystemHelper fileSystemHelper
+        )
             : base(workspace, fileSystemHelper)
         {
             _workspace = workspace;
@@ -48,11 +49,17 @@ namespace OmniSharp.Roslyn.CSharp.Workers.Diagnostics
         {
             bool firstRun = _implementation is null;
             bool? recreateWithAnalyzers = null;
-            if (options.RoslynExtensionsOptions.EnableAnalyzersSupport && (firstRun || _implementation?.AnalyzersEnabled == false))
+            if (
+                options.RoslynExtensionsOptions.EnableAnalyzersSupport
+                && (firstRun || _implementation?.AnalyzersEnabled == false)
+            )
             {
                 recreateWithAnalyzers = true;
             }
-            else if (!options.RoslynExtensionsOptions.EnableAnalyzersSupport && (firstRun || _implementation?.AnalyzersEnabled == true))
+            else if (
+                !options.RoslynExtensionsOptions.EnableAnalyzersSupport
+                && (firstRun || _implementation?.AnalyzersEnabled == true)
+            )
             {
                 recreateWithAnalyzers = false;
             }
@@ -63,9 +70,17 @@ namespace OmniSharp.Roslyn.CSharp.Workers.Diagnostics
             }
 
             ICsDiagnosticWorker old = Interlocked.Exchange(
-                    ref _implementation,
-                    new CSharpDiagnosticWorkerWithAnalyzers(
-                        _workspace, _providers, _loggerFactory, _forwarder, options, _fileSystemHelper, recreateWithAnalyzers!.Value));
+                ref _implementation,
+                new CSharpDiagnosticWorkerWithAnalyzers(
+                    _workspace,
+                    _providers,
+                    _loggerFactory,
+                    _forwarder,
+                    options,
+                    _fileSystemHelper,
+                    recreateWithAnalyzers!.Value
+                )
+            );
             if (old is IDisposable disposable)
             {
                 disposable.Dispose();
@@ -79,28 +94,39 @@ namespace OmniSharp.Roslyn.CSharp.Workers.Diagnostics
             return _implementation.GetAllDiagnosticsAsync();
         }
 
-        public override Task<ImmutableArray<DocumentDiagnostics>> GetDiagnostics(ImmutableArray<string> documentPaths)
+        public override Task<ImmutableArray<DocumentDiagnostics>> GetDiagnostics(
+            ImmutableArray<string> documentPaths
+        )
         {
             return _implementation.GetDiagnostics(documentPaths);
         }
 
         public void Dispose()
         {
-            if (_implementation is IDisposable disposable) disposable.Dispose();
+            if (_implementation is IDisposable disposable)
+                disposable.Dispose();
             _onChange.Dispose();
         }
 
-        public override Task<IEnumerable<Diagnostic>> AnalyzeDocumentAsync(Document document, CancellationToken cancellationToken)
+        public override Task<IEnumerable<Diagnostic>> AnalyzeDocumentAsync(
+            Document document,
+            CancellationToken cancellationToken
+        )
         {
             return _implementation.AnalyzeDocumentAsync(document, cancellationToken);
         }
 
-        public override Task<IEnumerable<Diagnostic>> AnalyzeProjectsAsync(Project project, CancellationToken cancellationToken)
+        public override Task<IEnumerable<Diagnostic>> AnalyzeProjectsAsync(
+            Project project,
+            CancellationToken cancellationToken
+        )
         {
             return _implementation.AnalyzeProjectsAsync(project, cancellationToken);
         }
 
-        public override ImmutableArray<DocumentId> QueueDocumentsForDiagnostics(IEnumerable<Document> documents, AnalyzerWorkType workType) =>
-            _implementation.QueueDocumentsForDiagnostics(documents, workType);
+        public override ImmutableArray<DocumentId> QueueDocumentsForDiagnostics(
+            IEnumerable<Document> documents,
+            AnalyzerWorkType workType
+        ) => _implementation.QueueDocumentsForDiagnostics(documents, workType);
     }
 }

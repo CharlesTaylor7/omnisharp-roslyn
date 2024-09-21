@@ -9,8 +9,6 @@ namespace OmniSharp.Cake.Services.RequestHandlers.Navigation
     {
         [ImportingConstructor]
         public MetadataHandler(OmniSharpWorkspace workspace)
-            : base(workspace)
-        {
-        }
+            : base(workspace) { }
     }
 }

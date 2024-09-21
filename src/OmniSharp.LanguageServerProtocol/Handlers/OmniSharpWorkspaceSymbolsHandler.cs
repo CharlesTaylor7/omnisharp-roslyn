@@ -17,7 +17,9 @@ namespace OmniSharp.LanguageServerProtocol.Handlers
 {
     internal sealed class OmniSharpWorkspaceSymbolsHandler : WorkspaceSymbolsHandlerBase
     {
-        private readonly IEnumerable<IRequestHandler<FindSymbolsRequest, QuickFixResponse>> _findSymbolsHandlers;
+        private readonly IEnumerable<
+            IRequestHandler<FindSymbolsRequest, QuickFixResponse>
+        > _findSymbolsHandlers;
 
         public static IEnumerable<IJsonRpcHandler> Enumerate(RequestHandlers handlers)
         {
@@ -28,20 +30,24 @@ namespace OmniSharp.LanguageServerProtocol.Handlers
             // thus we artificially limit the handler to C# language for now
             // (as Cake version of <FindSymbolsRequest,QuickFixResponse> would get selected otherwise)
             //
-            yield return new OmniSharpWorkspaceSymbolsHandler(handlers
-                .OfType<Mef.IRequestHandler<FindSymbolsRequest, QuickFixResponse>>()
-                .Select(z => z.handler));
+            yield return new OmniSharpWorkspaceSymbolsHandler(
+                handlers
+                    .OfType<Mef.IRequestHandler<FindSymbolsRequest, QuickFixResponse>>()
+                    .Select(z => z.handler)
+            );
         }
 
         public OmniSharpWorkspaceSymbolsHandler(
-            IEnumerable<IRequestHandler<FindSymbolsRequest, QuickFixResponse>> findSymbolsHandlers)
+            IEnumerable<IRequestHandler<FindSymbolsRequest, QuickFixResponse>> findSymbolsHandlers
+        )
         {
             _findSymbolsHandlers = findSymbolsHandlers.ToArray();
         }
 
         public override async Task<Container<WorkspaceSymbol>> Handle(
             WorkspaceSymbolParams request,
-            CancellationToken cancellationToken)
+            CancellationToken cancellationToken
+        )
         {
             var omnisharpRequest = new FindSymbolsRequest
             {
@@ -54,23 +60,27 @@ namespace OmniSharp.LanguageServerProtocol.Handlers
             );
 
             return responses
-                .SelectMany(z => z?.QuickFixes.OfType<SymbolLocation>() ?? Enumerable.Empty<SymbolLocation>())
-                .Select(
-                    x => new WorkspaceSymbol
+                .SelectMany(z =>
+                    z?.QuickFixes.OfType<SymbolLocation>() ?? Enumerable.Empty<SymbolLocation>()
+                )
+                .Select(x => new WorkspaceSymbol
+                {
+                    Name = x.Text,
+                    Kind = Helpers.ToSymbolKind(x.Kind),
+                    ContainerName = x.ContainingSymbolName,
+                    Location = new OmniSharp.Extensions.LanguageServer.Protocol.Models.Location
                     {
-                        Name = x.Text,
-                        Kind = Helpers.ToSymbolKind(x.Kind),
-                        ContainerName = x.ContainingSymbolName,
-                        Location = new OmniSharp.Extensions.LanguageServer.Protocol.Models.Location
-                        {
-                            Uri = Helpers.ToUri(x.FileName),
-                            Range = Helpers.ToRange((x.Column, x.Line), (x.EndColumn, x.EndLine))
-                        }
-                    })
+                        Uri = Helpers.ToUri(x.FileName),
+                        Range = Helpers.ToRange((x.Column, x.Line), (x.EndColumn, x.EndLine)),
+                    },
+                })
                 .ToArray();
         }
 
-        protected override WorkspaceSymbolRegistrationOptions CreateRegistrationOptions(WorkspaceSymbolCapability capability, ClientCapabilities clientCapabilities)
+        protected override WorkspaceSymbolRegistrationOptions CreateRegistrationOptions(
+            WorkspaceSymbolCapability capability,
+            ClientCapabilities clientCapabilities
+        )
         {
             return new WorkspaceSymbolRegistrationOptions() { };
         }

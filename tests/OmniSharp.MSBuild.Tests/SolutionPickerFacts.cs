@@ -32,7 +32,7 @@ namespace OmniSharp.Tests
             Assert.Null(solution.FilePath);
             Assert.Equal("No solution files found in '/path'", solution.Message);
         }
-        
+
         [Fact]
         public void SolutionPicker_logs_info_when_ambiguous_solutions_found()
         {

@@ -14,7 +14,10 @@ namespace OmniSharp.Roslyn.CSharp.Tests
     {
         private readonly ILogger _logger;
 
-        public SnippetFacts(ITestOutputHelper output, SharedOmniSharpHostFixture sharedOmniSharpHostFixture)
+        public SnippetFacts(
+            ITestOutputHelper output,
+            SharedOmniSharpHostFixture sharedOmniSharpHostFixture
+        )
             : base(output, sharedOmniSharpHostFixture)
         {
             this._logger = this.LoggerFactory.CreateLogger<SnippetFacts>();
@@ -81,10 +84,16 @@ namespace OmniSharp.Roslyn.CSharp.Tests
             var completions = await FindCompletionsAsync(filename, source, wantSnippet: true);
             ContainsSnippet("First()$0 : string", completions);
 #if NETCOREAPP
-            ContainsSnippet("FirstOrDefault(${1:Func<string, bool> predicate})$0 : string?", completions);
+            ContainsSnippet(
+                "FirstOrDefault(${1:Func<string, bool> predicate})$0 : string?",
+                completions
+            );
 #else
 
-            ContainsSnippet("FirstOrDefault(${1:Func<string, bool> predicate})$0 : string", completions);
+            ContainsSnippet(
+                "FirstOrDefault(${1:Func<string, bool> predicate})$0 : string",
+                completions
+            );
 #endif
         }
 
@@ -105,7 +114,10 @@ namespace OmniSharp.Roslyn.CSharp.Tests
                      }";
 
             var completions = await FindCompletionsAsync(filename, source, wantSnippet: true);
-            ContainsSnippet("Select(${1:Func<KeyValuePair<string, object>, TResult> selector})$0 : IEnumerable<TResult>", completions);
+            ContainsSnippet(
+                "Select(${1:Func<KeyValuePair<string, object>, TResult> selector})$0 : IEnumerable<TResult>",
+                completions
+            );
         }
 
         [Theory]
@@ -153,7 +165,6 @@ namespace OmniSharp.Roslyn.CSharp.Tests
             ContainsSnippet("MyClass(${1:int param}, ${2:string param})$0", completions);
         }
 
-
         [Theory]
         [InlineData("dummy.cs")]
         [InlineData("dummy.csx")]
@@ -188,7 +199,6 @@ namespace OmniSharp.Roslyn.CSharp.Tests
 
             var completions = await FindCompletionsAsync(filename, source, wantSnippet: true);
             ContainsSnippet("List<${1:T}>(${2:IEnumerable<T> collection})$0", completions);
-
         }
 
         [Theory]
@@ -207,7 +217,8 @@ namespace OmniSharp.Roslyn.CSharp.Tests
         [InlineData("dummy.csx")]
         public async Task Can_complete_variable(string filename)
         {
-            const string source = @"
+            const string source =
+                @"
                 public class Class1
                 {
                     public Class1()
@@ -227,7 +238,8 @@ namespace OmniSharp.Roslyn.CSharp.Tests
         [InlineData("dummy.csx")]
         public async Task Void_methods_end_with_semicolons(string filename)
         {
-            const string source = @"
+            const string source =
+                @"
                 using System;
                 public class Class1
                 {
@@ -247,7 +259,8 @@ namespace OmniSharp.Roslyn.CSharp.Tests
         [InlineData("dummy.csx")]
         public async Task Fuzzy_matches_are_returned_when_first_letters_match(string filename)
         {
-            const string source = @"
+            const string source =
+                @"
                 using System;
                 public class Class1
                 {
@@ -265,9 +278,12 @@ namespace OmniSharp.Roslyn.CSharp.Tests
         [Theory]
         [InlineData("dummy.cs")]
         [InlineData("dummy.csx")]
-        public async Task Fuzzy_matches_are_not_returned_when_first_letters_do_not_match(string filename)
+        public async Task Fuzzy_matches_are_not_returned_when_first_letters_do_not_match(
+            string filename
+        )
         {
-            const string source = @"
+            const string source =
+                @"
                 using System;
                 public class Class1
                 {
@@ -288,7 +304,8 @@ namespace OmniSharp.Roslyn.CSharp.Tests
         [InlineData("dummy.csx")]
         public async Task Can_complete_parameter(string filename)
         {
-            const string source = @"
+            const string source =
+                @"
                 public class Class1
                 {
                     public Class1()
@@ -363,7 +380,8 @@ namespace OmniSharp.Roslyn.CSharp.Tests
         [InlineData("dummy.csx")]
         public async Task Returns_method_without_optional_params(string filename)
         {
-            const string source = @"
+            const string source =
+                @"
                 public class Class1
                 {
                     public void OptionalParam(int i, string s = null)
@@ -378,13 +396,17 @@ namespace OmniSharp.Roslyn.CSharp.Tests
 
             var completions = await FindCompletionsAsync(filename, source, wantSnippet: true);
             ContainsSnippet("OptionalParam(${1:int i});$0 : void", completions);
-            ContainsSnippet("OptionalParam(${1:int i}, ${2:string s = null});$0 : void", completions);
+            ContainsSnippet(
+                "OptionalParam(${1:int i}, ${2:string s = null});$0 : void",
+                completions
+            );
         }
 
         [Fact]
         public async Task Can_complete_global_variable_in_CSX()
         {
-            const string source = @"
+            const string source =
+                @"
                         var aVariable = 1;
                         av$$
             ";
@@ -410,12 +432,13 @@ namespace OmniSharp.Roslyn.CSharp.Tests
             ContainsSnippet("Get<${1:SomeType}>()$0 : string", completions);
         }
 
-        private static IEnumerable<string> GetSnippetTexts(IEnumerable<AutoCompleteResponse> responses)
+        private static IEnumerable<string> GetSnippetTexts(
+            IEnumerable<AutoCompleteResponse> responses
+        )
         {
             return responses.Select(r =>
-                r.ReturnType != null
-                    ? r.Snippet + " : " + r.ReturnType
-                    : r.Snippet);
+                r.ReturnType != null ? r.Snippet + " : " + r.ReturnType : r.Snippet
+            );
         }
 
         private void ContainsSnippet(string expected, IEnumerable<AutoCompleteResponse> responses)

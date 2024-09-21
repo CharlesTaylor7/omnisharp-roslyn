@@ -14,23 +14,40 @@ namespace OmniSharp.Extensions
 {
     public static class SolutionExtensions
     {
-        public static async Task<QuickFixResponse> FindSymbols(this Solution solution,
+        public static async Task<QuickFixResponse> FindSymbols(
+            this Solution solution,
             string pattern,
             string projectFileExtension,
             int maxItemsToReturn,
-            SymbolFilter symbolFilter = SymbolFilter.TypeAndMember)
+            SymbolFilter symbolFilter = SymbolFilter.TypeAndMember
+        )
         {
             var projects = solution.Projects.Where(p =>
-                (p.FilePath?.EndsWith(projectFileExtension, StringComparison.OrdinalIgnoreCase) ?? false) ||
-                (p.Name?.EndsWith(projectFileExtension, StringComparison.OrdinalIgnoreCase) ?? false));
+                (
+                    p.FilePath?.EndsWith(projectFileExtension, StringComparison.OrdinalIgnoreCase)
+                    ?? false
+                )
+                || (
+                    p.Name?.EndsWith(projectFileExtension, StringComparison.OrdinalIgnoreCase)
+                    ?? false
+                )
+            );
 
             var symbolLocations = new List<QuickFix>();
 
             foreach (var project in projects)
             {
-                var symbols = !string.IsNullOrEmpty(pattern) ?
-                    await SymbolFinder.FindSourceDeclarationsWithPatternAsync(project, pattern, symbolFilter) :
-                    await SymbolFinder.FindSourceDeclarationsAsync(project, candidate => true, symbolFilter);
+                var symbols = !string.IsNullOrEmpty(pattern)
+                    ? await SymbolFinder.FindSourceDeclarationsWithPatternAsync(
+                        project,
+                        pattern,
+                        symbolFilter
+                    )
+                    : await SymbolFinder.FindSourceDeclarationsAsync(
+                        project,
+                        candidate => true,
+                        symbolFilter
+                    );
 
                 foreach (var symbol in symbols)
                 {
@@ -61,7 +78,10 @@ namespace OmniSharp.Extensions
             return new QuickFixResponse(symbolLocations.Distinct().ToList());
         }
 
-        private static bool ShouldStopSearching(int maxItemsToReturn, List<QuickFix> symbolLocations)
+        private static bool ShouldStopSearching(
+            int maxItemsToReturn,
+            List<QuickFix> symbolLocations
+        )
         {
             return maxItemsToReturn > 0 && symbolLocations.Count >= maxItemsToReturn;
         }
@@ -70,14 +90,17 @@ namespace OmniSharp.Extensions
         {
             var lineSpan = location.GetLineSpan();
             var path = lineSpan.Path;
-            var projects = solution.GetDocumentIdsWithFilePath(path)
-                                    .Select(documentId => solution.GetProject(documentId.ProjectId)!.Name)
-                                    .ToArray();
+            var projects = solution
+                .GetDocumentIdsWithFilePath(path)
+                .Select(documentId => solution.GetProject(documentId.ProjectId)!.Name)
+                .ToArray();
 
             var format = SymbolDisplayFormat.MinimallyQualifiedFormat;
-            format = format.WithMemberOptions(format.MemberOptions
-                                              ^ SymbolDisplayMemberOptions.IncludeContainingType
-                                              ^ SymbolDisplayMemberOptions.IncludeType);
+            format = format.WithMemberOptions(
+                format.MemberOptions
+                    ^ SymbolDisplayMemberOptions.IncludeContainingType
+                    ^ SymbolDisplayMemberOptions.IncludeType
+            );
 
             format = format.WithKindOptions(SymbolDisplayKindOptions.None);
 
@@ -96,7 +119,10 @@ namespace OmniSharp.Extensions
             };
         }
 
-        internal static SourceGeneratedFileInfo? GetSourceGeneratedFileInfo(this Solution solution, Location location)
+        internal static SourceGeneratedFileInfo? GetSourceGeneratedFileInfo(
+            this Solution solution,
+            Location location
+        )
         {
             Debug.Assert(location.IsInSource);
             var document = solution.GetDocument(location.SourceTree);
@@ -108,7 +134,7 @@ namespace OmniSharp.Extensions
             return new SourceGeneratedFileInfo
             {
                 ProjectGuid = document.Project.Id.Id,
-                DocumentGuid = document.Id.Id
+                DocumentGuid = document.Id.Id,
             };
         }
     }

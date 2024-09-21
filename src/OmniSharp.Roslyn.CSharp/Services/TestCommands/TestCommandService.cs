@@ -22,7 +22,10 @@ namespace OmniSharp.Roslyn.CSharp.Services.TestCommands
         private IEnumerable<ITestCommandProvider> _testCommandProviders;
 
         [ImportingConstructor]
-        public TestCommandService(OmniSharpWorkspace workspace, [ImportMany] IEnumerable<ITestCommandProvider> testCommandProviders)
+        public TestCommandService(
+            OmniSharpWorkspace workspace,
+            [ImportMany] IEnumerable<ITestCommandProvider> testCommandProviders
+        )
         {
             _workspace = workspace;
             _testCommandProviders = testCommandProviders;
@@ -70,9 +73,11 @@ namespace OmniSharp.Roslyn.CSharp.Services.TestCommands
 
             if (type == null)
             {
-                type = node.SyntaxTree.GetRoot()
-                        .DescendantNodes().OfType<ClassDeclarationSyntax>()
-                        .FirstOrDefault();
+                type = node
+                    .SyntaxTree.GetRoot()
+                    .DescendantNodes()
+                    .OfType<ClassDeclarationSyntax>()
+                    .FirstOrDefault();
             }
 
             return type;

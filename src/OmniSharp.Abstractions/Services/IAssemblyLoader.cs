@@ -1,8 +1,8 @@
-﻿using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
+using Microsoft.Extensions.Logging;
 
 namespace OmniSharp.Services
 {
@@ -33,7 +33,10 @@ namespace OmniSharp.Services
             return loader.Load(new AssemblyName(assemblyName));
         }
 
-        public static IEnumerable<Assembly> Load(this IAssemblyLoader loader, params string[] assemblyNames)
+        public static IEnumerable<Assembly> Load(
+            this IAssemblyLoader loader,
+            params string[] assemblyNames
+        )
         {
             foreach (var name in assemblyNames)
             {
@@ -43,7 +46,8 @@ namespace OmniSharp.Services
 
         public static Assembly LoadByAssemblyNameOrPath(
             this IAssemblyLoader loader,
-            string assemblyName)
+            string assemblyName
+        )
         {
             if (File.Exists(assemblyName))
             {
@@ -55,7 +59,11 @@ namespace OmniSharp.Services
             }
         }
 
-        public static IEnumerable<Assembly> LoadByAssemblyNameOrPath(this IAssemblyLoader loader, ILogger logger, IEnumerable<string> assemblyNames)
+        public static IEnumerable<Assembly> LoadByAssemblyNameOrPath(
+            this IAssemblyLoader loader,
+            ILogger logger,
+            IEnumerable<string> assemblyNames
+        )
         {
             foreach (var assemblyName in assemblyNames)
             {

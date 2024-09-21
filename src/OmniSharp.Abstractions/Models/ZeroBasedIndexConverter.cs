@@ -9,10 +9,18 @@ namespace OmniSharp.Models
     {
         public override bool CanConvert(Type objectType)
         {
-            return objectType == typeof(int) || objectType == typeof(int?) || objectType == typeof(IEnumerable<int>) || objectType == typeof(int[]);
+            return objectType == typeof(int)
+                || objectType == typeof(int?)
+                || objectType == typeof(IEnumerable<int>)
+                || objectType == typeof(int[]);
         }
 
-        public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
+        public override object ReadJson(
+            JsonReader reader,
+            Type objectType,
+            object existingValue,
+            JsonSerializer serializer
+        )
         {
             if (reader.TokenType == JsonToken.Null)
                 return null;
@@ -76,13 +84,11 @@ namespace OmniSharp.Models
                     results[i] = results[i] + 1;
                 }
             }
-
             else if (objectType == typeof(IEnumerable<int>))
             {
                 var results = (IEnumerable<int>)value;
                 value = results.Select(x => x + 1);
             }
-
             else if (objectType == typeof(int?))
             {
                 var nullable = (int?)value;
@@ -92,7 +98,6 @@ namespace OmniSharp.Models
                 }
                 value = nullable;
             }
-
             else if (objectType == typeof(int))
             {
                 var intValue = (int)value;

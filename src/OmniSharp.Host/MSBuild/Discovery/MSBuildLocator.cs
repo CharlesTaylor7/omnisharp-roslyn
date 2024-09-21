@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Immutable;
 using System.IO;
 using System.Text;
@@ -18,7 +18,11 @@ namespace OmniSharp.MSBuild.Discovery
 
         public MSBuildInstance RegisteredInstance { get; private set; }
 
-        private MSBuildLocator(ILoggerFactory loggerFactory, IAssemblyLoader assemblyLoader, ImmutableArray<MSBuildInstanceProvider> providers)
+        private MSBuildLocator(
+            ILoggerFactory loggerFactory,
+            IAssemblyLoader assemblyLoader,
+            ImmutableArray<MSBuildInstanceProvider> providers
+        )
         {
             _logger = loggerFactory.CreateLogger<MSBuildLocator>();
             _providers = providers;
@@ -32,29 +36,43 @@ namespace OmniSharp.MSBuild.Discovery
             }
         }
 
-        public static MSBuildLocator CreateDefault(ILoggerFactory loggerFactory, IAssemblyLoader assemblyLoader, IConfiguration configuration)
+        public static MSBuildLocator CreateDefault(
+            ILoggerFactory loggerFactory,
+            IAssemblyLoader assemblyLoader,
+            IConfiguration configuration
+        )
         {
             var msbuildConfiguration = configuration?.GetSection("msbuild");
             var useBundledOnly = msbuildConfiguration?.GetValue<bool>("UseBundledOnly") ?? false;
             if (useBundledOnly)
             {
                 var logger = loggerFactory.CreateLogger<MSBuildLocator>();
-                logger.LogWarning("The MSBuild option 'UseBundledOnly' is no longer supported. Please update your OmniSharp configuration files.");
+                logger.LogWarning(
+                    "The MSBuild option 'UseBundledOnly' is no longer supported. Please update your OmniSharp configuration files."
+                );
             }
 
 #if NETCOREAPP
             var sdkConfiguration = configuration?.GetSection("sdk");
 
-            return new MSBuildLocator(loggerFactory, assemblyLoader,
+            return new MSBuildLocator(
+                loggerFactory,
+                assemblyLoader,
                 ImmutableArray.Create<MSBuildInstanceProvider>(
                     new SdkInstanceProvider(loggerFactory, sdkConfiguration),
-                    new SdkOverrideInstanceProvider(loggerFactory, sdkConfiguration)));
+                    new SdkOverrideInstanceProvider(loggerFactory, sdkConfiguration)
+                )
+            );
 #else
-            return new MSBuildLocator(loggerFactory, assemblyLoader,
+            return new MSBuildLocator(
+                loggerFactory,
+                assemblyLoader,
                 ImmutableArray.Create<MSBuildInstanceProvider>(
                     new MicrosoftBuildLocatorInstanceProvider(loggerFactory),
                     new MonoInstanceProvider(loggerFactory),
-                    new UserOverrideInstanceProvider(loggerFactory, msbuildConfiguration)));
+                    new UserOverrideInstanceProvider(loggerFactory, msbuildConfiguration)
+                )
+            );
 #endif
         }
 
@@ -85,7 +103,9 @@ namespace OmniSharp.MSBuild.Discovery
                 if (!string.IsNullOrEmpty(msbuildPath))
                 {
                     Environment.SetEnvironmentVariable("MSBUILD_EXE_PATH", msbuildPath);
-                    _logger.LogInformation($"MSBUILD_EXE_PATH environment variable set to '{msbuildPath}'");
+                    _logger.LogInformation(
+                        $"MSBUILD_EXE_PATH environment variable set to '{msbuildPath}'"
+                    );
                 }
                 else
                 {

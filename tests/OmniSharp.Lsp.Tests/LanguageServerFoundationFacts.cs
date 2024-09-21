@@ -25,30 +25,36 @@ namespace OmniSharp.Lsp.Tests
     public class LanguageServerFoundationFacts : AbstractLanguageServerTestBase
     {
         public LanguageServerFoundationFacts(ITestOutputHelper output)
-            : base(output)
-        {
-        }
+            : base(output) { }
 
         [Fact]
         public async Task Language_server_contributes_configuration_from_client()
         {
-            var options = OmniSharpTestHost.ServiceProvider.GetRequiredService<IOptionsMonitor<OmniSharpOptions>>();
+            var options = OmniSharpTestHost.ServiceProvider.GetRequiredService<
+                IOptionsMonitor<OmniSharpOptions>
+            >();
 
             var originalIndentationSize = options.CurrentValue.FormattingOptions.IndentationSize;
 
             await Task.WhenAll(
-                Configuration.Update("csharp", new Dictionary<string, string>()
-                {
-                    ["FormattingOptions:IndentationSize"] = "12",
-                }),
-                Configuration.Update("omnisharp", new Dictionary<string, string>()
-                {
-                    ["RenameOptions:RenameOverloads"] = "true",
-                }),
+                Configuration.Update(
+                    "csharp",
+                    new Dictionary<string, string>()
+                    {
+                        ["FormattingOptions:IndentationSize"] = "12",
+                    }
+                ),
+                Configuration.Update(
+                    "omnisharp",
+                    new Dictionary<string, string>() { ["RenameOptions:RenameOverloads"] = "true" }
+                ),
                 options.WaitForChange(CancellationToken)
             );
 
-            Assert.NotEqual(originalIndentationSize, options.CurrentValue.FormattingOptions.IndentationSize);
+            Assert.NotEqual(
+                originalIndentationSize,
+                options.CurrentValue.FormattingOptions.IndentationSize
+            );
             Assert.Equal(12, options.CurrentValue.FormattingOptions.IndentationSize);
             Assert.True(options.CurrentValue.RenameOptions.RenameOverloads);
         }
@@ -61,8 +67,9 @@ namespace OmniSharp.Lsp.Tests
         [ClassData(typeof(RegistersAllKnownOmniSharpHandlersData))]
         public void Registers_all_known_OmniSharp_handlers(string method)
         {
-            var descriptor = Server.GetRequiredService<IHandlersManager>().Descriptors
-                .FirstOrDefault(z => z.Method == $"o#{method}".ToLowerInvariant());
+            var descriptor = Server
+                .GetRequiredService<IHandlersManager>()
+                .Descriptors.FirstOrDefault(z => z.Method == $"o#{method}".ToLowerInvariant());
             Assert.NotNull(descriptor);
         }
 
@@ -79,7 +86,9 @@ namespace OmniSharp.Lsp.Tests
             {
                 var cts = CancellationTokenSource.CreateLinkedTokenSource(CancellationToken);
                 cts.CancelAfter(TimeSpan.FromSeconds(1));
-                await Client.SendRequest($"o#{method}".ToLowerInvariant(), new object()).ReturningVoid(cts.Token);
+                await Client
+                    .SendRequest($"o#{method}".ToLowerInvariant(), new object())
+                    .ReturningVoid(cts.Token);
             }
             catch (MethodNotSupportedException)
             {
@@ -95,14 +104,16 @@ namespace OmniSharp.Lsp.Tests
         {
             public RegistersAllKnownOmniSharpHandlersData()
             {
-                var v1Fields = typeof(OmniSharpEndpoints).GetFields(BindingFlags.Public | BindingFlags.Static)
+                var v1Fields = typeof(OmniSharpEndpoints)
+                    .GetFields(BindingFlags.Public | BindingFlags.Static)
                     .Where(z => z.FieldType == typeof(string));
                 foreach (var field in v1Fields)
                 {
                     Add(field.GetValue(null) as string);
                 }
 
-                var v2Fields = typeof(OmniSharpEndpoints.V2).GetFields(BindingFlags.Public | BindingFlags.Static)
+                var v2Fields = typeof(OmniSharpEndpoints.V2)
+                    .GetFields(BindingFlags.Public | BindingFlags.Static)
                     .Where(z => z.FieldType == typeof(string));
                 foreach (var field in v2Fields)
                 {

@@ -1,6 +1,6 @@
 using System.IO;
-using System.Threading.Tasks;
 using System.Linq;
+using System.Threading.Tasks;
 using OmniSharp.Models.TypeLookup;
 using OmniSharp.Options;
 using OmniSharp.Roslyn.CSharp.Services.Types;
@@ -12,10 +12,11 @@ namespace OmniSharp.Roslyn.CSharp.Tests
 {
     public class TypeLookupFacts : AbstractSingleRequestHandlerTestFixture<TypeLookupService>
     {
-        public TypeLookupFacts(ITestOutputHelper output, SharedOmniSharpHostFixture sharedOmniSharpHostFixture)
-            : base(output, sharedOmniSharpHostFixture)
-        {
-        }
+        public TypeLookupFacts(
+            ITestOutputHelper output,
+            SharedOmniSharpHostFixture sharedOmniSharpHostFixture
+        )
+            : base(output, sharedOmniSharpHostFixture) { }
 
         protected override string EndpointName => OmniSharpEndpoints.TypeLookup;
 
@@ -28,7 +29,14 @@ namespace OmniSharp.Roslyn.CSharp.Tests
             var workspace = TestHelpers.CreateCsxWorkspace(testFile);
 
             var controller = new TypeLookupService(workspace, new FormattingOptions());
-            var response = await controller.Handle(new TypeLookupRequest { FileName = testFile.FileName, Line = 0, Column = 7 });
+            var response = await controller.Handle(
+                new TypeLookupRequest
+                {
+                    FileName = testFile.FileName,
+                    Line = 0,
+                    Column = 7,
+                }
+            );
 
             Assert.Equal("Foo", response.Type);
         }
@@ -36,7 +44,10 @@ namespace OmniSharp.Roslyn.CSharp.Tests
         [Fact]
         public async Task TypesFromInlineAssemlbyReferenceContainDocumentation()
         {
-            var testAssemblyPath = Path.Combine(TestAssets.Instance.TestBinariesFolder, "ClassLibraryWithDocumentation.dll");
+            var testAssemblyPath = Path.Combine(
+                TestAssets.Instance.TestBinariesFolder,
+                "ClassLibraryWithDocumentation.dll"
+            );
             var source =
                 $@"#r ""{testAssemblyPath}""
                 using ClassLibraryWithDocumentation;
@@ -48,15 +59,27 @@ namespace OmniSharp.Roslyn.CSharp.Tests
             var workspace = TestHelpers.CreateCsxWorkspace(testFile);
 
             var controller = new TypeLookupService(workspace, new FormattingOptions());
-            var response = await controller.Handle(new TypeLookupRequest { FileName = testFile.FileName, Line = position.Line, Column = position.Offset, IncludeDocumentation = true });
+            var response = await controller.Handle(
+                new TypeLookupRequest
+                {
+                    FileName = testFile.FileName,
+                    Line = position.Line,
+                    Column = position.Offset,
+                    IncludeDocumentation = true,
+                }
+            );
 
-            Assert.Equal("This class performs an important function.", response.Documentation?.Trim());
+            Assert.Equal(
+                "This class performs an important function.",
+                response.Documentation?.Trim()
+            );
         }
 
         [Fact]
         public async Task OmitsNamespaceForTypesInGlobalNamespace()
         {
-            const string source = @"namespace Bar {
+            const string source =
+                @"namespace Bar {
             class Foo {}
             }
             class Baz {}";
@@ -65,10 +88,20 @@ namespace OmniSharp.Roslyn.CSharp.Tests
             SharedOmniSharpTestHost.AddFilesToWorkspace(testFile);
             var requestHandler = GetRequestHandler(SharedOmniSharpTestHost);
 
-            var requestInNormalNamespace = new TypeLookupRequest { FileName = testFile.FileName, Line = 1, Column = 19 };
+            var requestInNormalNamespace = new TypeLookupRequest
+            {
+                FileName = testFile.FileName,
+                Line = 1,
+                Column = 19,
+            };
             var responseInNormalNamespace = await requestHandler.Handle(requestInNormalNamespace);
 
-            var requestInGlobalNamespace = new TypeLookupRequest { FileName = testFile.FileName, Line = 3, Column = 19 };
+            var requestInGlobalNamespace = new TypeLookupRequest
+            {
+                FileName = testFile.FileName,
+                Line = 3,
+                Column = 19,
+            };
             var responseInGlobalNamespace = await requestHandler.Handle(requestInGlobalNamespace);
 
             Assert.Equal("Bar.Foo", responseInNormalNamespace.Type);
@@ -78,7 +111,8 @@ namespace OmniSharp.Roslyn.CSharp.Tests
         [Fact]
         public async Task IncludesNamespaceForRegularCSharpSyntax()
         {
-            const string source = @"namespace Bar {
+            const string source =
+                @"namespace Bar {
             class Foo {}
             }";
 
@@ -86,7 +120,12 @@ namespace OmniSharp.Roslyn.CSharp.Tests
             SharedOmniSharpTestHost.AddFilesToWorkspace(testFile);
             var requestHandler = GetRequestHandler(SharedOmniSharpTestHost);
 
-            var request = new TypeLookupRequest { FileName = testFile.FileName, Line = 1, Column = 19 };
+            var request = new TypeLookupRequest
+            {
+                FileName = testFile.FileName,
+                Line = 1,
+                Column = 19,
+            };
             var response = await requestHandler.Handle(request);
 
             Assert.Equal("Bar.Foo", response.Type);
@@ -95,7 +134,8 @@ namespace OmniSharp.Roslyn.CSharp.Tests
         [Fact]
         public async Task IncludesContainingTypeFoNestedTypesForRegularCSharpSyntax()
         {
-            var source = @"namespace Bar {
+            var source =
+                @"namespace Bar {
             class Foo {
                     class Xyz {}
                 }
@@ -105,7 +145,12 @@ namespace OmniSharp.Roslyn.CSharp.Tests
             SharedOmniSharpTestHost.AddFilesToWorkspace(testFile);
             var requestHandler = GetRequestHandler(SharedOmniSharpTestHost);
 
-            var request = new TypeLookupRequest { FileName = testFile.FileName, Line = 2, Column = 27 };
+            var request = new TypeLookupRequest
+            {
+                FileName = testFile.FileName,
+                Line = 2,
+                Column = 27,
+            };
             var response = await requestHandler.Handle(request);
 
             Assert.Equal("Bar.Foo.Xyz", response.Type);
@@ -114,7 +159,8 @@ namespace OmniSharp.Roslyn.CSharp.Tests
         [Fact]
         public async Task IncludesContainingTypeFoNestedTypesForNonRegularCSharpSyntax()
         {
-            var source = @"class Foo {
+            var source =
+                @"class Foo {
                 class Bar {}
             }";
 
@@ -122,13 +168,19 @@ namespace OmniSharp.Roslyn.CSharp.Tests
             var workspace = TestHelpers.CreateCsxWorkspace(testFile);
 
             var controller = new TypeLookupService(workspace, new FormattingOptions());
-            var request = new TypeLookupRequest { FileName = testFile.FileName, Line = 1, Column = 23 };
+            var request = new TypeLookupRequest
+            {
+                FileName = testFile.FileName,
+                Line = 1,
+                Column = 23,
+            };
             var response = await controller.Handle(request);
 
             Assert.Equal("Foo.Bar", response.Type);
         }
 
-        private static TestFile s_testFile = new TestFile("dummy.cs",
+        private static TestFile s_testFile = new TestFile(
+            "dummy.cs",
             @"using System;
             using Bar2;
             using System.Collections.Generic;
@@ -163,7 +215,8 @@ namespace OmniSharp.Roslyn.CSharp.Tests
                     Val2
                 }
             }
-            ");
+            "
+        );
 
         [Fact]
         public async Task DisplayFormatForMethodSymbol_Invocation()
@@ -209,7 +262,10 @@ namespace OmniSharp.Roslyn.CSharp.Tests
         public async Task DisplayFormatFor_TypeSymbol_WithGenerics()
         {
             var response = await GetTypeLookUpResponse(line: 15, column: 36);
-            Assert.Equal("System.Collections.Generic.IDictionary<System.String, System.Collections.Generic.IEnumerable<System.Int32>>", response.Type);
+            Assert.Equal(
+                "System.Collections.Generic.IDictionary<System.String, System.Collections.Generic.IEnumerable<System.Int32>>",
+                response.Type
+            );
         }
 
         [Fact]
@@ -278,7 +334,8 @@ namespace OmniSharp.Roslyn.CSharp.Tests
         [Fact]
         public async Task StructuredDocumentationRemarksText()
         {
-            string content = @"
+            string content =
+                @"
 class testissue
 {
     ///<remarks>You may have some additional information about this class here.</remarks>
@@ -288,15 +345,15 @@ class testissue
     }
 }";
             var response = await GetTypeLookUpResponse(content);
-            var expected =
-            @"You may have some additional information about this class here.";
+            var expected = @"You may have some additional information about this class here.";
             Assert.Equal(expected, response.StructuredDocumentation.RemarksText);
         }
 
         [Fact]
         public async Task StructuredDocumentationSummaryText()
         {
-            string content = @"
+            string content =
+                @"
 class testissue
 {
     ///<summary>Checks if object is tagged with the tag.</summary>
@@ -305,15 +362,15 @@ class testissue
     }
 }";
             var response = await GetTypeLookUpResponse(content);
-            var expected =
-            @"Checks if object is tagged with the tag.";
+            var expected = @"Checks if object is tagged with the tag.";
             Assert.Equal(expected, response.StructuredDocumentation.SummaryText);
         }
 
         [Fact]
         public async Task StructuredDocumentationReturnsText()
         {
-            string content = @"
+            string content =
+                @"
 class testissue
 {
     ///<returns>Returns true if object is tagged with tag.</returns>
@@ -322,15 +379,15 @@ class testissue
     }
 }";
             var response = await GetTypeLookUpResponse(content);
-            var expected =
-            @"Returns true if object is tagged with tag.";
+            var expected = @"Returns true if object is tagged with tag.";
             Assert.Equal(expected, response.StructuredDocumentation.ReturnsText);
         }
 
         [Fact]
         public async Task StructuredDocumentationExampleText()
         {
-            string content = @"
+            string content =
+                @"
 class testissue
 {
     ///<example>Checks if object is tagged with the tag.</example>
@@ -339,15 +396,15 @@ class testissue
     }
 }";
             var response = await GetTypeLookUpResponse(content);
-            var expected =
-            @"Checks if object is tagged with the tag.";
+            var expected = @"Checks if object is tagged with the tag.";
             Assert.Equal(expected, response.StructuredDocumentation.ExampleText);
         }
 
         [Fact]
         public async Task StructuredDocumentationExceptionText()
         {
-            string content = @"
+            string content =
+                @"
 class testissue
 {
     ///<exception cref=""A"">A description</exception>
@@ -360,15 +417,22 @@ class testissue
             Assert.Equal(2, response.StructuredDocumentation.Exception.Count());
 
             Assert.Equal("A", response.StructuredDocumentation.Exception[0].Name);
-            Assert.Equal("A description", response.StructuredDocumentation.Exception[0].Documentation);
+            Assert.Equal(
+                "A description",
+                response.StructuredDocumentation.Exception[0].Documentation
+            );
             Assert.Equal("B", response.StructuredDocumentation.Exception[1].Name);
-            Assert.Equal("B description", response.StructuredDocumentation.Exception[1].Documentation);
+            Assert.Equal(
+                "B description",
+                response.StructuredDocumentation.Exception[1].Documentation
+            );
         }
 
         [Fact]
         public async Task StructuredDocumentationParameter()
         {
-            string content = @"
+            string content =
+                @"
 class testissue
 {
     /// <param name=""gameObject"">The game object.</param>
@@ -381,15 +445,22 @@ class testissue
             Assert.Equal(2, response.StructuredDocumentation.ParamElements.Length);
 
             Assert.Equal("gameObject", response.StructuredDocumentation.ParamElements[0].Name);
-            Assert.Equal("The game object.", response.StructuredDocumentation.ParamElements[0].Documentation);
+            Assert.Equal(
+                "The game object.",
+                response.StructuredDocumentation.ParamElements[0].Documentation
+            );
             Assert.Equal("tagName", response.StructuredDocumentation.ParamElements[1].Name);
-            Assert.Equal("Name of the tag.", response.StructuredDocumentation.ParamElements[1].Documentation);
+            Assert.Equal(
+                "Name of the tag.",
+                response.StructuredDocumentation.ParamElements[1].Documentation
+            );
         }
 
         [Fact]
         public async Task StructuredDocumentationTypeParameter()
         {
-            string content = @"
+            string content =
+                @"
 public class TestClass
 {
     /// <summary>
@@ -406,16 +477,22 @@ public class TestClass
             Assert.Equal(2, response.StructuredDocumentation.TypeParamElements.Count());
 
             Assert.Equal("T", response.StructuredDocumentation.TypeParamElements[0].Name);
-            Assert.Equal("The element type of the array", response.StructuredDocumentation.TypeParamElements[0].Documentation);
+            Assert.Equal(
+                "The element type of the array",
+                response.StructuredDocumentation.TypeParamElements[0].Documentation
+            );
             Assert.Equal("X", response.StructuredDocumentation.TypeParamElements[1].Name);
-            Assert.Equal("The element type of the list", response.StructuredDocumentation.TypeParamElements[1].Documentation);
+            Assert.Equal(
+                "The element type of the list",
+                response.StructuredDocumentation.TypeParamElements[1].Documentation
+            );
         }
 
         [Fact]
         public async Task StructuredDocumentationValueText()
         {
             string content =
-@"public class Employee
+                @"public class Employee
 {
     private string _name;
 
@@ -428,17 +505,17 @@ public class TestClass
 ";
             var response = await GetTypeLookUpResponse(content);
             var expectedValue =
-            @"The Name property gets/sets the value of the string field, _name.";
+                @"The Name property gets/sets the value of the string field, _name.";
             Assert.Equal(expectedValue, response.StructuredDocumentation.ValueText);
-            var expectedSummary =
-            @"The Name property represents the employee's name.";
+            var expectedSummary = @"The Name property represents the employee's name.";
             Assert.Equal(expectedSummary, response.StructuredDocumentation.SummaryText);
         }
 
         [Fact]
         public async Task StructuredDocumentationNestedTagSee()
         {
-            string content = @"
+            string content =
+                @"
 public class TestClass
 {
     /// <summary>DoWork is a method in the TestClass class. <see cref=""System.Console.WriteLine(System.String)""/> for information about output statements.</summary>
@@ -448,14 +525,15 @@ public class TestClass
 }";
             var response = await GetTypeLookUpResponse(content);
             var expected =
-            @"DoWork is a method in the TestClass class. System.Console.WriteLine(System.String)  for information about output statements.";
+                @"DoWork is a method in the TestClass class. System.Console.WriteLine(System.String)  for information about output statements.";
             Assert.Equal(expected, response.StructuredDocumentation.SummaryText);
         }
 
         [Fact]
         public async Task StructuredDocumentationNestedTagParamRef()
         {
-            string content = @"
+            string content =
+                @"
 public class TestClass
 {
     /// <summary>Creates a new array of arbitrary type <typeparamref name=""T""/></summary>
@@ -466,15 +544,15 @@ public class TestClass
     }
 }";
             var response = await GetTypeLookUpResponse(content);
-            var expected =
-            @"Creates a new array of arbitrary type T ";
+            var expected = @"Creates a new array of arbitrary type T ";
             Assert.Equal(expected, response.StructuredDocumentation.SummaryText);
         }
 
         [Fact]
         public async Task StructuredDocumentationNestedTagCode()
         {
-            string content = @"
+            string content =
+                @"
 public class TestClass
 {
     /// <example>This sample shows how to call the <see cref=""GetZero""/> method.
@@ -495,7 +573,7 @@ public class TestClass
 }";
             var response = await GetTypeLookUpResponse(content);
             var expected =
-@"This sample shows how to call the TestClass.GetZero  method.
+                @"This sample shows how to call the TestClass.GetZero  method.
 
     class TestClass
     {
@@ -511,7 +589,8 @@ public class TestClass
         [Fact]
         public async Task StructuredDocumentationNestedTagPara()
         {
-            string content = @"
+            string content =
+                @"
 public class TestClass
 {
     /// <summary>DoWork is a method in the TestClass class.
@@ -524,7 +603,7 @@ public class TestClass
             ";
             var response = await GetTypeLookUpResponse(content);
             var expected =
-@"DoWork is a method in the TestClass class.
+                @"DoWork is a method in the TestClass class.
 
 Here's how you could make a second paragraph in a description.";
             Assert.Equal(expected.Replace("\r", ""), response.StructuredDocumentation.SummaryText);
@@ -533,7 +612,8 @@ Here's how you could make a second paragraph in a description.";
         [Fact]
         public async Task StructuredDocumentationNestedTagSeeAlso()
         {
-            string content = @"
+            string content =
+                @"
 public class TestClass
 {
     /// <summary>DoWork is a method in the TestClass class.
@@ -549,7 +629,7 @@ public class TestClass
 }";
             var response = await GetTypeLookUpResponse(content);
             var expected =
-@"DoWork is a method in the TestClass class.
+                @"DoWork is a method in the TestClass class.
 See also: TestClass.Main ";
             Assert.Equal(expected.Replace("\r", ""), response.StructuredDocumentation.SummaryText);
         }
@@ -557,7 +637,8 @@ See also: TestClass.Main ";
         [Fact]
         public async Task StructuredDocumentationSummaryAndParam()
         {
-            string content = @"
+            string content =
+                @"
 class testissue
 {
     ///<summary>Checks if object is tagged with the tag.</summary>
@@ -568,21 +649,27 @@ class testissue
     }
 }";
             var response = await GetTypeLookUpResponse(content);
-            var expected =
-            @"Checks if object is tagged with the tag.";
+            var expected = @"Checks if object is tagged with the tag.";
             Assert.Equal(expected, response.StructuredDocumentation.SummaryText);
 
             Assert.Equal(2, response.StructuredDocumentation.ParamElements.Length);
             Assert.Equal("gameObject", response.StructuredDocumentation.ParamElements[0].Name);
-            Assert.Equal("The game object.", response.StructuredDocumentation.ParamElements[0].Documentation);
+            Assert.Equal(
+                "The game object.",
+                response.StructuredDocumentation.ParamElements[0].Documentation
+            );
             Assert.Equal("tagName", response.StructuredDocumentation.ParamElements[1].Name);
-            Assert.Equal("Name of the tag.", response.StructuredDocumentation.ParamElements[1].Documentation);
+            Assert.Equal(
+                "Name of the tag.",
+                response.StructuredDocumentation.ParamElements[1].Documentation
+            );
         }
 
         [Fact]
         public async Task StructuredDocumentationManyTags()
         {
-            string content = @"
+            string content =
+                @"
 class testissue
 {
     ///<summary>Checks if object is tagged with the tag.</summary>
@@ -597,39 +684,47 @@ class testissue
     }
 }";
             var response = await GetTypeLookUpResponse(content);
-            var expectedSummary =
-            @"Checks if object is tagged with the tag.";
+            var expectedSummary = @"Checks if object is tagged with the tag.";
             Assert.Equal(expectedSummary, response.StructuredDocumentation.SummaryText);
 
             Assert.Single(response.StructuredDocumentation.ParamElements);
             Assert.Equal("gameObject", response.StructuredDocumentation.ParamElements[0].Name);
-            Assert.Equal("The game object.", response.StructuredDocumentation.ParamElements[0].Documentation);
+            Assert.Equal(
+                "The game object.",
+                response.StructuredDocumentation.ParamElements[0].Documentation
+            );
 
             var expectedExample =
-            @"Invoke using A.Compare(5) where A is an instance of the class testissue.";
+                @"Invoke using A.Compare(5) where A is an instance of the class testissue.";
             Assert.Equal(expectedExample, response.StructuredDocumentation.ExampleText);
 
             Assert.Single(response.StructuredDocumentation.TypeParamElements);
             Assert.Equal("T", response.StructuredDocumentation.TypeParamElements[0].Name);
-            Assert.Equal("The element type of the array", response.StructuredDocumentation.TypeParamElements[0].Documentation);
+            Assert.Equal(
+                "The element type of the array",
+                response.StructuredDocumentation.TypeParamElements[0].Documentation
+            );
 
             Assert.Single(response.StructuredDocumentation.Exception);
             Assert.Equal("System.Exception", response.StructuredDocumentation.Exception[0].Name);
-            Assert.Equal("Thrown when something goes wrong", response.StructuredDocumentation.Exception[0].Documentation);
+            Assert.Equal(
+                "Thrown when something goes wrong",
+                response.StructuredDocumentation.Exception[0].Documentation
+            );
 
             var expectedRemarks =
-            @"You may have some additional information about this class here.";
+                @"You may have some additional information about this class here.";
             Assert.Equal(expectedRemarks, response.StructuredDocumentation.RemarksText);
 
-            var expectedReturns =
-            @"Returns an array of type T .";
+            var expectedReturns = @"Returns an array of type T .";
             Assert.Equal(expectedReturns, response.StructuredDocumentation.ReturnsText);
         }
 
         [Fact]
         public async Task StructuredDocumentationSpaceBeforeText()
         {
-            string content = @"
+            string content =
+                @"
 public class TestClass
 {
     /// <summary><c>DoWork</c> is a method in the <c>TestClass</c> class.</summary>
@@ -638,15 +733,15 @@ public class TestClass
     }
 }";
             var response = await GetTypeLookUpResponse(content);
-            var expected =
-            @"DoWork is a method in the TestClass class.";
+            var expected = @"DoWork is a method in the TestClass class.";
             Assert.Equal(expected, response.StructuredDocumentation.SummaryText);
         }
 
         [Fact]
         public async Task StructuredDocumentationForParameters1()
         {
-            string content = @"
+            string content =
+                @"
 class testissue
 {
     /// <param name=""gameObject"">The game object.</param>
@@ -662,7 +757,8 @@ class testissue
         [Fact]
         public async Task StructuredDocumentationForParameters2()
         {
-            string content = @"
+            string content =
+                @"
 class testissue
 {
     /// <param name=""gameObject"">The game object.</param>
@@ -681,7 +777,12 @@ class testissue
             SharedOmniSharpTestHost.AddFilesToWorkspace(testFile);
             var requestHandler = GetRequestHandler(SharedOmniSharpTestHost);
             var point = testFile.Content.GetPointFromPosition();
-            var request = new TypeLookupRequest { FileName = testFile.FileName, Line = point.Line, Column = point.Offset };
+            var request = new TypeLookupRequest
+            {
+                FileName = testFile.FileName,
+                Line = point.Line,
+                Column = point.Offset,
+            };
             request.IncludeDocumentation = true;
 
             return await requestHandler.Handle(request);
@@ -691,7 +792,12 @@ class testissue
         {
             SharedOmniSharpTestHost.AddFilesToWorkspace(s_testFile);
             var requestHandler = GetRequestHandler(SharedOmniSharpTestHost);
-            var request = new TypeLookupRequest { FileName = s_testFile.FileName, Line = line, Column = column };
+            var request = new TypeLookupRequest
+            {
+                FileName = s_testFile.FileName,
+                Line = line,
+                Column = column,
+            };
 
             return await requestHandler.Handle(request);
         }

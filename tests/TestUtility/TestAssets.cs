@@ -47,11 +47,17 @@ namespace TestUtility
             return current;
         }
 
-        private static async Task CopyDirectoryAsync(DirectoryInfo sourceDirectory, DirectoryInfo destDirectory, bool recursive = true)
+        private static async Task CopyDirectoryAsync(
+            DirectoryInfo sourceDirectory,
+            DirectoryInfo destDirectory,
+            bool recursive = true
+        )
         {
             if (!sourceDirectory.Exists)
             {
-                throw new InvalidOperationException($"Source directory does not exist: '{sourceDirectory.FullName}'.");
+                throw new InvalidOperationException(
+                    $"Source directory does not exist: '{sourceDirectory.FullName}'."
+                );
             }
 
             if (!destDirectory.Exists)
@@ -68,7 +74,9 @@ namespace TestUtility
             {
                 foreach (var sourceSubDirectory in sourceDirectory.GetDirectories())
                 {
-                    var destSubDirectory = new DirectoryInfo(Path.Combine(destDirectory.FullName, sourceSubDirectory.Name));
+                    var destSubDirectory = new DirectoryInfo(
+                        Path.Combine(destDirectory.FullName, sourceSubDirectory.Name)
+                    );
                     await CopyDirectoryAsync(sourceSubDirectory, destSubDirectory, recursive);
                 }
             }
@@ -85,7 +93,12 @@ namespace TestUtility
         public ITestProject GetTestScript(string folderName)
         {
             var sourceDirectory = Path.Combine(TestScriptsFolder, folderName);
-            return new TestProject(folderName, TestScriptsFolder, sourceDirectory, shadowCopied: false);
+            return new TestProject(
+                folderName,
+                TestScriptsFolder,
+                sourceDirectory,
+                shadowCopied: false
+            );
         }
 
         public async Task<ITestProject> GetTestProjectAsync(string name, bool shadowCopy = true)
@@ -95,13 +108,21 @@ namespace TestUtility
             var sourceDirectory = Path.Combine(testProjectsFolder, name);
             if (!shadowCopy)
             {
-                return new TestProject(name, testProjectsFolder, sourceDirectory, shadowCopied: false);
+                return new TestProject(
+                    name,
+                    testProjectsFolder,
+                    sourceDirectory,
+                    shadowCopied: false
+                );
             }
 
             var baseDirectory = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
             var targetDirectory = Path.Combine(baseDirectory, name);
 
-            await CopyDirectoryAsync(new DirectoryInfo(sourceDirectory), new DirectoryInfo(targetDirectory));
+            await CopyDirectoryAsync(
+                new DirectoryInfo(sourceDirectory),
+                new DirectoryInfo(targetDirectory)
+            );
 
             var globalJsonFileInfo = new FileInfo(Path.Combine(testProjectsFolder, "global.json"));
             await CopyFileAsync(globalJsonFileInfo, new DirectoryInfo(baseDirectory));

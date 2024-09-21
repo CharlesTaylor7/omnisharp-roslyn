@@ -25,9 +25,7 @@ namespace OmniSharp.Utilities
                     return Array.Empty<string>();
                 }
 
-                s_searchPaths = path
-                    .Split(Path.PathSeparator)
-                    .Select(p => p.Trim('"'));
+                s_searchPaths = path.Split(Path.PathSeparator).Select(p => p.Trim('"'));
             }
 
             return s_searchPaths;
@@ -35,11 +33,22 @@ namespace OmniSharp.Utilities
 
         // http://man7.org/linux/man-pages/man3/realpath.3.html
         // CharSet.Ansi is UTF8 on Unix
-        [DllImport("libc", EntryPoint = "realpath", CharSet = CharSet.Ansi, ExactSpelling = true, CallingConvention = CallingConvention.Cdecl)]
+        [DllImport(
+            "libc",
+            EntryPoint = "realpath",
+            CharSet = CharSet.Ansi,
+            ExactSpelling = true,
+            CallingConvention = CallingConvention.Cdecl
+        )]
         private static extern IntPtr Unix_realpath(string path, IntPtr buffer);
 
         // http://man7.org/linux/man-pages/man3/free.3.html
-        [DllImport("libc", EntryPoint = "free", ExactSpelling = true, CallingConvention = CallingConvention.Cdecl)]
+        [DllImport(
+            "libc",
+            EntryPoint = "free",
+            ExactSpelling = true,
+            CallingConvention = CallingConvention.Cdecl
+        )]
         private static extern void Unix_free(IntPtr ptr);
 
         /// <summary>
@@ -50,7 +59,9 @@ namespace OmniSharp.Utilities
         {
             if (IsWindows)
             {
-                throw new PlatformNotSupportedException($"{nameof(RealPath)} can only be called on Unix.");
+                throw new PlatformNotSupportedException(
+                    $"{nameof(RealPath)} can only be called on Unix."
+                );
             }
 
             var ptr = Unix_realpath(path, IntPtr.Zero);
@@ -72,7 +83,10 @@ namespace OmniSharp.Utilities
             // word by word, until we find a word that parses as a version number. Normally, this should
             // be the *fifth* word. E.g. "Mono JIT compiler version 4.8.0"
 
-            var lines = output.Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries);
+            var lines = output.Split(
+                new[] { Environment.NewLine },
+                StringSplitOptions.RemoveEmptyEntries
+            );
             var words = lines[0].Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
 
             foreach (var word in words)
@@ -139,9 +153,7 @@ namespace OmniSharp.Utilities
                 var monoLibDirPath = Path.Combine(monoDirPath, "..", "lib", "mono");
                 monoLibDirPath = Path.GetFullPath(monoLibDirPath);
 
-                s_monoLibDirPath = Directory.Exists(monoLibDirPath)
-                    ? monoLibDirPath
-                    : null;
+                s_monoLibDirPath = Directory.Exists(monoLibDirPath) ? monoLibDirPath : null;
             }
 
             return s_monoLibDirPath;
@@ -163,9 +175,7 @@ namespace OmniSharp.Utilities
             var monoMSBuildDirPath = Path.Combine(monoLibDirPath, "msbuild");
             monoMSBuildDirPath = Path.GetFullPath(monoMSBuildDirPath);
 
-            return Directory.Exists(monoMSBuildDirPath)
-                ? monoMSBuildDirPath
-                : null;
+            return Directory.Exists(monoMSBuildDirPath) ? monoMSBuildDirPath : null;
         }
     }
 }

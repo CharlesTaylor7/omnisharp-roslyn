@@ -1,4 +1,4 @@
-﻿using System.Diagnostics;
+using System.Diagnostics;
 using System.IO;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
@@ -47,10 +47,11 @@ namespace OmniSharp.Http.Middleware
                 LogResponse(context);
 
                 await context.Response.Body.CopyToAsync(responseBody);
-
             }
 
-            _logger.LogInformation($"{context.Request.Path}: {context.Response.StatusCode} {stopwatch.ElapsedMilliseconds}ms");
+            _logger.LogInformation(
+                $"{context.Request.Path}: {context.Response.StatusCode} {stopwatch.ElapsedMilliseconds}ms"
+            );
         }
 
         private void LogRequest(HttpContext context)

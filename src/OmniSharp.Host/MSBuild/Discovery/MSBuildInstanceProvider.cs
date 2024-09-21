@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Immutable;
 using System.Diagnostics;
 using System.IO;
@@ -10,7 +10,8 @@ namespace OmniSharp.MSBuild.Discovery
     internal abstract class MSBuildInstanceProvider
     {
         protected readonly ILogger Logger;
-        protected static readonly ImmutableArray<MSBuildInstance> NoInstances = ImmutableArray<MSBuildInstance>.Empty;
+        protected static readonly ImmutableArray<MSBuildInstance> NoInstances =
+            ImmutableArray<MSBuildInstance>.Empty;
 
         protected MSBuildInstanceProvider(ILoggerFactory loggerFactory)
         {
@@ -24,10 +25,12 @@ namespace OmniSharp.MSBuild.Discovery
         /// </summary>
         protected string FindMSBuildToolsPath(string basePath)
         {
-            if (TryGetToolsPath("Current", "Bin", out var result) ||
-                TryGetToolsPath("Current", "bin", out result) ||
-                TryGetToolsPath("15.0", "Bin", out result) ||
-                TryGetToolsPath("15.0", "bin", out result))
+            if (
+                TryGetToolsPath("Current", "Bin", out var result)
+                || TryGetToolsPath("Current", "bin", out result)
+                || TryGetToolsPath("15.0", "Bin", out result)
+                || TryGetToolsPath("15.0", "bin", out result)
+            )
             {
                 return result;
             }
@@ -45,13 +48,17 @@ namespace OmniSharp.MSBuild.Discovery
                     return false;
                 }
 
-                var versionDir = baseDir.EnumerateDirectories().FirstOrDefault(di => di.Name == versionPath);
+                var versionDir = baseDir
+                    .EnumerateDirectories()
+                    .FirstOrDefault(di => di.Name == versionPath);
                 if (versionDir == null)
                 {
                     return false;
                 }
 
-                var binDir = versionDir.EnumerateDirectories().FirstOrDefault(di => di.Name == binPath);
+                var binDir = versionDir
+                    .EnumerateDirectories()
+                    .FirstOrDefault(di => di.Name == binPath);
                 if (binDir == null)
                 {
                     return false;
@@ -66,11 +73,7 @@ namespace OmniSharp.MSBuild.Discovery
         {
             var msbuildVersionInfo = FileVersionInfo.GetVersionInfo(microsoftBuildPath);
             var semanticVersion = SemanticVersion.Parse(msbuildVersionInfo.ProductVersion);
-            return new Version(
-                semanticVersion.Major,
-                semanticVersion.Minor,
-                semanticVersion.Patch
-            );
+            return new Version(semanticVersion.Major, semanticVersion.Minor, semanticVersion.Patch);
         }
     }
 }

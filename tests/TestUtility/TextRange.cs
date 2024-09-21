@@ -1,5 +1,5 @@
-﻿using OmniSharp.Models.V2;
-using System;
+﻿using System;
+using OmniSharp.Models.V2;
 using Range = OmniSharp.Models.V2.Range;
 
 namespace TestUtility
@@ -17,8 +17,8 @@ namespace TestUtility
             this.End = end;
         }
 
-        public Range ToRange()
-            => new Range { Start = this.Start.ToPoint(), End = this.End.ToPoint() };
+        public Range ToRange() =>
+            new Range { Start = this.Start.ToPoint(), End = this.End.ToPoint() };
 
         public int CompareTo(TextRange other)
         {
@@ -42,35 +42,31 @@ namespace TestUtility
             return 0;
         }
 
-        public override bool Equals(object obj)
-            => obj is TextRange && Equals((TextRange)obj);
+        public override bool Equals(object obj) => obj is TextRange && Equals((TextRange)obj);
 
-        public bool Equals(TextRange other)
-            => this.Start == other.Start && this.End == other.End;
+        public bool Equals(TextRange other) => this.Start == other.Start && this.End == other.End;
 
-        public override int GetHashCode()
-            => this.Start.GetHashCode() ^ this.End.GetHashCode();
+        public override int GetHashCode() => this.Start.GetHashCode() ^ this.End.GetHashCode();
 
-        public override string ToString()
-            => $"{{Start={this.Start}, End={this.End}}}";
+        public override string ToString() => $"{{Start={this.Start}, End={this.End}}}";
 
-        public static bool operator ==(TextRange range11, TextRange range12)
-            => range11.Equals(range12);
+        public static bool operator ==(TextRange range11, TextRange range12) =>
+            range11.Equals(range12);
 
-        public static bool operator !=(TextRange range11, TextRange range12)
-            => !range11.Equals(range12);
+        public static bool operator !=(TextRange range11, TextRange range12) =>
+            !range11.Equals(range12);
 
-        public static bool operator <(TextRange range11, TextRange range12)
-            => range11.CompareTo(range12) < 0;
+        public static bool operator <(TextRange range11, TextRange range12) =>
+            range11.CompareTo(range12) < 0;
 
-        public static bool operator <=(TextRange range11, TextRange range12)
-            => range11.CompareTo(range12) <= 0;
+        public static bool operator <=(TextRange range11, TextRange range12) =>
+            range11.CompareTo(range12) <= 0;
 
-        public static bool operator >(TextRange range11, TextRange range12)
-            => range11.CompareTo(range12) > 0;
+        public static bool operator >(TextRange range11, TextRange range12) =>
+            range11.CompareTo(range12) > 0;
 
-        public static bool operator >=(TextRange range11, TextRange range12)
-            => range11.CompareTo(range12) >= 0;
+        public static bool operator >=(TextRange range11, TextRange range12) =>
+            range11.CompareTo(range12) >= 0;
 
         public Range GetSelection()
         {
@@ -82,7 +78,7 @@ namespace TestUtility
             return new Range
             {
                 Start = new Point { Line = Start.Line, Column = Start.Offset },
-                End = new Point { Line = End.Line, Column = End.Offset }
+                End = new Point { Line = End.Line, Column = End.Offset },
             };
         }
     }

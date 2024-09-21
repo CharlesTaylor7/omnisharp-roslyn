@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 
 namespace OmniSharp.Utilities
 {
@@ -11,7 +11,10 @@ namespace OmniSharp.Utilities
                 private PollingFileChangeToken _changeToken;
                 private int _callbackId;
 
-                public DisposableChangeCallback(PollingFileChangeToken pollingFileChangeToken, int callbackId)
+                public DisposableChangeCallback(
+                    PollingFileChangeToken pollingFileChangeToken,
+                    int callbackId
+                )
                 {
                     _changeToken = pollingFileChangeToken;
                     _callbackId = callbackId;

@@ -38,7 +38,8 @@ namespace OmniSharp
                     new PhysicalFileProvider(_environment.TargetDirectory).WrapForPolling(),
                     Constants.OptionsFile,
                     optional: true,
-                    reloadOnChange: true);
+                    reloadOnChange: true
+                );
 
                 // bootstrap additional host configuration at the end
                 additionalSetup?.Invoke(configBuilder);

@@ -1,7 +1,11 @@
 using OmniSharp.Mef;
 
-﻿namespace OmniSharp.Models.CodeAction
+namespace OmniSharp.Models.CodeAction
 {
-    [OmniSharpEndpoint(OmniSharpEndpoints.RunCodeAction, typeof(RunCodeActionRequest), typeof(RunCodeActionResponse))]
+    [OmniSharpEndpoint(
+        OmniSharpEndpoints.RunCodeAction,
+        typeof(RunCodeActionRequest),
+        typeof(RunCodeActionResponse)
+    )]
     public class RunCodeActionRequest : CodeActionRequest { }
 }

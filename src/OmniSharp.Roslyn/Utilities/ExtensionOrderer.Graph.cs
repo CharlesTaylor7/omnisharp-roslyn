@@ -1,4 +1,4 @@
-﻿// Adapted from ExtensionOrderer in Roslyn
+// Adapted from ExtensionOrderer in Roslyn
 using System.Collections.Generic;
 
 namespace OmniSharp.Utilities
@@ -10,11 +10,13 @@ namespace OmniSharp.Utilities
             //Dictionary to map between nodes and the names
             private Dictionary<string, Node<T>> Nodes { get; }
             private List<Node<T>> AllNodes { get; }
+
             private Graph(List<Node<T>> nodesList)
             {
                 Nodes = new Dictionary<string, Node<T>>();
                 AllNodes = nodesList;
             }
+
             internal static Graph<T> GetGraph(List<Node<T>> nodesList)
             {
                 var graph = new Graph<T>(nodesList);

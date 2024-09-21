@@ -1,29 +1,31 @@
-﻿using OmniSharp.Cake.Services.RequestHandlers.Navigation;
-using OmniSharp.Models.V2.GotoDefinition;
-
-using System.IO;
+﻿using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-
+using OmniSharp.Cake.Services.RequestHandlers.Navigation;
+using OmniSharp.Models.V2.GotoDefinition;
 using TestUtility;
-
 using Xunit;
 using Xunit.Abstractions;
 
 namespace OmniSharp.Cake.Tests
 {
-    public sealed class GotoDefinitionV2Facts : CakeSingleRequestHandlerTestFixture<GotoDefinitionV2Handler>
+    public sealed class GotoDefinitionV2Facts
+        : CakeSingleRequestHandlerTestFixture<GotoDefinitionV2Handler>
     {
-        public GotoDefinitionV2Facts(ITestOutputHelper testOutput) : base(testOutput)
-        {
-        }
+        public GotoDefinitionV2Facts(ITestOutputHelper testOutput)
+            : base(testOutput) { }
 
         protected override string EndpointName => OmniSharpEndpoints.V2.GotoDefinition;
 
         [Fact]
         public async Task ShouldSupportLoadedFiles()
         {
-            using (var testProject = await TestAssets.Instance.GetTestProjectAsync("CakeProject", shadowCopy: false))
+            using (
+                var testProject = await TestAssets.Instance.GetTestProjectAsync(
+                    "CakeProject",
+                    shadowCopy: false
+                )
+            )
             using (var host = CreateOmniSharpHost(testProject.Directory))
             {
                 var fileName = Path.Combine(testProject.Directory, "build.cake");
@@ -32,7 +34,7 @@ namespace OmniSharp.Cake.Tests
                 {
                     FileName = fileName,
                     Line = 8,
-                    Column = 10
+                    Column = 10,
                 };
 
                 var requestHandler = GetRequestHandler(host);
@@ -42,7 +44,10 @@ namespace OmniSharp.Cake.Tests
                 Assert.Single(response.Definitions);
                 var definition = response.Definitions.Single();
 
-                Assert.Equal(Path.Combine(testProject.Directory, "foo.cake"), definition.Location.FileName);
+                Assert.Equal(
+                    Path.Combine(testProject.Directory, "foo.cake"),
+                    definition.Location.FileName
+                );
                 Assert.Equal(4, definition.Location.Range.Start.Line);
                 Assert.Equal(22, definition.Location.Range.Start.Column);
             }
@@ -51,7 +56,12 @@ namespace OmniSharp.Cake.Tests
         [Fact]
         public async Task ShouldNavigateToAProperty()
         {
-            using (var testProject = await TestAssets.Instance.GetTestProjectAsync("CakeProject", shadowCopy: false))
+            using (
+                var testProject = await TestAssets.Instance.GetTestProjectAsync(
+                    "CakeProject",
+                    shadowCopy: false
+                )
+            )
             using (var host = CreateOmniSharpHost(testProject.Directory))
             {
                 var fileName = Path.Combine(testProject.Directory, "build.cake");
@@ -60,7 +70,7 @@ namespace OmniSharp.Cake.Tests
                 {
                     FileName = fileName,
                     Line = 11,
-                    Column = 20
+                    Column = 20,
                 };
 
                 var requestHandler = GetRequestHandler(host);
@@ -70,7 +80,10 @@ namespace OmniSharp.Cake.Tests
                 Assert.Single(response.Definitions);
                 var definition = response.Definitions.Single();
 
-                Assert.Equal(Path.Combine(testProject.Directory, "foo.cake"), definition.Location.FileName);
+                Assert.Equal(
+                    Path.Combine(testProject.Directory, "foo.cake"),
+                    definition.Location.FileName
+                );
                 Assert.Equal(0, definition.Location.Range.Start.Line);
                 Assert.Equal(4, definition.Location.Range.Start.Column);
             }
@@ -79,7 +92,12 @@ namespace OmniSharp.Cake.Tests
         [Fact]
         public async Task ShouldNavigateIntoDslMetadataWithoutGenericParams()
         {
-            using (var testProject = await TestAssets.Instance.GetTestProjectAsync("CakeProject", shadowCopy: false))
+            using (
+                var testProject = await TestAssets.Instance.GetTestProjectAsync(
+                    "CakeProject",
+                    shadowCopy: false
+                )
+            )
             using (var host = CreateOmniSharpHost(testProject.Directory))
             {
                 var fileName = Path.Combine(testProject.Directory, "build.cake");
@@ -89,7 +107,7 @@ namespace OmniSharp.Cake.Tests
                     FileName = fileName,
                     Line = 11,
                     Column = 10,
-                    WantMetadata = true
+                    WantMetadata = true,
                 };
 
                 var requestHandler = GetRequestHandler(host);
@@ -110,7 +128,12 @@ namespace OmniSharp.Cake.Tests
         [Fact]
         public async Task ShouldNavigateIntoDslMetadataWithGenericParams()
         {
-            using (var testProject = await TestAssets.Instance.GetTestProjectAsync("CakeProject", shadowCopy: false))
+            using (
+                var testProject = await TestAssets.Instance.GetTestProjectAsync(
+                    "CakeProject",
+                    shadowCopy: false
+                )
+            )
             using (var host = CreateOmniSharpHost(testProject.Directory))
             {
                 var fileName = Path.Combine(testProject.Directory, "build.cake");
@@ -120,7 +143,7 @@ namespace OmniSharp.Cake.Tests
                     FileName = fileName,
                     Line = 0,
                     Column = 16,
-                    WantMetadata = true
+                    WantMetadata = true,
                 };
 
                 var requestHandler = GetRequestHandler(host);
@@ -141,7 +164,12 @@ namespace OmniSharp.Cake.Tests
         [Fact]
         public async Task ShouldNavigateIntoDslMetadataProperty()
         {
-            using (var testProject = await TestAssets.Instance.GetTestProjectAsync("CakeProject", shadowCopy: false))
+            using (
+                var testProject = await TestAssets.Instance.GetTestProjectAsync(
+                    "CakeProject",
+                    shadowCopy: false
+                )
+            )
             using (var host = CreateOmniSharpHost(testProject.Directory))
             {
                 var fileName = Path.Combine(testProject.Directory, "build.cake");
@@ -151,7 +179,7 @@ namespace OmniSharp.Cake.Tests
                     FileName = fileName,
                     Line = 12,
                     Column = 37,
-                    WantMetadata = true
+                    WantMetadata = true,
                 };
 
                 var requestHandler = GetRequestHandler(host);
@@ -172,7 +200,12 @@ namespace OmniSharp.Cake.Tests
         [Fact]
         public async Task ShouldFindMultipleLocationsForPartial()
         {
-            using (var testProject = await TestAssets.Instance.GetTestProjectAsync("CakeProject", shadowCopy: false))
+            using (
+                var testProject = await TestAssets.Instance.GetTestProjectAsync(
+                    "CakeProject",
+                    shadowCopy: false
+                )
+            )
             using (var host = CreateOmniSharpHost(testProject.Directory))
             {
                 var fileName = Path.Combine(testProject.Directory, "build.cake");
@@ -181,7 +214,7 @@ namespace OmniSharp.Cake.Tests
                 {
                     FileName = fileName,
                     Line = 7,
-                    Column = 5
+                    Column = 5,
                 };
 
                 var requestHandler = GetRequestHandler(host);
@@ -202,7 +235,8 @@ namespace OmniSharp.Cake.Tests
                         Assert.Equal(expectedFile, d.Location.FileName);
                         Assert.Equal(15, d.Location.Range.Start.Line);
                         Assert.Equal(21, d.Location.Range.Start.Column);
-                    });
+                    }
+                );
             }
         }
     }

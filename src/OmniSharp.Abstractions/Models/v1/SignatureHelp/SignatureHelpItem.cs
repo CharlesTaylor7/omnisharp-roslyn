@@ -1,6 +1,6 @@
-using OmniSharp.Models.TypeLookup;
 using System.Collections.Generic;
 using System.Linq;
+using OmniSharp.Models.TypeLookup;
 
 namespace OmniSharp.Models.SignatureHelp
 {
@@ -35,7 +35,11 @@ namespace OmniSharp.Models.SignatureHelp
             return 17 * Name.GetHashCode()
                 + 23 * Label.GetHashCode()
                 + 31 * Documentation.GetHashCode()
-                + Enumerable.Aggregate(Parameters, 37, (current, element) => current + element.GetHashCode());
+                + Enumerable.Aggregate(
+                    Parameters,
+                    37,
+                    (current, element) => current + element.GetHashCode()
+                );
         }
     }
 }

@@ -21,9 +21,7 @@ namespace OmniSharp.Cake.Tests
     public class CodeActionsV2Facts : AbstractTestFixture
     {
         public CodeActionsV2Facts(ITestOutputHelper output)
-            : base(output)
-        {
-        }
+            : base(output) { }
 
         [Fact]
         public async Task Can_get_code_actions_from_roslyn()
@@ -31,7 +29,10 @@ namespace OmniSharp.Cake.Tests
             const string code = "var regex = new Reg[||]ex();";
 
             var refactorings = await FindRefactoringNamesAsync(code);
-            Assert.Contains(("using System.Text.RegularExpressions;", CodeActionKind.QuickFix), refactorings);
+            Assert.Contains(
+                ("using System.Text.RegularExpressions;", CodeActionKind.QuickFix),
+                refactorings
+            );
         }
 
         [Fact]
@@ -70,12 +71,30 @@ namespace OmniSharp.Cake.Tests
                 ("Extract method", CodeActionKind.RefactorExtract),
                 ("Extract local function", CodeActionKind.RefactorExtract),
                 ("Introduce local for 'Regex.Match(\"foo\", \"bar\")'", CodeActionKind.Refactor),
-                ("Introduce parameter for 'Regex.Match(\"foo\", \"bar\")' -> and update call sites directly", CodeActionKind.Refactor),
-                ("Introduce parameter for 'Regex.Match(\"foo\", \"bar\")' -> into extracted method to invoke at call sites", CodeActionKind.Refactor),
-                ("Introduce parameter for 'Regex.Match(\"foo\", \"bar\")' -> into new overload", CodeActionKind.Refactor),
-                ("Introduce parameter for all occurrences of 'Regex.Match(\"foo\", \"bar\")' -> and update call sites directly", CodeActionKind.Refactor),
-                ("Introduce parameter for all occurrences of 'Regex.Match(\"foo\", \"bar\")' -> into extracted method to invoke at call sites", CodeActionKind.Refactor),
-                ("Introduce parameter for all occurrences of 'Regex.Match(\"foo\", \"bar\")' -> into new overload", CodeActionKind.Refactor)
+                (
+                    "Introduce parameter for 'Regex.Match(\"foo\", \"bar\")' -> and update call sites directly",
+                    CodeActionKind.Refactor
+                ),
+                (
+                    "Introduce parameter for 'Regex.Match(\"foo\", \"bar\")' -> into extracted method to invoke at call sites",
+                    CodeActionKind.Refactor
+                ),
+                (
+                    "Introduce parameter for 'Regex.Match(\"foo\", \"bar\")' -> into new overload",
+                    CodeActionKind.Refactor
+                ),
+                (
+                    "Introduce parameter for all occurrences of 'Regex.Match(\"foo\", \"bar\")' -> and update call sites directly",
+                    CodeActionKind.Refactor
+                ),
+                (
+                    "Introduce parameter for all occurrences of 'Regex.Match(\"foo\", \"bar\")' -> into extracted method to invoke at call sites",
+                    CodeActionKind.Refactor
+                ),
+                (
+                    "Introduce parameter for all occurrences of 'Regex.Match(\"foo\", \"bar\")' -> into new overload",
+                    CodeActionKind.Refactor
+                ),
             };
             AssertEx.Equal(expected, refactorings);
         }
@@ -84,7 +103,7 @@ namespace OmniSharp.Cake.Tests
         public async Task Can_extract_method()
         {
             const string code =
-@"public class Class1
+                @"public class Class1
 {
     public void Whatever()
     {
@@ -94,11 +113,12 @@ namespace OmniSharp.Cake.Tests
 
             var expected = new LinePositionSpanTextChange
             {
-                NewText = "NewMethod();\n    }\n\n    private static void NewMethod()\n    {\n        ",
+                NewText =
+                    "NewMethod();\n    }\n\n    private static void NewMethod()\n    {\n        ",
                 StartLine = 4,
                 StartColumn = 8,
                 EndLine = 4,
-                EndColumn = 8
+                EndColumn = 8,
             };
 
             var response = await RunRefactoringAsync(code, "Extract method");
@@ -126,16 +146,29 @@ namespace OmniSharp.Cake.Tests
             Assert.Empty(refactorings.Where(x => x.Name.StartsWith("Rename file to")));
         }
 
-        private async Task<RunCodeActionResponse> RunRefactoringAsync(string code, string refactoringName)
+        private async Task<RunCodeActionResponse> RunRefactoringAsync(
+            string code,
+            string refactoringName
+        )
         {
             var refactorings = await FindRefactoringsAsync(code);
-            Assert.Contains(refactoringName, refactorings.Select(x => x.Name), StringComparer.OrdinalIgnoreCase);
+            Assert.Contains(
+                refactoringName,
+                refactorings.Select(x => x.Name),
+                StringComparer.OrdinalIgnoreCase
+            );
 
-            var identifier = refactorings.First(action => action.Name.Equals(refactoringName, StringComparison.OrdinalIgnoreCase)).Identifier;
+            var identifier = refactorings
+                .First(action =>
+                    action.Name.Equals(refactoringName, StringComparison.OrdinalIgnoreCase)
+                )
+                .Identifier;
             return await RunRefactoringsAsync(code, identifier);
         }
 
-        private async Task<IEnumerable<(string Name, string CodeActionKind)>> FindRefactoringNamesAsync(string code)
+        private async Task<
+            IEnumerable<(string Name, string CodeActionKind)>
+        > FindRefactoringNamesAsync(string code)
         {
             var codeActions = await FindRefactoringsAsync(code);
 
@@ -144,10 +177,18 @@ namespace OmniSharp.Cake.Tests
 
         private async Task<IEnumerable<OmniSharpCodeAction>> FindRefactoringsAsync(string code)
         {
-            using (var testProject = await TestAssets.Instance.GetTestProjectAsync("CakeProject", shadowCopy: false))
+            using (
+                var testProject = await TestAssets.Instance.GetTestProjectAsync(
+                    "CakeProject",
+                    shadowCopy: false
+                )
+            )
             using (var host = CreateOmniSharpHost(testProject.Directory))
             {
-                var testFile = new TestFile(Path.Combine(testProject.Directory, "build.cake"), code);
+                var testFile = new TestFile(
+                    Path.Combine(testProject.Directory, "build.cake"),
+                    code
+                );
                 var requestHandler = GetGetCodeActionsHandler(host);
 
                 var span = testFile.Content.GetSpans().Single();
@@ -168,7 +209,7 @@ namespace OmniSharp.Cake.Tests
                     Column = request.Column,
                     FileName = request.FileName,
                     Line = request.Line,
-                    FromDisk = false
+                    FromDisk = false,
                 };
 
                 await GetUpdateBufferHandler(host).Handle(updateBufferRequest);
@@ -179,12 +220,23 @@ namespace OmniSharp.Cake.Tests
             }
         }
 
-        private async Task<RunCodeActionResponse> RunRefactoringsAsync(string code, string identifier)
+        private async Task<RunCodeActionResponse> RunRefactoringsAsync(
+            string code,
+            string identifier
+        )
         {
-            using (var testProject = await TestAssets.Instance.GetTestProjectAsync("CakeProject", shadowCopy: false))
+            using (
+                var testProject = await TestAssets.Instance.GetTestProjectAsync(
+                    "CakeProject",
+                    shadowCopy: false
+                )
+            )
             using (var host = CreateOmniSharpHost(testProject.Directory))
             {
-                var testFile = new TestFile(Path.Combine(testProject.Directory, "build.cake"), code);
+                var testFile = new TestFile(
+                    Path.Combine(testProject.Directory, "build.cake"),
+                    code
+                );
                 var requestHandler = GetRunCodeActionsHandler(host);
 
                 var span = testFile.Content.GetSpans().Single();
@@ -199,7 +251,7 @@ namespace OmniSharp.Cake.Tests
                     Buffer = testFile.Content.Code,
                     Identifier = identifier,
                     WantsTextChanges = true,
-                    WantsAllCodeActionOperations = true
+                    WantsAllCodeActionOperations = true,
                 };
 
                 var updateBufferRequest = new UpdateBufferRequest
@@ -208,7 +260,7 @@ namespace OmniSharp.Cake.Tests
                     Column = request.Column,
                     FileName = request.FileName,
                     Line = request.Line,
-                    FromDisk = false
+                    FromDisk = false,
                 };
 
                 await GetUpdateBufferHandler(host).Handle(updateBufferRequest);
@@ -227,18 +279,24 @@ namespace OmniSharp.Cake.Tests
             return new Range
             {
                 Start = new Point { Line = range.Start.Line, Column = range.Start.Offset },
-                End = new Point { Line = range.End.Line, Column = range.End.Offset }
+                End = new Point { Line = range.End.Line, Column = range.End.Offset },
             };
         }
 
         private static GetCodeActionsHandler GetGetCodeActionsHandler(OmniSharpTestHost host)
         {
-            return GetRequestHandler<GetCodeActionsHandler>(host, OmniSharpEndpoints.V2.GetCodeActions);
+            return GetRequestHandler<GetCodeActionsHandler>(
+                host,
+                OmniSharpEndpoints.V2.GetCodeActions
+            );
         }
 
         private static RunCodeActionsHandler GetRunCodeActionsHandler(OmniSharpTestHost host)
         {
-            return GetRequestHandler<RunCodeActionsHandler>(host, OmniSharpEndpoints.V2.RunCodeAction);
+            return GetRequestHandler<RunCodeActionsHandler>(
+                host,
+                OmniSharpEndpoints.V2.RunCodeAction
+            );
         }
 
         private static UpdateBufferHandler GetUpdateBufferHandler(OmniSharpTestHost host)
@@ -246,7 +304,11 @@ namespace OmniSharp.Cake.Tests
             return GetRequestHandler<UpdateBufferHandler>(host, OmniSharpEndpoints.UpdateBuffer);
         }
 
-        private static TRequestHandler GetRequestHandler<TRequestHandler>(OmniSharpTestHost host, string endpoint) where TRequestHandler : IRequestHandler
+        private static TRequestHandler GetRequestHandler<TRequestHandler>(
+            OmniSharpTestHost host,
+            string endpoint
+        )
+            where TRequestHandler : IRequestHandler
         {
             return host.GetRequestHandler<TRequestHandler>(endpoint, Constants.LanguageNames.Cake);
         }

@@ -7,7 +7,7 @@ namespace OmniSharp.DotNetTest.Models
         public string DisplayName { get; set; }
 
         public string Source { get; set; }
-        
+
         public string CodeFilePath { get; set; }
 
         public int LineNumber { get; set; }

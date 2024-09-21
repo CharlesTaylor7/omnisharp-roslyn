@@ -1,4 +1,4 @@
-﻿using System.Composition;
+using System.Composition;
 using System.Threading.Tasks;
 using OmniSharp.Cake.Extensions;
 using OmniSharp.Mef;
@@ -11,11 +11,13 @@ namespace OmniSharp.Cake.Services.RequestHandlers.Refactoring
     public class RenameHandler : CakeRequestHandler<RenameRequest, RenameResponse>
     {
         [ImportingConstructor]
-        public RenameHandler(OmniSharpWorkspace workspace) : base(workspace)
-        {
-        }
+        public RenameHandler(OmniSharpWorkspace workspace)
+            : base(workspace) { }
 
-        protected override Task<RenameResponse> TranslateResponse(RenameResponse response, RenameRequest request)
+        protected override Task<RenameResponse> TranslateResponse(
+            RenameResponse response,
+            RenameRequest request
+        )
         {
             return response.TranslateAsync(Workspace, request);
         }

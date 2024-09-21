@@ -17,22 +17,35 @@ namespace OmniSharp.LanguageServerProtocol.Handlers
     {
         public static IEnumerable<IJsonRpcHandler> Enumerate(RequestHandlers handlers)
         {
-            foreach (var (selector, handler) in handlers
-                .OfType<Mef.IRequestHandler<FormatRangeRequest, FormatRangeResponse>>())
+            foreach (
+                var (selector, handler) in handlers.OfType<Mef.IRequestHandler<
+                    FormatRangeRequest,
+                    FormatRangeResponse
+                >>()
+            )
                 if (handler != null)
                     yield return new OmniSharpDocumentFormatRangeHandler(handler, selector);
         }
 
-        private readonly Mef.IRequestHandler<FormatRangeRequest, FormatRangeResponse> _formatRangeHandler;
+        private readonly Mef.IRequestHandler<
+            FormatRangeRequest,
+            FormatRangeResponse
+        > _formatRangeHandler;
         private readonly TextDocumentSelector _documentSelector;
 
-        public OmniSharpDocumentFormatRangeHandler(Mef.IRequestHandler<FormatRangeRequest, FormatRangeResponse> formatRangeHandler, TextDocumentSelector documentSelector)
+        public OmniSharpDocumentFormatRangeHandler(
+            Mef.IRequestHandler<FormatRangeRequest, FormatRangeResponse> formatRangeHandler,
+            TextDocumentSelector documentSelector
+        )
         {
             _formatRangeHandler = formatRangeHandler;
             _documentSelector = documentSelector;
         }
 
-        public override async Task<TextEditContainer> Handle(DocumentRangeFormattingParams request, CancellationToken cancellationToken)
+        public override async Task<TextEditContainer> Handle(
+            DocumentRangeFormattingParams request,
+            CancellationToken cancellationToken
+        )
         {
             var omnisharpRequest = new FormatRangeRequest()
             {
@@ -44,14 +57,22 @@ namespace OmniSharp.LanguageServerProtocol.Handlers
             };
 
             var omnisharpResponse = await _formatRangeHandler.Handle(omnisharpRequest);
-            return omnisharpResponse.Changes.Select(change => new TextEdit()
-            {
-                NewText = change.NewText,
-                Range = new Range(new Position(change.StartLine, change.StartColumn), new Position(change.EndLine, change.EndColumn))
-            }).ToArray();
+            return omnisharpResponse
+                .Changes.Select(change => new TextEdit()
+                {
+                    NewText = change.NewText,
+                    Range = new Range(
+                        new Position(change.StartLine, change.StartColumn),
+                        new Position(change.EndLine, change.EndColumn)
+                    ),
+                })
+                .ToArray();
         }
 
-        protected override DocumentRangeFormattingRegistrationOptions CreateRegistrationOptions(DocumentRangeFormattingCapability capability, ClientCapabilities clientCapabilities)
+        protected override DocumentRangeFormattingRegistrationOptions CreateRegistrationOptions(
+            DocumentRangeFormattingCapability capability,
+            ClientCapabilities clientCapabilities
+        )
         {
             return new DocumentRangeFormattingRegistrationOptions()
             {

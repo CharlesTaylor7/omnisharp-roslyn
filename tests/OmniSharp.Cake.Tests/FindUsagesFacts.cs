@@ -13,39 +13,49 @@ namespace OmniSharp.Cake.Tests
 {
     public sealed class FindUsagesFacts : CakeSingleRequestHandlerTestFixture<FindUsagesHandler>
     {
-        public FindUsagesFacts(ITestOutputHelper testOutput) : base(testOutput)
-        {
-        }
+        public FindUsagesFacts(ITestOutputHelper testOutput)
+            : base(testOutput) { }
 
         protected override string EndpointName => OmniSharpEndpoints.FindUsages;
 
         [Fact]
         public async Task ShouldNotIncludeUsagesFromLoadedFilesWhenOnlyThisFileIsTrue()
         {
-            using (var testProject = await TestAssets.Instance.GetTestProjectAsync("CakeProject", shadowCopy: false))
+            using (
+                var testProject = await TestAssets.Instance.GetTestProjectAsync(
+                    "CakeProject",
+                    shadowCopy: false
+                )
+            )
             using (var host = CreateOmniSharpHost(testProject.Directory))
             {
                 var fileName = Path.Combine(testProject.Directory, "build.cake");
 
-                await GetUpdateBufferHandler(host).Handle(new UpdateBufferRequest
-                {
-                    Buffer = "Information(\"Hello World\");",
-                    FileName = Path.Combine(testProject.Directory, "foo.cake"),
-                    FromDisk = false
-                });
-                await GetUpdateBufferHandler(host).Handle(new UpdateBufferRequest
-                {
-                    Buffer = "#load foo.cake\nInformation(\"Hello World\");",
-                    FileName = fileName,
-                    FromDisk = false
-                });
+                await GetUpdateBufferHandler(host)
+                    .Handle(
+                        new UpdateBufferRequest
+                        {
+                            Buffer = "Information(\"Hello World\");",
+                            FileName = Path.Combine(testProject.Directory, "foo.cake"),
+                            FromDisk = false,
+                        }
+                    );
+                await GetUpdateBufferHandler(host)
+                    .Handle(
+                        new UpdateBufferRequest
+                        {
+                            Buffer = "#load foo.cake\nInformation(\"Hello World\");",
+                            FileName = fileName,
+                            FromDisk = false,
+                        }
+                    );
 
                 var request = new FindUsagesRequest
                 {
                     FileName = fileName,
                     Line = 1,
                     Column = 1,
-                    OnlyThisFile = true
+                    OnlyThisFile = true,
                 };
 
                 var requestHandler = GetRequestHandler(host);
@@ -58,31 +68,42 @@ namespace OmniSharp.Cake.Tests
         [Fact]
         public async Task ShouldIncludeUsagesFromLoadedFiles()
         {
-            using (var testProject = await TestAssets.Instance.GetTestProjectAsync("CakeProject", shadowCopy: false))
+            using (
+                var testProject = await TestAssets.Instance.GetTestProjectAsync(
+                    "CakeProject",
+                    shadowCopy: false
+                )
+            )
             using (var host = CreateOmniSharpHost(testProject.Directory))
             {
                 var fileName = Path.Combine(testProject.Directory, "build.cake");
                 var loadedFile = Path.Combine(testProject.Directory, "foo.cake");
 
-                await GetUpdateBufferHandler(host).Handle(new UpdateBufferRequest
-                {
-                    Buffer = "Information(\"Hello World\");",
-                    FileName = loadedFile,
-                    FromDisk = false
-                });
-                await GetUpdateBufferHandler(host).Handle(new UpdateBufferRequest
-                {
-                    Buffer = "#load foo.cake\nInformation(\"Hello World\");",
-                    FileName = fileName,
-                    FromDisk = false
-                });
+                await GetUpdateBufferHandler(host)
+                    .Handle(
+                        new UpdateBufferRequest
+                        {
+                            Buffer = "Information(\"Hello World\");",
+                            FileName = loadedFile,
+                            FromDisk = false,
+                        }
+                    );
+                await GetUpdateBufferHandler(host)
+                    .Handle(
+                        new UpdateBufferRequest
+                        {
+                            Buffer = "#load foo.cake\nInformation(\"Hello World\");",
+                            FileName = fileName,
+                            FromDisk = false,
+                        }
+                    );
 
                 var request = new FindUsagesRequest
                 {
                     FileName = fileName,
                     Line = 1,
                     Column = 1,
-                    OnlyThisFile = false
+                    OnlyThisFile = false,
                 };
 
                 var requestHandler = GetRequestHandler(host);

@@ -1,17 +1,18 @@
-﻿using System;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Linq;
 using System.IO;
+using System.Linq;
 using System.Reflection;
-using Microsoft.Extensions.Logging;
 using Microsoft.CodeAnalysis;
+using Microsoft.Extensions.Logging;
 
 namespace OmniSharp.Services
 {
     internal class AssemblyLoader : IAssemblyLoader
     {
-        private static readonly ConcurrentDictionary<string, Assembly> AssemblyCache = new ConcurrentDictionary<string, Assembly>(StringComparer.OrdinalIgnoreCase);
+        private static readonly ConcurrentDictionary<string, Assembly> AssemblyCache =
+            new ConcurrentDictionary<string, Assembly>(StringComparer.OrdinalIgnoreCase);
         private readonly ILogger _logger;
 
         public AssemblyLoader(ILoggerFactory loggerFactory)
@@ -37,7 +38,8 @@ namespace OmniSharp.Services
 
         public IReadOnlyList<Assembly> LoadAllFrom(string folderPath)
         {
-            if (string.IsNullOrWhiteSpace(folderPath)) return Array.Empty<Assembly>();
+            if (string.IsNullOrWhiteSpace(folderPath))
+                return Array.Empty<Assembly>();
 
             try
             {
@@ -56,14 +58,18 @@ namespace OmniSharp.Services
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, $"An error occurred when attempting to access '{folderPath}'.");
+                _logger.LogError(
+                    ex,
+                    $"An error occurred when attempting to access '{folderPath}'."
+                );
                 return Array.Empty<Assembly>();
             }
         }
 
         public Assembly LoadFrom(string assemblyPath, bool dontLockAssemblyOnDisk = false)
         {
-            if (string.IsNullOrWhiteSpace(assemblyPath)) return null;
+            if (string.IsNullOrWhiteSpace(assemblyPath))
+                return null;
 
             if (!AssemblyCache.TryGetValue(assemblyPath, out var assembly))
             {

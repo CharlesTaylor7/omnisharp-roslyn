@@ -32,19 +32,16 @@ namespace OmniSharp.Roslyn.CSharp.Services.Formatting
 
             if (request.WantsTextChanges)
             {
-                var textChanges = await FormattingWorker.GetFormattedTextChanges(document, _omnisharpOptions);
-                return new CodeFormatResponse()
-                {
-                    Changes = textChanges
-                };
+                var textChanges = await FormattingWorker.GetFormattedTextChanges(
+                    document,
+                    _omnisharpOptions
+                );
+                return new CodeFormatResponse() { Changes = textChanges };
             }
 
             var newText = await FormattingWorker.GetFormattedText(document, _omnisharpOptions);
 
-            return new CodeFormatResponse
-            {
-                Buffer = newText
-            };
+            return new CodeFormatResponse { Buffer = newText };
         }
     }
 }

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Composition;
@@ -26,11 +26,17 @@ namespace OmniSharp.Cake.Services
         private ScriptGenerationClient _generationService;
 
         [ImportingConstructor]
-        public CakeScriptService(IOmniSharpEnvironment environment, ICakeConfiguration cakeConfiguration, ILoggerFactory loggerFactory)
+        public CakeScriptService(
+            IOmniSharpEnvironment environment,
+            ICakeConfiguration cakeConfiguration,
+            ILoggerFactory loggerFactory
+        )
         {
             _environment = environment ?? throw new ArgumentNullException(nameof(environment));
-            _cakeConfiguration = cakeConfiguration ?? throw new ArgumentNullException(nameof(cakeConfiguration));
-            _loggerFactory = loggerFactory ?? throw new ArgumentNullException(nameof(loggerFactory));
+            _cakeConfiguration =
+                cakeConfiguration ?? throw new ArgumentNullException(nameof(cakeConfiguration));
+            _loggerFactory =
+                loggerFactory ?? throw new ArgumentNullException(nameof(loggerFactory));
             _cachedReferences = new Dictionary<string, ISet<string>>();
             _cachedUsings = new Dictionary<string, ISet<string>>();
             _logger = _loggerFactory.CreateLogger<CakeScriptService>();
@@ -38,7 +44,11 @@ namespace OmniSharp.Cake.Services
 
         public bool Initialize(CakeOptions options)
         {
-            var serverExecutablePath = ScriptGenerationToolResolver.GetExecutablePath(_environment.TargetDirectory, _cakeConfiguration, options);
+            var serverExecutablePath = ScriptGenerationToolResolver.GetExecutablePath(
+                _environment.TargetDirectory,
+                _cakeConfiguration,
+                options
+            );
 
             if (File.Exists(serverExecutablePath))
             {
@@ -46,11 +56,31 @@ namespace OmniSharp.Cake.Services
 
                 _generationService =
 #if NET472_OR_GREATER
-                    PlatformHelper.IsMono ?
-                        new ScriptGenerationClient(new MonoScriptGenerationProcess(serverExecutablePath, _environment, _loggerFactory), _environment.TargetDirectory, _loggerFactory) :
-                        new ScriptGenerationClient(serverExecutablePath, _environment.TargetDirectory, _loggerFactory);
+                PlatformHelper.IsMono
+                    ? new ScriptGenerationClient(
+                        new MonoScriptGenerationProcess(
+                            serverExecutablePath,
+                            _environment,
+                            _loggerFactory
+                        ),
+                        _environment.TargetDirectory,
+                        _loggerFactory
+                    )
+                    : new ScriptGenerationClient(
+                        serverExecutablePath,
+                        _environment.TargetDirectory,
+                        _loggerFactory
+                    );
 #else
-                    new ScriptGenerationClient(new DotnetScriptGenerationProcess(serverExecutablePath, _environment, _loggerFactory), _environment.TargetDirectory, _loggerFactory);
+                new ScriptGenerationClient(
+                    new DotnetScriptGenerationProcess(
+                        serverExecutablePath,
+                        _environment,
+                        _loggerFactory
+                    ),
+                    _environment.TargetDirectory,
+                    _loggerFactory
+                );
 #endif
             }
             else if (!string.IsNullOrEmpty(serverExecutablePath))
@@ -68,22 +98,20 @@ namespace OmniSharp.Cake.Services
                 throw new InvalidOperationException("Cake.Bakery not initialized.");
             }
 
-            if (!fileChange.FromDisk && fileChange.Buffer is null && fileChange.LineChanges.Count == 0)
+            if (
+                !fileChange.FromDisk
+                && fileChange.Buffer is null
+                && fileChange.LineChanges.Count == 0
+            )
             {
-                return new CakeScript
-                {
-                    Source = null
-                };
+                return new CakeScript { Source = null };
             }
 
             var cakeScript = _generationService.Generate(fileChange);
 
             if (string.IsNullOrEmpty(cakeScript?.Source))
             {
-                return new CakeScript
-                {
-                    Source = null
-                };
+                return new CakeScript { Source = null };
             }
 
             // Set line processor for generated aliases. TODO: Move to Cake.Bakery
@@ -97,7 +125,9 @@ namespace OmniSharp.Cake.Services
             if (!cakeScript.References.SetEquals(references))
             {
                 _cachedReferences[fileChange.FileName] = cakeScript.References;
-                OnReferencesChanged(new ReferencesChangedEventArgs(fileChange.FileName, cakeScript.References));
+                OnReferencesChanged(
+                    new ReferencesChangedEventArgs(fileChange.FileName, cakeScript.References)
+                );
             }
 
             // Check if usings changed
@@ -108,7 +138,9 @@ namespace OmniSharp.Cake.Services
             if (!cakeScript.Usings.SetEquals(usings))
             {
                 _cachedUsings[fileChange.FileName] = cakeScript.Usings;
-                OnUsingsChanged(new UsingsChangedEventArgs(fileChange.FileName, cakeScript.Usings.ToList()));
+                OnUsingsChanged(
+                    new UsingsChangedEventArgs(fileChange.FileName, cakeScript.Usings.ToList())
+                );
             }
 
             return cakeScript;

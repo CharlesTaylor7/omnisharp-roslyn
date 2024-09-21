@@ -1,4 +1,4 @@
-﻿using System.Composition;
+using System.Composition;
 using System.Linq;
 using System.Threading.Tasks;
 using OmniSharp.Cake.Extensions;
@@ -12,11 +12,13 @@ namespace OmniSharp.Cake.Services.RequestHandlers.Completion
     public class CompletionHandler : CakeRequestHandler<CompletionRequest, CompletionResponse>
     {
         [ImportingConstructor]
-        public CompletionHandler(OmniSharpWorkspace workspace) : base(workspace)
-        {
-        }
+        public CompletionHandler(OmniSharpWorkspace workspace)
+            : base(workspace) { }
 
-        protected override Task<CompletionResponse> TranslateResponse(CompletionResponse response, CompletionRequest request)
+        protected override Task<CompletionResponse> TranslateResponse(
+            CompletionResponse response,
+            CompletionRequest request
+        )
         {
             if (response.Items is { Count: > 0 })
             {
@@ -35,14 +37,17 @@ namespace OmniSharp.Cake.Services.RequestHandlers.Completion
 
     [Shared]
     [OmniSharpHandler(OmniSharpEndpoints.CompletionResolve, Constants.LanguageNames.Cake)]
-    public class CompletionResolveHandler : CakeRequestHandler<CompletionResolveRequest, CompletionResolveResponse>
+    public class CompletionResolveHandler
+        : CakeRequestHandler<CompletionResolveRequest, CompletionResolveResponse>
     {
         [ImportingConstructor]
-        public CompletionResolveHandler(OmniSharpWorkspace workspace) : base(workspace)
-        {
-        }
+        public CompletionResolveHandler(OmniSharpWorkspace workspace)
+            : base(workspace) { }
 
-        protected override Task<CompletionResolveResponse> TranslateResponse(CompletionResolveResponse response, CompletionResolveRequest request)
+        protected override Task<CompletionResolveResponse> TranslateResponse(
+            CompletionResolveResponse response,
+            CompletionResolveRequest request
+        )
         {
             // Due to the fact that AdditionalTextEdits return the complete buffer, we can't currently use that in Cake.
             // Revisit when we have a solution. At this point it's probably just best to remove AdditionalTextEdits.

@@ -18,17 +18,19 @@ namespace OmniSharp.Roslyn.CSharp.Tests
 {
     public class FindReferencesFacts : AbstractSingleRequestHandlerTestFixture<FindUsagesService>
     {
-        public FindReferencesFacts(ITestOutputHelper output, SharedOmniSharpHostFixture sharedOmniSharpHostFixture)
-            : base(output, sharedOmniSharpHostFixture)
-        {
-        }
+        public FindReferencesFacts(
+            ITestOutputHelper output,
+            SharedOmniSharpHostFixture sharedOmniSharpHostFixture
+        )
+            : base(output, sharedOmniSharpHostFixture) { }
 
         protected override string EndpointName => OmniSharpEndpoints.FindUsages;
 
         [Fact]
         public async Task CanFindReferencesOfLocalVariable()
         {
-            const string code = @"
+            const string code =
+                @"
                 public class Foo
                 {
                     public Foo(string s)
@@ -46,7 +48,8 @@ namespace OmniSharp.Roslyn.CSharp.Tests
         [Fact]
         public async Task CanFindReferencesOfMethodParameter()
         {
-            const string code = @"
+            const string code =
+                @"
                 public class Foo
                 {
                     public Foo(string $$s)
@@ -62,7 +65,8 @@ namespace OmniSharp.Roslyn.CSharp.Tests
         [Fact]
         public async Task CanFindReferencesOfField()
         {
-            const string code = @"
+            const string code =
+                @"
                 public class Foo
                 {
                     public string p$$rop;
@@ -84,7 +88,8 @@ namespace OmniSharp.Roslyn.CSharp.Tests
         [Fact]
         public async Task CanFindReferencesOfConstructor()
         {
-            const string code = @"
+            const string code =
+                @"
                 public class Foo
                 {
                     public F$$oo() {}
@@ -105,7 +110,8 @@ namespace OmniSharp.Roslyn.CSharp.Tests
         [Fact]
         public async Task CanFindReferencesOfMethod()
         {
-            const string code = @"
+            const string code =
+                @"
                 public class Foo
                 {
                     public void b$$ar() { }
@@ -126,9 +132,13 @@ namespace OmniSharp.Roslyn.CSharp.Tests
         [Theory]
         [InlineData(9, "public FooConsumer()")]
         [InlineData(100, "new Foo().bar();")]
-        public async Task CanFindReferencesWithLineMapping(int mappingLine, string expectedMappingText)
+        public async Task CanFindReferencesWithLineMapping(
+            int mappingLine,
+            string expectedMappingText
+        )
         {
-            var code = @"
+            var code =
+                @"
                 public class Foo
                 {
                     public void b$$ar() { }
@@ -138,7 +148,9 @@ namespace OmniSharp.Roslyn.CSharp.Tests
                 {
                     public FooConsumer()
                     {
-#line " + mappingLine + @"
+#line "
+                + mappingLine
+                + @"
                         new Foo().bar();
 #line default
                     }
@@ -173,11 +185,17 @@ namespace OmniSharp.Roslyn.CSharp.Tests
         [InlineData(1, "// hello", true)] // everything correct
         [InlineData(100, "new Foo().bar();", true)] // file exists in workspace but mapping incorrect
         [InlineData(1, "new Foo().bar();", false)] // file doesn't exist in workspace but mapping correct
-        public async Task CanFindReferencesWithLineMappingAcrossFiles(int mappingLine, string expectedMappingText, bool mappedFileExistsInWorkspace)
+        public async Task CanFindReferencesWithLineMappingAcrossFiles(
+            int mappingLine,
+            string expectedMappingText,
+            bool mappedFileExistsInWorkspace
+        )
         {
             var testFiles = new List<TestFile>()
             {
-                new TestFile("a.cs", @"
+                new TestFile(
+                    "a.cs",
+                    @"
                 public class Foo
                 {
                     public void b$$ar() { }
@@ -187,18 +205,19 @@ namespace OmniSharp.Roslyn.CSharp.Tests
                 {
                     public FooConsumer()
                     {
-#line "+mappingLine+@" ""b.cs""
+#line "
+                        + mappingLine
+                        + @" ""b.cs""
                         new Foo().bar();
 #line default
                     }
-                }"),
-
+                }"
+                ),
             };
 
             if (mappedFileExistsInWorkspace)
             {
-                testFiles.Add(new TestFile("b.cs",
-                    @"// hello"));
+                testFiles.Add(new TestFile("b.cs", @"// hello"));
             }
 
             var usages = await FindUsagesAsync(testFiles.ToArray(), onlyThisFile: false);
@@ -230,7 +249,9 @@ namespace OmniSharp.Roslyn.CSharp.Tests
         {
             var testFiles = new List<TestFile>()
             {
-                new TestFile("a.cs", @"
+                new TestFile(
+                    "a.cs",
+                    @"
                 public class Foo
                 {
                     public void b$$ar() { }
@@ -244,12 +265,11 @@ namespace OmniSharp.Roslyn.CSharp.Tests
                         new Foo().bar();
 #line default
                     }
-                }"),
-
+                }"
+                ),
             };
 
-            testFiles.Add(new TestFile("b.cs",
-                    @"// hello"));
+            testFiles.Add(new TestFile("b.cs", @"// hello"));
 
             var usages = await FindUsagesAsync(testFiles.ToArray(), onlyThisFile: false);
             Assert.Equal(2, usages.QuickFixes.Count());
@@ -275,7 +295,8 @@ namespace OmniSharp.Roslyn.CSharp.Tests
         [Fact]
         public async Task ExcludesMethodDefinition()
         {
-            const string code = @"
+            const string code =
+                @"
                 public class Foo
                 {
                     public void b$$ar() { }
@@ -296,7 +317,8 @@ namespace OmniSharp.Roslyn.CSharp.Tests
         [Fact]
         public async Task CanFindReferencesOfPublicAutoProperty()
         {
-            const string code = @"
+            const string code =
+                @"
                 public class Foo
                 {
                     public string p$$rop {get;set;}
@@ -318,7 +340,8 @@ namespace OmniSharp.Roslyn.CSharp.Tests
         [Fact]
         public async Task CanFindReferencesOfPublicIndexerProperty()
         {
-            const string code = @"
+            const string code =
+                @"
                 public class Foo
                 {
                     int prop;
@@ -347,7 +370,8 @@ namespace OmniSharp.Roslyn.CSharp.Tests
         [Fact]
         public async Task CanFindReferencesOfClass()
         {
-            const string code = @"
+            const string code =
+                @"
                 public class F$$oo
                 {
                     public string prop {get;set;}
@@ -369,7 +393,8 @@ namespace OmniSharp.Roslyn.CSharp.Tests
         [Fact]
         public async Task CanFindReferencesOfOperatorOverloads()
         {
-            const string code = @"
+            const string code =
+                @"
                 public struct Vector2
                 {
                     public float x;
@@ -401,14 +426,16 @@ namespace OmniSharp.Roslyn.CSharp.Tests
         {
             var testFiles = new[]
             {
-                new TestFile("a.cs", @"
+                new TestFile(
+                    "a.cs",
+                    @"
                     public class F$$oo {
                         public Foo Clone() {
                             return null;
                         }
-                    }"),
-                new TestFile("b.cs",
-                    @"public class Bar : Foo { }")
+                    }"
+                ),
+                new TestFile("b.cs", @"public class Bar : Foo { }"),
             };
 
             var usages = await FindUsagesAsync(testFiles, onlyThisFile: false);
@@ -432,12 +459,17 @@ namespace OmniSharp.Roslyn.CSharp.Tests
 
             var testFiles = new[]
             {
-                new TestFile("Constants.cs", @"
+                new TestFile(
+                    "Constants.cs",
+                    @"
                     public static class Constants
                     {
                         public const string My$$Text = ""Hello World"";
-                    }"),
-                new TestFile("Index.cshtml.cs", @"
+                    }"
+                ),
+                new TestFile(
+                    "Index.cshtml.cs",
+                    @"
                     using Microsoft.AspNetCore.Mvc.RazorPages;
 
                     public class IndexModel : PageModel
@@ -450,21 +482,38 @@ namespace OmniSharp.Roslyn.CSharp.Tests
                         {
 
                         }
-                    }"),
-                new TestFile("Index.cshtml_virtual.cs", $@"
+                    }"
+                ),
+                new TestFile(
+                    "Index.cshtml_virtual.cs",
+                    $@"
                     #line 1 ""{relativeFile}""
                     Constants.MyText
                     #line default
-                    #line hidden"),
-                new TestFile(mappedFilePath, "<p>@Constants.MyText</p>")
+                    #line hidden"
+                ),
+                new TestFile(mappedFilePath, "<p>@Constants.MyText</p>"),
             };
 
-            var usages = await FindUsagesAsync(testFiles, onlyThisFile: false, folderPath: folderPath);
+            var usages = await FindUsagesAsync(
+                testFiles,
+                onlyThisFile: false,
+                folderPath: folderPath
+            );
 
-            Assert.DoesNotContain(usages.QuickFixes, location => location.FileName.EndsWith("Index.cshtml_virtual.cs"));
-            Assert.DoesNotContain(usages.QuickFixes, location => location.FileName.Equals(relativeFile));
+            Assert.DoesNotContain(
+                usages.QuickFixes,
+                location => location.FileName.EndsWith("Index.cshtml_virtual.cs")
+            );
+            Assert.DoesNotContain(
+                usages.QuickFixes,
+                location => location.FileName.Equals(relativeFile)
+            );
 
-            var quickFix = Assert.Single(usages.QuickFixes, location => location.FileName.Equals(mappedFilePath));
+            var quickFix = Assert.Single(
+                usages.QuickFixes,
+                location => location.FileName.Equals(mappedFilePath)
+            );
             Assert.Empty(quickFix.Projects);
         }
 
@@ -477,16 +526,22 @@ namespace OmniSharp.Roslyn.CSharp.Tests
 
             var testFiles = new[]
             {
-                new TestFile("Constants.cs", @"
+                new TestFile(
+                    "Constants.cs",
+                    @"
                     public static class Constants
                     {
                         public const string My$$Text = ""Hello World"";
-                    }"),
-                new TestFile("Index.cshtml_virtual.cs", $@"
+                    }"
+                ),
+                new TestFile(
+                    "Index.cshtml_virtual.cs",
+                    $@"
                     #line 1 ""{relativeFile}""
                     Constants.MyText
                     #line default
-                    #line hidden")
+                    #line hidden"
+                ),
             };
 
             var miscFile = new TestFile(mappedFilePath, "// Constants.MyText;");
@@ -494,16 +549,28 @@ namespace OmniSharp.Roslyn.CSharp.Tests
             SharedOmniSharpTestHost.AddFilesToWorkspace(folderPath, testFiles);
             SharedOmniSharpTestHost.Workspace.TryAddMiscellaneousDocument(
                 miscFile.FileName,
-                TextLoader.From(TextAndVersion.Create(miscFile.Content.Text, VersionStamp.Create())),
-                LanguageNames.CSharp);
+                TextLoader.From(
+                    TextAndVersion.Create(miscFile.Content.Text, VersionStamp.Create())
+                ),
+                LanguageNames.CSharp
+            );
 
             var testFile = testFiles.Single(tf => tf.Content.HasPosition);
             var usages = await FindUsagesAsync(testFile, onlyThisFile: false);
 
-            Assert.DoesNotContain(usages.QuickFixes, location => location.FileName.EndsWith("Index.cshtml_virtual.cs"));
-            Assert.DoesNotContain(usages.QuickFixes, location => location.FileName.Equals(relativeFile));
+            Assert.DoesNotContain(
+                usages.QuickFixes,
+                location => location.FileName.EndsWith("Index.cshtml_virtual.cs")
+            );
+            Assert.DoesNotContain(
+                usages.QuickFixes,
+                location => location.FileName.Equals(relativeFile)
+            );
 
-            var quickFix = Assert.Single(usages.QuickFixes, location => location.FileName.Equals(mappedFilePath));
+            var quickFix = Assert.Single(
+                usages.QuickFixes,
+                location => location.FileName.Equals(mappedFilePath)
+            );
             Assert.Empty(quickFix.Projects);
         }
 
@@ -512,14 +579,16 @@ namespace OmniSharp.Roslyn.CSharp.Tests
         {
             var testFiles = new[]
             {
-                new TestFile("a.cs",
-                 @"public class Bar : F$$oo {}"),
-                new TestFile("b.cs", @"
+                new TestFile("a.cs", @"public class Bar : F$$oo {}"),
+                new TestFile(
+                    "b.cs",
+                    @"
                     public class Foo {
                         public Foo Clone() {
                             return null;
                         }
-                    }")
+                    }"
+                ),
             };
 
             var usages = await FindUsagesAsync(testFiles, onlyThisFile: true);
@@ -532,7 +601,8 @@ namespace OmniSharp.Roslyn.CSharp.Tests
         [InlineData("pu$$blic Foo(string s)")]
         public async Task DoesNotCrashOnInvalidReference(string methodDefinition)
         {
-            var code = @$"
+            var code =
+                @$"
                 public class Foo
                 {{
                     {methodDefinition}
@@ -552,59 +622,98 @@ namespace OmniSharp.Roslyn.CSharp.Tests
         [Fact]
         public async Task ReturnsGeneratedReferences()
         {
-            const string Source = @"
+            const string Source =
+                @"
 public partial class Generated
 {
     public int Property { get; set; }
 }
 ";
             const string FileName = "real.cs";
-            var testFile = new TestFile(FileName, @"
+            var testFile = new TestFile(
+                FileName,
+                @"
 class C
 {
     Generate$$d G;
 }
-");
+"
+            );
 
-            TestHelpers.AddProjectToWorkspace(SharedOmniSharpTestHost.Workspace,
+            TestHelpers.AddProjectToWorkspace(
+                SharedOmniSharpTestHost.Workspace,
                 "project.csproj",
                 new[] { "net6.0" },
                 new[] { testFile },
-                analyzerRefs: ImmutableArray.Create<AnalyzerReference>(new TestGeneratorReference(
-                    context => context.AddSource("GeneratedFile", Source))));
+                analyzerRefs: ImmutableArray.Create<AnalyzerReference>(
+                    new TestGeneratorReference(context =>
+                        context.AddSource("GeneratedFile", Source)
+                    )
+                )
+            );
 
-            var response = await FindUsagesAsync(testFile, onlyThisFile: false, excludeDefinition: false);
+            var response = await FindUsagesAsync(
+                testFile,
+                onlyThisFile: false,
+                excludeDefinition: false
+            );
 
-            var result = response.QuickFixes.Cast<SymbolLocation>().Single(s => s.GeneratedFileInfo is not null);
+            var result = response
+                .QuickFixes.Cast<SymbolLocation>()
+                .Single(s => s.GeneratedFileInfo is not null);
             Assert.NotNull(result);
-            AssertEx.Equal(@"OmniSharp.Roslyn.CSharp.Tests\OmniSharp.Roslyn.CSharp.Tests.TestSourceGenerator\GeneratedFile.cs", result.FileName.Replace("/", @"\"));
+            AssertEx.Equal(
+                @"OmniSharp.Roslyn.CSharp.Tests\OmniSharp.Roslyn.CSharp.Tests.TestSourceGenerator\GeneratedFile.cs",
+                result.FileName.Replace("/", @"\")
+            );
 
-            var sourceGeneratedFileHandler = SharedOmniSharpTestHost.GetRequestHandler<SourceGeneratedFileService>(OmniSharpEndpoints.SourceGeneratedFile);
+            var sourceGeneratedFileHandler =
+                SharedOmniSharpTestHost.GetRequestHandler<SourceGeneratedFileService>(
+                    OmniSharpEndpoints.SourceGeneratedFile
+                );
             var sourceGeneratedRequest = new SourceGeneratedFileRequest
             {
                 DocumentGuid = result.GeneratedFileInfo.DocumentGuid,
-                ProjectGuid = result.GeneratedFileInfo.ProjectGuid
+                ProjectGuid = result.GeneratedFileInfo.ProjectGuid,
             };
 
-            var sourceGeneratedFileResponse = await sourceGeneratedFileHandler.Handle(sourceGeneratedRequest);
+            var sourceGeneratedFileResponse = await sourceGeneratedFileHandler.Handle(
+                sourceGeneratedRequest
+            );
             Assert.NotNull(sourceGeneratedFileResponse);
             AssertEx.Equal(Source, sourceGeneratedFileResponse.Source);
-            AssertEx.Equal(@"OmniSharp.Roslyn.CSharp.Tests\OmniSharp.Roslyn.CSharp.Tests.TestSourceGenerator\GeneratedFile.cs", sourceGeneratedFileResponse.SourceName.Replace("/", @"\"));
+            AssertEx.Equal(
+                @"OmniSharp.Roslyn.CSharp.Tests\OmniSharp.Roslyn.CSharp.Tests.TestSourceGenerator\GeneratedFile.cs",
+                sourceGeneratedFileResponse.SourceName.Replace("/", @"\")
+            );
         }
 
         private Task<QuickFixResponse> FindUsagesAsync(string code, bool excludeDefinition = false)
         {
-            return FindUsagesAsync(new[] { new TestFile("dummy.cs", code) }, false, excludeDefinition);
+            return FindUsagesAsync(
+                new[] { new TestFile("dummy.cs", code) },
+                false,
+                excludeDefinition
+            );
         }
 
-        private Task<QuickFixResponse> FindUsagesAsync(TestFile[] testFiles, bool onlyThisFile, bool excludeDefinition = false, string folderPath = null)
+        private Task<QuickFixResponse> FindUsagesAsync(
+            TestFile[] testFiles,
+            bool onlyThisFile,
+            bool excludeDefinition = false,
+            string folderPath = null
+        )
         {
             SharedOmniSharpTestHost.AddFilesToWorkspace(folderPath, testFiles);
             var testFile = testFiles.Single(tf => tf.Content.HasPosition);
             return FindUsagesAsync(testFile, onlyThisFile, excludeDefinition);
         }
 
-        private async Task<QuickFixResponse> FindUsagesAsync(TestFile testFile, bool onlyThisFile, bool excludeDefinition = false)
+        private async Task<QuickFixResponse> FindUsagesAsync(
+            TestFile testFile,
+            bool onlyThisFile,
+            bool excludeDefinition = false
+        )
         {
             var point = testFile.Content.GetPointFromPosition();
 
@@ -617,7 +726,7 @@ class C
                 FileName = testFile.FileName,
                 Buffer = testFile.Content.Code,
                 OnlyThisFile = onlyThisFile,
-                ExcludeDefinition = excludeDefinition
+                ExcludeDefinition = excludeDefinition,
             };
 
             return await requestHandler.Handle(request);

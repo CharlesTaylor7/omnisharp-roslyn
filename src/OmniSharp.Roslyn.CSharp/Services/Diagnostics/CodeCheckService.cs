@@ -1,4 +1,4 @@
-﻿using System.Collections.Immutable;
+using System.Collections.Immutable;
 using System.Composition;
 using System.Linq;
 using System.Threading.Tasks;
@@ -24,7 +24,8 @@ namespace OmniSharp.Roslyn.CSharp.Services.Diagnostics
             OmniSharpWorkspace workspace,
             ILoggerFactory loggerFactory,
             OmniSharpOptions options,
-            ICsDiagnosticWorker diagWorker)
+            ICsDiagnosticWorker diagWorker
+        )
         {
             _diagWorker = diagWorker;
             _logger = loggerFactory.CreateLogger<CodeCheckService>();
@@ -38,16 +39,20 @@ namespace OmniSharp.Roslyn.CSharp.Services.Diagnostics
                 return GetResponseFromDiagnostics(allDiagnostics, fileName: null);
             }
 
-            var diagnostics = await _diagWorker.GetDiagnostics(ImmutableArray.Create(request.FileName));
+            var diagnostics = await _diagWorker.GetDiagnostics(
+                ImmutableArray.Create(request.FileName)
+            );
 
             return GetResponseFromDiagnostics(diagnostics, request.FileName);
         }
 
-        private static QuickFixResponse GetResponseFromDiagnostics(ImmutableArray<DocumentDiagnostics> diagnostics, string fileName)
+        private static QuickFixResponse GetResponseFromDiagnostics(
+            ImmutableArray<DocumentDiagnostics> diagnostics,
+            string fileName
+        )
         {
             var diagnosticLocations = diagnostics
-                .Where(x => string.IsNullOrEmpty(fileName)
-                    || x.DocumentPath == fileName)
+                .Where(x => string.IsNullOrEmpty(fileName) || x.DocumentPath == fileName)
                 .DistinctDiagnosticLocationsByProject()
                 .Where(x => x.FileName != null);
 

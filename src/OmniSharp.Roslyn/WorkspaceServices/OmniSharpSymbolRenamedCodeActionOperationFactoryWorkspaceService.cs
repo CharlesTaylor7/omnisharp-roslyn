@@ -1,4 +1,4 @@
-﻿using System.Composition;
+using System.Composition;
 using System.Threading;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CodeActions;
@@ -8,19 +8,20 @@ namespace OmniSharp
 {
     [Shared]
     [Export(typeof(IOmniSharpSymbolRenamedCodeActionOperationFactoryWorkspaceService))]
-    public class OmniSharpSymbolRenamedCodeActionOperationFactoryWorkspaceService : IOmniSharpSymbolRenamedCodeActionOperationFactoryWorkspaceService
+    public class OmniSharpSymbolRenamedCodeActionOperationFactoryWorkspaceService
+        : IOmniSharpSymbolRenamedCodeActionOperationFactoryWorkspaceService
     {
         [ImportingConstructor]
-        public OmniSharpSymbolRenamedCodeActionOperationFactoryWorkspaceService()
-        {
-        }
+        public OmniSharpSymbolRenamedCodeActionOperationFactoryWorkspaceService() { }
 
-        public CodeActionOperation CreateSymbolRenamedOperation(ISymbol symbol, string newName, Solution startingSolution, Solution updatedSolution)
+        public CodeActionOperation CreateSymbolRenamedOperation(
+            ISymbol symbol,
+            string newName,
+            Solution startingSolution,
+            Solution updatedSolution
+        )
         {
-            return new RenameSymbolOperation(
-                symbol,
-                newName,
-                updatedSolution);
+            return new RenameSymbolOperation(symbol, newName, updatedSolution);
         }
 
         private class RenameSymbolOperation : CodeActionOperation
@@ -29,17 +30,17 @@ namespace OmniSharp
             private readonly string _newName;
             private readonly Solution _updatedSolution;
 
-            public RenameSymbolOperation(
-                ISymbol symbol,
-                string newName,
-                Solution updatedSolution)
+            public RenameSymbolOperation(ISymbol symbol, string newName, Solution updatedSolution)
             {
                 _symbol = symbol;
                 _newName = newName;
                 _updatedSolution = updatedSolution;
             }
 
-            public override void Apply(Workspace workspace, CancellationToken cancellationToken = default)
+            public override void Apply(
+                Workspace workspace,
+                CancellationToken cancellationToken = default
+            )
             {
                 workspace.TryApplyChanges(_updatedSolution);
             }

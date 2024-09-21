@@ -11,26 +11,33 @@ namespace OmniSharp.Roslyn.CSharp.Tests
 {
     public class HighlightFacts : AbstractSingleRequestHandlerTestFixture<HighlightingService>
     {
-        public HighlightFacts(ITestOutputHelper output, SharedOmniSharpHostFixture sharedOmniSharpHostFixture)
-            : base(output, sharedOmniSharpHostFixture)
-        {
-        }
+        public HighlightFacts(
+            ITestOutputHelper output,
+            SharedOmniSharpHostFixture sharedOmniSharpHostFixture
+        )
+            : base(output, sharedOmniSharpHostFixture) { }
 
         protected override string EndpointName => OmniSharpEndpoints.Highlight;
 
         [Fact]
         public async Task HighlightSingleLine()
         {
-            var testFile = new TestFile("a.cs", @"
+            var testFile = new TestFile(
+                "a.cs",
+                @"
 namespace N1
 {
     class C1 { int n = true; }
 }
-");
+"
+            );
 
             var highlights = await GetHighlightsAsync(testFile, line: 3);
 
-            AssertSyntax(highlights, testFile.Content.Code, 3,
+            AssertSyntax(
+                highlights,
+                testFile.Content.Code,
+                3,
                 Keyword("class"),
                 ClassName("C1"),
                 Punctuation("{"),
@@ -39,22 +46,29 @@ namespace N1
                 Operator("="),
                 Keyword("true"),
                 Punctuation(";"),
-                Punctuation("}"));
+                Punctuation("}")
+            );
         }
 
         [Fact]
         public async Task HighlightEntireFile()
         {
-            var testFile = new TestFile("a.cs", @"
+            var testFile = new TestFile(
+                "a.cs",
+                @"
 namespace N1
 {
     class C1 { int n = true; }
 }
-");
+"
+            );
 
             var highlights = await GetHighlightsAsync(testFile);
 
-            AssertSyntax(highlights, testFile.Content.Code, 0,
+            AssertSyntax(
+                highlights,
+                testFile.Content.Code,
+                0,
                 Keyword("namespace"),
                 NamespaceName("N1"),
                 Punctuation("{"),
@@ -74,16 +88,22 @@ namespace N1
         [Fact]
         public async Task HighlightStringInterpolation()
         {
-            var testFile = new TestFile("a.cs", @"
+            var testFile = new TestFile(
+                "a.cs",
+                @"
 class C1
 {
     string s = $""{5}"";
 }
-");
+"
+            );
 
             var highlights = await GetHighlightsAsync(testFile);
 
-            AssertSyntax(highlights, testFile.Content.Code, 0,
+            AssertSyntax(
+                highlights,
+                testFile.Content.Code,
+                0,
                 Keyword("class"),
                 ClassName("C1"),
                 Punctuation("{"),
@@ -103,14 +123,20 @@ class C1
         [Fact]
         public async Task HighlightExcludesUnwantedKeywords()
         {
-            var testFile = new TestFile("a.cs", @"
+            var testFile = new TestFile(
+                "a.cs",
+                @"
 namespace N1
 {
     class C1 { int n = true; }
 }
-");
+"
+            );
 
-            var highlights = await GetHighlightsAsync(testFile, exclude: HighlightClassification.Keyword);
+            var highlights = await GetHighlightsAsync(
+                testFile,
+                exclude: HighlightClassification.Keyword
+            );
 
             Assert.DoesNotContain(highlights, x => x.Kind == "keyword");
         }
@@ -118,14 +144,20 @@ namespace N1
         [Fact]
         public async Task HighlightExcludesUnwantedPunctuation()
         {
-            var testFile = new TestFile("a.cs", @"
+            var testFile = new TestFile(
+                "a.cs",
+                @"
 namespace N1
 {
     class C1 { int n = true; }
 }
-");
+"
+            );
 
-            var highlights = await GetHighlightsAsync(testFile, exclude: HighlightClassification.Punctuation);
+            var highlights = await GetHighlightsAsync(
+                testFile,
+                exclude: HighlightClassification.Punctuation
+            );
 
             Assert.DoesNotContain(highlights, x => x.Kind == "punctuation");
         }
@@ -133,14 +165,20 @@ namespace N1
         [Fact]
         public async Task HighlightExcludesUnwantedOperators()
         {
-            var testFile = new TestFile("a.cs", @"
+            var testFile = new TestFile(
+                "a.cs",
+                @"
 namespace N1
 {
     class C1 { int n = true; }
 }
-");
+"
+            );
 
-            var highlights = await GetHighlightsAsync(testFile, exclude: HighlightClassification.Operator);
+            var highlights = await GetHighlightsAsync(
+                testFile,
+                exclude: HighlightClassification.Operator
+            );
 
             Assert.DoesNotContain(highlights, x => x.Kind == "operator");
         }
@@ -148,14 +186,20 @@ namespace N1
         [Fact]
         public async Task HighlightExcludesUnwantedIdentifiers()
         {
-            var testFile = new TestFile("a.cs", @"
+            var testFile = new TestFile(
+                "a.cs",
+                @"
 namespace N1
 {
     class C1 { int n = true; }
 }
-");
+"
+            );
 
-            var highlights = await GetHighlightsAsync(testFile, exclude: HighlightClassification.Identifier);
+            var highlights = await GetHighlightsAsync(
+                testFile,
+                exclude: HighlightClassification.Identifier
+            );
 
             Assert.DoesNotContain(highlights, x => x.Kind == "identifer");
         }
@@ -163,14 +207,20 @@ namespace N1
         [Fact]
         public async Task HighlightExcludesUnwantedNames()
         {
-            var testFile = new TestFile("a.cs", @"
+            var testFile = new TestFile(
+                "a.cs",
+                @"
 namespace N1
 {
     class C1 { int n = true; }
 }
-");
+"
+            );
 
-            var highlights = await GetHighlightsAsync(testFile, exclude: HighlightClassification.Name);
+            var highlights = await GetHighlightsAsync(
+                testFile,
+                exclude: HighlightClassification.Name
+            );
 
             Assert.DoesNotContain(highlights, x => x.Kind.EndsWith("name"));
         }
@@ -178,7 +228,9 @@ namespace N1
         [Fact]
         public async Task HighlightDoesNotContainAdditiveKinds()
         {
-            var testFile = new TestFile("a.cs", @"
+            var testFile = new TestFile(
+                "a.cs",
+                @"
 namespace N1
 {
     class C1
@@ -189,17 +241,28 @@ namespace N1
         }
     }
 }   
-");
+"
+            );
 
             var highlights = await GetHighlightsAsync(testFile);
 
-            foreach (var additiveName in Microsoft.CodeAnalysis.Classification.ClassificationTypeNames.AdditiveTypeNames)
+            foreach (
+                var additiveName in Microsoft
+                    .CodeAnalysis
+                    .Classification
+                    .ClassificationTypeNames
+                    .AdditiveTypeNames
+            )
             {
                 Assert.DoesNotContain(highlights, x => x.Kind == additiveName);
             }
         }
 
-        private async Task<HighlightSpan[]> GetHighlightsAsync(TestFile testFile, int? line = null, HighlightClassification? exclude = null)
+        private async Task<HighlightSpan[]> GetHighlightsAsync(
+            TestFile testFile,
+            int? line = null,
+            HighlightClassification? exclude = null
+        )
         {
             SharedOmniSharpTestHost.AddFilesToWorkspace(testFile);
             var requestHandler = GetRequestHandler(SharedOmniSharpTestHost);
@@ -207,7 +270,7 @@ namespace N1
             {
                 FileName = testFile.FileName,
                 Lines = line != null ? new[] { line.Value } : null,
-                ExcludeClassifications = exclude != null ? new[] { exclude.Value } : null
+                ExcludeClassifications = exclude != null ? new[] { exclude.Value } : null,
             };
 
             var response = await requestHandler.Handle(request);
@@ -215,7 +278,12 @@ namespace N1
             return response.Highlights;
         }
 
-        private static void AssertSyntax(HighlightSpan[] highlights, string code, int startLine, params (string kind, string text)[] expectedTokens)
+        private static void AssertSyntax(
+            HighlightSpan[] highlights,
+            string code,
+            int startLine,
+            params (string kind, string text)[] expectedTokens
+        )
         {
             var lineNo = startLine;
             var lastIndex = 0;
@@ -227,7 +295,8 @@ namespace N1
                 var highlight = highlights[i];
 
                 string line;
-                int start, end;
+                int start,
+                    end;
                 do
                 {
                     line = lines[lineNo].ToString();
@@ -241,8 +310,7 @@ namespace N1
 
                         lastIndex = 0;
                     }
-                }
-                while (start == -1);
+                } while (start == -1);
 
                 end = start + text.Length;
                 lastIndex = end;
@@ -258,13 +326,22 @@ namespace N1
         }
 
         private static (string kind, string text) ClassName(string text) => ("class name", text);
+
         private static (string kind, string text) Field(string text) => ("field name", text);
+
         private static (string kind, string text) Identifier(string text) => ("identifier", text);
-        private static (string kind, string text) NamespaceName(string text) => ("namespace name", text);
+
+        private static (string kind, string text) NamespaceName(string text) =>
+            ("namespace name", text);
+
         private static (string kind, string text) Keyword(string text) => ("keyword", text);
+
         private static (string kind, string text) Number(string text) => ("number", text);
+
         private static (string kind, string text) Operator(string text) => ("operator", text);
+
         private static (string kind, string text) Punctuation(string text) => ("punctuation", text);
+
         private static (string kind, string text) String(string text) => ("string", text);
     }
 }

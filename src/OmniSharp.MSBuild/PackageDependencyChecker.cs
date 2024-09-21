@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.IO;
@@ -20,7 +20,12 @@ namespace OmniSharp.MSBuild
         private readonly IDotNetCliService _dotNetCli;
         private readonly MSBuildOptions _options;
 
-        public PackageDependencyChecker(ILoggerFactory loggerFactory, IEventEmitter eventEmitter, IDotNetCliService dotNetCli, MSBuildOptions options)
+        public PackageDependencyChecker(
+            ILoggerFactory loggerFactory,
+            IEventEmitter eventEmitter,
+            IDotNetCliService dotNetCli,
+            MSBuildOptions options
+        )
         {
             _logger = loggerFactory.CreateLogger<PackageDependencyChecker>();
             _eventEmitter = eventEmitter;
@@ -28,7 +33,10 @@ namespace OmniSharp.MSBuild
             _options = options;
         }
 
-        public void CheckForUnresolvedDependences(ProjectFileInfo projectFile, bool allowAutoRestore)
+        public void CheckForUnresolvedDependences(
+            ProjectFileInfo projectFile,
+            bool allowAutoRestore
+        )
         {
             var unresolvedPackageReferences = FindUnresolvedPackageReferences(projectFile);
             if (unresolvedPackageReferences.IsEmpty)
@@ -36,19 +44,27 @@ namespace OmniSharp.MSBuild
                 return;
             }
 
-            var unresolvedDependencies = unresolvedPackageReferences.Select(packageReference =>
-                new PackageDependency
+            var unresolvedDependencies = unresolvedPackageReferences.Select(
+                packageReference => new PackageDependency
                 {
                     Name = packageReference.Dependency.Id,
-                    Version = packageReference.Dependency.VersionRange.ToNormalizedString()
-                });
+                    Version = packageReference.Dependency.VersionRange.ToNormalizedString(),
+                }
+            );
 
             if (allowAutoRestore && _options.EnablePackageAutoRestore)
             {
-                _dotNetCli.RestoreAsync(projectFile.Directory, projectFile.FilePath, onFailure: () =>
-                {
-                    _eventEmitter.UnresolvedDepdendencies(projectFile.FilePath, unresolvedDependencies);
-                });
+                _dotNetCli.RestoreAsync(
+                    projectFile.Directory,
+                    projectFile.FilePath,
+                    onFailure: () =>
+                    {
+                        _eventEmitter.UnresolvedDepdendencies(
+                            projectFile.FilePath,
+                            unresolvedDependencies
+                        );
+                    }
+                );
             }
             else
             {
@@ -56,7 +72,9 @@ namespace OmniSharp.MSBuild
             }
         }
 
-        public ImmutableArray<PackageReference> FindUnresolvedPackageReferences(ProjectFileInfo projectFile)
+        public ImmutableArray<PackageReference> FindUnresolvedPackageReferences(
+            ProjectFileInfo projectFile
+        )
         {
             if (projectFile.PackageReferences.Length == 0)
             {
@@ -75,7 +93,10 @@ namespace OmniSharp.MSBuild
             return FindUnresolvedPackageReferencesInLockFile(projectFile, lockFile);
         }
 
-        private ImmutableArray<PackageReference> FindUnresolvedPackageReferencesInLockFile(ProjectFileInfo projectFile, LockFile lockFile)
+        private ImmutableArray<PackageReference> FindUnresolvedPackageReferencesInLockFile(
+            ProjectFileInfo projectFile,
+            LockFile lockFile
+        )
         {
             var libraryMap = CreateLibraryMap(lockFile);
 
@@ -88,7 +109,9 @@ namespace OmniSharp.MSBuild
             {
                 if (!libraryMap.TryGetValue(reference.Dependency.Id, out var libraries))
                 {
-                    _logger.LogWarning($"{projectFile.Name}: Did not find '{reference.Dependency.Id}' in lock file.");
+                    _logger.LogWarning(
+                        $"{projectFile.Name}: Did not find '{reference.Dependency.Id}' in lock file."
+                    );
                     unresolved.Add(reference);
                 }
                 else
@@ -109,9 +132,14 @@ namespace OmniSharp.MSBuild
                             ? "implicit package reference"
                             : "package reference";
 
-                        var versions = string.Join(", ", libraries.Select(l => '"' + l.Version.ToString() + '"'));
+                        var versions = string.Join(
+                            ", ",
+                            libraries.Select(l => '"' + l.Version.ToString() + '"')
+                        );
 
-                        _logger.LogWarning($"{projectFile.Name}: Found {referenceText} '{reference.Dependency.Id}', but none of the versions in the lock file ({versions}) satisfy {reference.Dependency.VersionRange}");
+                        _logger.LogWarning(
+                            $"{projectFile.Name}: Found {referenceText} '{reference.Dependency.Id}', but none of the versions in the lock file ({versions}) satisfy {reference.Dependency.VersionRange}"
+                        );
                         unresolved.Add(reference);
                     }
                 }
@@ -127,7 +155,8 @@ namespace OmniSharp.MSBuild
 
             var libraryMap = new Dictionary<string, List<LockFileLibrary>>(
                 capacity: lockFile.Libraries.Count,
-                comparer: StringComparer.OrdinalIgnoreCase);
+                comparer: StringComparer.OrdinalIgnoreCase
+            );
 
             foreach (var library in lockFile.Libraries)
             {

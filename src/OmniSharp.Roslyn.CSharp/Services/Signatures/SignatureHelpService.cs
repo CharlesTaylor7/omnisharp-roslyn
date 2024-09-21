@@ -63,21 +63,42 @@ namespace OmniSharp.Roslyn.CSharp.Services.Signatures
                 var types = invocation.ArgumentTypes;
                 ISymbol throughSymbol = null;
                 ISymbol throughType = null;
-                var methodGroup = invocation.SemanticModel.GetMemberGroup(invocation.Receiver).OfType<IMethodSymbol>();
+                var methodGroup = invocation
+                    .SemanticModel.GetMemberGroup(invocation.Receiver)
+                    .OfType<IMethodSymbol>();
                 if (invocation.Receiver is MemberAccessExpressionSyntax)
                 {
-                    var throughExpression = ((MemberAccessExpressionSyntax)invocation.Receiver).Expression;
-                    throughSymbol = invocation.SemanticModel.GetSpeculativeSymbolInfo(invocation.Position, throughExpression, SpeculativeBindingOption.BindAsExpression).Symbol;
-                    throughType = invocation.SemanticModel.GetSpeculativeTypeInfo(invocation.Position, throughExpression, SpeculativeBindingOption.BindAsTypeOrNamespace).Type;
-                    var includeInstance = (throughSymbol != null && !(throughSymbol is ITypeSymbol)) ||
-                        throughExpression is LiteralExpressionSyntax ||
-                        throughExpression is TypeOfExpressionSyntax;
+                    var throughExpression = (
+                        (MemberAccessExpressionSyntax)invocation.Receiver
+                    ).Expression;
+                    throughSymbol = invocation
+                        .SemanticModel.GetSpeculativeSymbolInfo(
+                            invocation.Position,
+                            throughExpression,
+                            SpeculativeBindingOption.BindAsExpression
+                        )
+                        .Symbol;
+                    throughType = invocation
+                        .SemanticModel.GetSpeculativeTypeInfo(
+                            invocation.Position,
+                            throughExpression,
+                            SpeculativeBindingOption.BindAsTypeOrNamespace
+                        )
+                        .Type;
+                    var includeInstance =
+                        (throughSymbol != null && !(throughSymbol is ITypeSymbol))
+                        || throughExpression is LiteralExpressionSyntax
+                        || throughExpression is TypeOfExpressionSyntax;
                     var includeStatic = (throughSymbol is INamedTypeSymbol) || throughType != null;
-                    methodGroup = methodGroup.Where(m => (m.IsStatic && includeStatic) || (!m.IsStatic && includeInstance));
+                    methodGroup = methodGroup.Where(m =>
+                        (m.IsStatic && includeStatic) || (!m.IsStatic && includeInstance)
+                    );
                 }
                 else if (invocation.Receiver is SimpleNameSyntax && invocation.IsInStaticContext)
                 {
-                    methodGroup = methodGroup.Where(m => m.IsStatic || m.MethodKind == MethodKind.LocalFunction);
+                    methodGroup = methodGroup.Where(m =>
+                        m.IsStatic || m.MethodKind == MethodKind.LocalFunction
+                    );
                 }
 
                 foreach (var methodOverload in methodGroup)
@@ -112,22 +133,49 @@ namespace OmniSharp.Roslyn.CSharp.Services.Signatures
             // Walk up until we find a node that we're interested in.
             while (node != null)
             {
-                if (node is InvocationExpressionSyntax invocation && invocation.ArgumentList.Span.Contains(position))
+                if (
+                    node is InvocationExpressionSyntax invocation
+                    && invocation.ArgumentList.Span.Contains(position)
+                )
                 {
                     var semanticModel = await document.GetSemanticModelAsync();
-                    return new InvocationContext(semanticModel, position, invocation.Expression, invocation.ArgumentList, invocation.IsInStaticContext());
+                    return new InvocationContext(
+                        semanticModel,
+                        position,
+                        invocation.Expression,
+                        invocation.ArgumentList,
+                        invocation.IsInStaticContext()
+                    );
                 }
 
-                if (node is BaseObjectCreationExpressionSyntax objectCreation && (objectCreation.ArgumentList?.Span.Contains(position) ?? false))
+                if (
+                    node is BaseObjectCreationExpressionSyntax objectCreation
+                    && (objectCreation.ArgumentList?.Span.Contains(position) ?? false)
+                )
                 {
                     var semanticModel = await document.GetSemanticModelAsync();
-                    return new InvocationContext(semanticModel, position, objectCreation, objectCreation.ArgumentList, objectCreation.IsInStaticContext());
+                    return new InvocationContext(
+                        semanticModel,
+                        position,
+                        objectCreation,
+                        objectCreation.ArgumentList,
+                        objectCreation.IsInStaticContext()
+                    );
                 }
 
-                if (node is AttributeSyntax attributeSyntax && (attributeSyntax.ArgumentList?.Span.Contains(position) ?? false))
+                if (
+                    node is AttributeSyntax attributeSyntax
+                    && (attributeSyntax.ArgumentList?.Span.Contains(position) ?? false)
+                )
                 {
                     var semanticModel = await document.GetSemanticModelAsync();
-                    return new InvocationContext(semanticModel, position, attributeSyntax, attributeSyntax.ArgumentList, attributeSyntax.IsInStaticContext());
+                    return new InvocationContext(
+                        semanticModel,
+                        position,
+                        attributeSyntax,
+                        attributeSyntax.ArgumentList,
+                        attributeSyntax.IsInStaticContext()
+                    );
                 }
 
                 node = node.Parent;
@@ -154,7 +202,12 @@ namespace OmniSharp.Roslyn.CSharp.Services.Signatures
                     // 1 point for having a parameter
                     score += 1;
                 }
-                else if (SymbolEqualityComparer.Default.Equals(invocationEnum.Current.ConvertedType, definitionEnum.Current.Type))
+                else if (
+                    SymbolEqualityComparer.Default.Equals(
+                        invocationEnum.Current.ConvertedType,
+                        definitionEnum.Current.Type
+                    )
+                )
                 {
                     // 2 points for having a parameter and being
                     // the same type
@@ -169,9 +222,14 @@ namespace OmniSharp.Roslyn.CSharp.Services.Signatures
         {
             var signature = new SignatureHelpItem();
             signature.Documentation = symbol.GetDocumentationCommentXml();
-            signature.Name = symbol.MethodKind == MethodKind.Constructor ? symbol.ContainingType.Name : symbol.Name;
+            signature.Name =
+                symbol.MethodKind == MethodKind.Constructor
+                    ? symbol.ContainingType.Name
+                    : symbol.Name;
             signature.Label = symbol.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat);
-            signature.StructuredDocumentation = DocumentationConverter.GetStructuredDocumentation(symbol);
+            signature.StructuredDocumentation = DocumentationConverter.GetStructuredDocumentation(
+                symbol
+            );
 
             signature.Parameters = symbol.Parameters.Select(parameter =>
             {
@@ -179,7 +237,9 @@ namespace OmniSharp.Roslyn.CSharp.Services.Signatures
                 {
                     Name = parameter.Name,
                     Label = parameter.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat),
-                    Documentation = signature.StructuredDocumentation.GetParameterText(parameter.Name)
+                    Documentation = signature.StructuredDocumentation.GetParameterText(
+                        parameter.Name
+                    ),
                 };
             });
 

@@ -19,7 +19,8 @@ namespace OmniSharp.Cake.Tests
     {
         private readonly ILogger _logger;
 
-        public QuickInfoFacts(ITestOutputHelper testOutput) : base(testOutput)
+        public QuickInfoFacts(ITestOutputHelper testOutput)
+            : base(testOutput)
         {
             _logger = LoggerFactory.CreateLogger<QuickInfoFacts>();
         }
@@ -31,7 +32,12 @@ namespace OmniSharp.Cake.Tests
         {
             const string input = "Informa$$tion(\"Hello\");";
 
-            using (var testProject = await TestAssets.Instance.GetTestProjectAsync("CakeProject", shadowCopy : false))
+            using (
+                var testProject = await TestAssets.Instance.GetTestProjectAsync(
+                    "CakeProject",
+                    shadowCopy: false
+                )
+            )
             using (var host = CreateOmniSharpHost(testProject.Directory))
             {
                 var fileName = Path.Combine(testProject.Directory, "build.cake");
@@ -41,7 +47,13 @@ namespace OmniSharp.Cake.Tests
             }
         }
 
-        private async Task<QuickInfoResponse> GetQuickInfo(string filename, string source, OmniSharpTestHost host, char? triggerChar = null, TestFile[] additionalFiles = null)
+        private async Task<QuickInfoResponse> GetQuickInfo(
+            string filename,
+            string source,
+            OmniSharpTestHost host,
+            char? triggerChar = null,
+            TestFile[] additionalFiles = null
+        )
         {
             var testFile = new TestFile(filename, source);
 
@@ -59,7 +71,7 @@ namespace OmniSharp.Cake.Tests
                 Line = point.Line,
                 Column = point.Offset,
                 FileName = testFile.FileName,
-                Buffer = testFile.Content.Code
+                Buffer = testFile.Content.Code,
             };
 
             var updateBufferRequest = new UpdateBufferRequest
@@ -68,7 +80,7 @@ namespace OmniSharp.Cake.Tests
                 Column = request.Column,
                 FileName = request.FileName,
                 Line = request.Line,
-                FromDisk = false
+                FromDisk = false,
             };
 
             await GetUpdateBufferHandler(host).Handle(updateBufferRequest);

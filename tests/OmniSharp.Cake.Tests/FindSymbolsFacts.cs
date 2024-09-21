@@ -14,7 +14,8 @@ namespace OmniSharp.Cake.Tests
     {
         private readonly ILogger _logger;
 
-        public FindSymbolsFacts(ITestOutputHelper testOutput) : base(testOutput)
+        public FindSymbolsFacts(ITestOutputHelper testOutput)
+            : base(testOutput)
         {
             _logger = LoggerFactory.CreateLogger<FindSymbolsFacts>();
         }
@@ -24,7 +25,11 @@ namespace OmniSharp.Cake.Tests
         [Fact]
         public async Task ShouldFindSymbolsInCakeProjects()
         {
-            var symbols = await FindSymbols("CakeProject", minFilterLength: null, maxItemsToReturn: null);
+            var symbols = await FindSymbols(
+                "CakeProject",
+                minFilterLength: null,
+                maxItemsToReturn: null
+            );
             Assert.NotEmpty(symbols.QuickFixes);
         }
 
@@ -38,27 +43,44 @@ namespace OmniSharp.Cake.Tests
         [Fact]
         public async Task ShouldFindLimitedNumberOfSymbolsInCakeProjects()
         {
-            var symbols = await FindSymbols("CakeProject", minFilterLength: 0, maxItemsToReturn: 100);
+            var symbols = await FindSymbols(
+                "CakeProject",
+                minFilterLength: 0,
+                maxItemsToReturn: 100
+            );
             Assert.Equal(100, symbols.QuickFixes.Count());
         }
 
         [Fact]
         public async Task ShouldNotFindSymbolsInCSharpProjects()
         {
-            var symbols = await FindSymbols("ProjectAndSolution", minFilterLength: 0, maxItemsToReturn: 0);
+            var symbols = await FindSymbols(
+                "ProjectAndSolution",
+                minFilterLength: 0,
+                maxItemsToReturn: 0
+            );
             Assert.Empty(symbols.QuickFixes);
         }
 
-        private async Task<QuickFixResponse> FindSymbols(string projectName, int? minFilterLength, int? maxItemsToReturn)
+        private async Task<QuickFixResponse> FindSymbols(
+            string projectName,
+            int? minFilterLength,
+            int? maxItemsToReturn
+        )
         {
-            using (var testProject = await TestAssets.Instance.GetTestProjectAsync(projectName, shadowCopy : false))
+            using (
+                var testProject = await TestAssets.Instance.GetTestProjectAsync(
+                    projectName,
+                    shadowCopy: false
+                )
+            )
             using (var host = CreateOmniSharpHost(testProject.Directory))
             {
                 var request = new FindSymbolsRequest
                 {
                     Filter = "",
                     MinFilterLength = minFilterLength,
-                    MaxItemsToReturn = maxItemsToReturn
+                    MaxItemsToReturn = maxItemsToReturn,
                 };
 
                 var requestHandler = GetRequestHandler(host);

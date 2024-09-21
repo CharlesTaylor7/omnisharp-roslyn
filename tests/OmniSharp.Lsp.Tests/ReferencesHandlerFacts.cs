@@ -17,14 +17,13 @@ namespace OmniSharp.Lsp.Tests
     public class ReferencesHandlerFacts : AbstractLanguageServerTestBase
     {
         public ReferencesHandlerFacts(ITestOutputHelper output)
-            : base(output)
-        {
-        }
+            : base(output) { }
 
         [Fact]
         public async Task CanFindReferencesOfLocalVariable()
         {
-            const string code = @"
+            const string code =
+                @"
                 public class Foo
                 {
                     public Foo(string s)
@@ -42,11 +41,10 @@ namespace OmniSharp.Lsp.Tests
         [Fact]
         public async Task Cannot_Find_References_For_Empty_Files()
         {
-            var response = await Client.TextDocument.RequestReferences(new ReferenceParams()
-            {
-                Position = (0, 0),
-                TextDocument = "notfound.cs"
-            }, CancellationToken);
+            var response = await Client.TextDocument.RequestReferences(
+                new ReferenceParams() { Position = (0, 0), TextDocument = "notfound.cs" },
+                CancellationToken
+            );
 
             Assert.Empty(response);
         }
@@ -54,7 +52,8 @@ namespace OmniSharp.Lsp.Tests
         [Fact]
         public async Task CanFindReferencesOfMethodParameter()
         {
-            const string code = @"
+            const string code =
+                @"
                 public class Foo
                 {
                     public Foo(string $$s)
@@ -70,7 +69,8 @@ namespace OmniSharp.Lsp.Tests
         [Fact]
         public async Task CanFindReferencesOfField()
         {
-            const string code = @"
+            const string code =
+                @"
                 public class Foo
                 {
                     public string p$$rop;
@@ -92,7 +92,8 @@ namespace OmniSharp.Lsp.Tests
         [Fact]
         public async Task CanFindReferencesOfConstructor()
         {
-            const string code = @"
+            const string code =
+                @"
                 public class Foo
                 {
                     public F$$oo() {}
@@ -113,7 +114,8 @@ namespace OmniSharp.Lsp.Tests
         [Fact]
         public async Task CanFindReferencesOfMethod()
         {
-            const string code = @"
+            const string code =
+                @"
                 public class Foo
                 {
                     public void b$$ar() { }
@@ -136,7 +138,8 @@ namespace OmniSharp.Lsp.Tests
         [InlineData(100)]
         public async Task CanFindReferencesWithLineMapping(int mappingLine)
         {
-            var code = @"
+            var code =
+                @"
                 public class Foo
                 {
                     public void b$$ar() { }
@@ -146,7 +149,9 @@ namespace OmniSharp.Lsp.Tests
                 {
                     public FooConsumer()
                     {
-#line " + mappingLine + @"
+#line "
+                + mappingLine
+                + @"
                         new Foo().bar();
 #line default
                     }
@@ -181,12 +186,16 @@ namespace OmniSharp.Lsp.Tests
         [InlineData(1, true)] // everything correct
         [InlineData(100, true)] // file exists in workspace but mapping incorrect
         [InlineData(1, false)] // file doesn't exist in workspace but mapping correct
-        public async Task CanFindReferencesWithLineMappingAcrossFiles(int mappingLine,
-            bool mappedFileExistsInWorkspace)
+        public async Task CanFindReferencesWithLineMappingAcrossFiles(
+            int mappingLine,
+            bool mappedFileExistsInWorkspace
+        )
         {
             var testFiles = new List<TestFile>()
             {
-                new TestFile("a.cs", @"
+                new TestFile(
+                    "a.cs",
+                    @"
                 public class Foo
                 {
                     public void b$$ar() { }
@@ -196,17 +205,19 @@ namespace OmniSharp.Lsp.Tests
                 {
                     public FooConsumer()
                     {
-#line " + mappingLine + @" ""b.cs""
+#line "
+                        + mappingLine
+                        + @" ""b.cs""
                         new Foo().bar();
 #line default
                     }
-                }"),
+                }"
+                ),
             };
 
             if (mappedFileExistsInWorkspace)
             {
-                testFiles.Add(new TestFile("b.cs",
-                    @"// hello"));
+                testFiles.Add(new TestFile("b.cs", @"// hello"));
             }
 
             var usages = await FindUsagesAsync(testFiles.ToArray());
@@ -238,7 +249,8 @@ namespace OmniSharp.Lsp.Tests
         [InlineData(100)]
         public async Task FindReferencesWithLineMappingReturnsRegularPosition_Razor(int mappingLine)
         {
-            var code = @"
+            var code =
+                @"
                 public class Foo
                 {
                     public void b$$ar() { }
@@ -247,13 +259,18 @@ namespace OmniSharp.Lsp.Tests
                 {
                     public FooConsumer()
                     {
-#line " + mappingLine + @"
+#line "
+                + mappingLine
+                + @"
                         new Foo().bar();
 #line default
                     }
                 }";
 
-            var usages = await FindUsagesAsync(new[] { new TestFile("dummy.razor__virtual.cs", code) }, excludeDefinition: false);
+            var usages = await FindUsagesAsync(
+                new[] { new TestFile("dummy.razor__virtual.cs", code) },
+                excludeDefinition: false
+            );
             Assert.Equal(2, usages.Count());
 
             var quickFixes = usages.OrderBy(x => x.Range.Start.Line);
@@ -278,12 +295,16 @@ namespace OmniSharp.Lsp.Tests
         [InlineData(1, true)] // everything correct
         [InlineData(100, true)] // file exists in workspace but mapping incorrect
         [InlineData(1, false)] // file doesn't exist in workspace but mapping correct
-        public async Task FindReferencesWithLineMappingAcrossFilesReturnsRegularPosition_Razor(int mappingLine,
-            bool mappedFileExistsInWorkspace)
+        public async Task FindReferencesWithLineMappingAcrossFilesReturnsRegularPosition_Razor(
+            int mappingLine,
+            bool mappedFileExistsInWorkspace
+        )
         {
             var testFiles = new List<TestFile>()
             {
-                new TestFile("a.cshtml__virtual.cs", @"
+                new TestFile(
+                    "a.cshtml__virtual.cs",
+                    @"
                 public class Foo
                 {
                     public void b$$ar() { }
@@ -292,17 +313,19 @@ namespace OmniSharp.Lsp.Tests
                 {
                     public FooConsumer()
                     {
-#line " + mappingLine + @" ""b.cs""
+#line "
+                        + mappingLine
+                        + @" ""b.cs""
                         new Foo().bar();
 #line default
                     }
-                }"),
+                }"
+                ),
             };
 
             if (mappedFileExistsInWorkspace)
             {
-                testFiles.Add(new TestFile("b.cs",
-                    @"// hello"));
+                testFiles.Add(new TestFile("b.cs", @"// hello"));
             }
 
             var usages = await FindUsagesAsync(testFiles.ToArray());
@@ -330,7 +353,9 @@ namespace OmniSharp.Lsp.Tests
         {
             var testFiles = new List<TestFile>()
             {
-                new TestFile("a.cs", @"
+                new TestFile(
+                    "a.cs",
+                    @"
                 public class Foo
                 {
                     public void b$$ar() { }
@@ -344,11 +369,11 @@ namespace OmniSharp.Lsp.Tests
                         new Foo().bar();
 #line default
                     }
-                }"),
+                }"
+                ),
             };
 
-            testFiles.Add(new TestFile("b.cs",
-                @"// hello"));
+            testFiles.Add(new TestFile("b.cs", @"// hello"));
 
             var usages = await FindUsagesAsync(testFiles.ToArray());
             Assert.Equal(2, usages.Count());
@@ -374,7 +399,8 @@ namespace OmniSharp.Lsp.Tests
         [Fact]
         public async Task ExcludesMethodDefinition()
         {
-            const string code = @"
+            const string code =
+                @"
                 public class Foo
                 {
                     public void b$$ar() { }
@@ -395,7 +421,8 @@ namespace OmniSharp.Lsp.Tests
         [Fact]
         public async Task CanFindReferencesOfPublicAutoProperty()
         {
-            const string code = @"
+            const string code =
+                @"
                 public class Foo
                 {
                     public string p$$rop {get;set;}
@@ -417,7 +444,8 @@ namespace OmniSharp.Lsp.Tests
         [Fact]
         public async Task CanFindReferencesOfPublicIndexerProperty()
         {
-            const string code = @"
+            const string code =
+                @"
                 public class Foo
                 {
                     int prop;
@@ -446,7 +474,8 @@ namespace OmniSharp.Lsp.Tests
         [Fact]
         public async Task CanFindReferencesOfClass()
         {
-            const string code = @"
+            const string code =
+                @"
                 public class F$$oo
                 {
                     public string prop {get;set;}
@@ -468,7 +497,8 @@ namespace OmniSharp.Lsp.Tests
         [Fact]
         public async Task CanFindReferencesOfOperatorOverloads()
         {
-            const string code = @"
+            const string code =
+                @"
                 public struct Vector2
                 {
                     public float x;
@@ -500,36 +530,48 @@ namespace OmniSharp.Lsp.Tests
             return FindUsagesAsync(new[] { new TestFile("dummy.cs", code) }, excludeDefinition);
         }
 
-        private async Task<LocationContainer> FindUsagesAsync(TestFile[] testFiles, bool excludeDefinition = false)
+        private async Task<LocationContainer> FindUsagesAsync(
+            TestFile[] testFiles,
+            bool excludeDefinition = false
+        )
         {
-            OmniSharpTestHost.AddFilesToWorkspace(testFiles
-                .Select(f =>
-                    new TestFile(
-                        ((f.FileName.StartsWith("/") || f.FileName.StartsWith("\\")) ? f.FileName : ("/" + f.FileName))
-                        .Replace(Path.AltDirectorySeparatorChar, Path.DirectorySeparatorChar), f.Content))
-                .ToArray()
+            OmniSharpTestHost.AddFilesToWorkspace(
+                testFiles
+                    .Select(f => new TestFile(
+                        (
+                            (f.FileName.StartsWith("/") || f.FileName.StartsWith("\\"))
+                                ? f.FileName
+                                : ("/" + f.FileName)
+                        ).Replace(Path.AltDirectorySeparatorChar, Path.DirectorySeparatorChar),
+                        f.Content
+                    ))
+                    .ToArray()
             );
             var file = testFiles.Single(tf => tf.Content.HasPosition);
             var point = file.Content.GetPointFromPosition();
 
-            Client.TextDocument.DidChangeTextDocument(new DidChangeTextDocumentParams()
-            {
-                ContentChanges = new Container<TextDocumentContentChangeEvent>(new TextDocumentContentChangeEvent()
+            Client.TextDocument.DidChangeTextDocument(
+                new DidChangeTextDocumentParams()
                 {
-                    Text = file.Content.Code
-                }),
-                TextDocument = new OptionalVersionedTextDocumentIdentifier()
-                {
-                    Uri = DocumentUri.From(file.FileName),
-                    Version = 1
+                    ContentChanges = new Container<TextDocumentContentChangeEvent>(
+                        new TextDocumentContentChangeEvent() { Text = file.Content.Code }
+                    ),
+                    TextDocument = new OptionalVersionedTextDocumentIdentifier()
+                    {
+                        Uri = DocumentUri.From(file.FileName),
+                        Version = 1,
+                    },
                 }
-            });
-            return await Client.TextDocument.RequestReferences(new ReferenceParams()
-            {
-                Position = new Position(point.Line, point.Offset),
-                TextDocument = new TextDocumentIdentifier(DocumentUri.From(file.FileName)),
-                Context = new ReferenceContext { IncludeDeclaration = !excludeDefinition }
-            }, CancellationToken);
+            );
+            return await Client.TextDocument.RequestReferences(
+                new ReferenceParams()
+                {
+                    Position = new Position(point.Line, point.Offset),
+                    TextDocument = new TextDocumentIdentifier(DocumentUri.From(file.FileName)),
+                    Context = new ReferenceContext { IncludeDeclaration = !excludeDefinition },
+                },
+                CancellationToken
+            );
         }
     }
 }

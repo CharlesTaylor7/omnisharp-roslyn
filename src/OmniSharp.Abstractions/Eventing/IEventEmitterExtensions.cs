@@ -1,9 +1,9 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
-using OmniSharp.Models.Events;
+using System.Linq;
 using OmniSharp;
 using OmniSharp.Models;
-using System.Linq;
+using OmniSharp.Models.Events;
 
 namespace OmniSharp.Eventing
 {
@@ -13,49 +13,59 @@ namespace OmniSharp.Eventing
         {
             emitter.Emit(
                 EventTypes.Error,
-                new ErrorMessage { FileName = fileName, Text = ex.ToString() });
+                new ErrorMessage { FileName = fileName, Text = ex.ToString() }
+            );
         }
 
         public static void RestoreStarted(this IEventEmitter emitter, string projectPath)
         {
             emitter.Emit(
                 EventTypes.PackageRestoreStarted,
-                new PackageRestoreMessage { FileName = projectPath });
+                new PackageRestoreMessage { FileName = projectPath }
+            );
         }
 
-        public static void RestoreFinished(this IEventEmitter emitter, string projectPath, bool succeeded)
+        public static void RestoreFinished(
+            this IEventEmitter emitter,
+            string projectPath,
+            bool succeeded
+        )
         {
             emitter.Emit(
                 EventTypes.PackageRestoreFinished,
-                new PackageRestoreMessage
-                {
-                    FileName = projectPath,
-                    Succeeded = succeeded
-                });
+                new PackageRestoreMessage { FileName = projectPath, Succeeded = succeeded }
+            );
         }
 
-        public static void UnresolvedDepdendencies(this IEventEmitter emitter, string projectFilePath, IEnumerable<PackageDependency> unresolvedDependencies)
+        public static void UnresolvedDepdendencies(
+            this IEventEmitter emitter,
+            string projectFilePath,
+            IEnumerable<PackageDependency> unresolvedDependencies
+        )
         {
             emitter.Emit(
                 EventTypes.UnresolvedDependencies,
                 new UnresolvedDependenciesMessage
                 {
                     FileName = projectFilePath,
-                    UnresolvedDependencies = unresolvedDependencies
-                });
+                    UnresolvedDependencies = unresolvedDependencies,
+                }
+            );
         }
 
-        public static void ProjectInformation(this IEventEmitter emitter,
-                                              HashedString projectId,
-                                              HashedString sessionId,
-                                              int outputKind,
-                                              IEnumerable<string> projectCapabilities,
-                                              IEnumerable<string> targetFrameworks,
-                                              HashedString sdkVersion,
-                                              IEnumerable<HashedString> references,
-                                              IEnumerable<HashedString> fileExtensions,
-                                              IEnumerable<int> fileCounts,
-                                              bool sdkStyleProject)
+        public static void ProjectInformation(
+            this IEventEmitter emitter,
+            HashedString projectId,
+            HashedString sessionId,
+            int outputKind,
+            IEnumerable<string> projectCapabilities,
+            IEnumerable<string> targetFrameworks,
+            HashedString sdkVersion,
+            IEnumerable<HashedString> references,
+            IEnumerable<HashedString> fileExtensions,
+            IEnumerable<int> fileCounts,
+            bool sdkStyleProject
+        )
         {
             var projectConfiguration = new ProjectConfigurationMessage()
             {
@@ -68,12 +78,10 @@ namespace OmniSharp.Eventing
                 References = references.Select(hashed => hashed.Value),
                 FileExtensions = fileExtensions.Select(hashed => hashed.Value),
                 FileCounts = fileCounts,
-                SdkStyleProject = sdkStyleProject
+                SdkStyleProject = sdkStyleProject,
             };
 
-            emitter.Emit(
-                EventTypes.ProjectConfiguration,
-                projectConfiguration);
+            emitter.Emit(EventTypes.ProjectConfiguration, projectConfiguration);
         }
     }
 }

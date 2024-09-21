@@ -1,4 +1,4 @@
-﻿using System.Composition;
+using System.Composition;
 using OmniSharp.Services;
 
 namespace OmniSharp.Roslyn.CSharp.Services.CodeActions
@@ -9,8 +9,6 @@ namespace OmniSharp.Roslyn.CSharp.Services.CodeActions
     {
         [ImportingConstructor]
         public ExternalCodeActionProvider(ExternalFeaturesHostServicesProvider hostServicesProvider)
-            : base("ExternalCodeActions", hostServicesProvider.Assemblies)
-        {
-        }
+            : base("ExternalCodeActions", hostServicesProvider.Assemblies) { }
     }
 }

@@ -15,7 +15,8 @@ namespace OmniSharp.Script
             {
                 if (a is PortableExecutableReference portableExecutableReference)
                 {
-                    return portableExecutableReference.FilePath ?? portableExecutableReference.Display;
+                    return portableExecutableReference.FilePath
+                        ?? portableExecutableReference.Display;
                 }
 
                 return a.Display;

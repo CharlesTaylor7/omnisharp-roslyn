@@ -8,10 +8,19 @@ namespace OmniSharp.Http
         private readonly CommandOption _serverInterface;
         private readonly CommandOption _port;
 
-        public HttpCommandLineApplication() : base()
+        public HttpCommandLineApplication()
+            : base()
         {
-            _port = Application.Option("-p | --port", "OmniSharp port (defaults to 2000).", CommandOptionType.SingleValue);
-            _serverInterface = Application.Option("-i | --interface", "Server interface address (defaults to 'localhost').", CommandOptionType.SingleValue);
+            _port = Application.Option(
+                "-p | --port",
+                "OmniSharp port (defaults to 2000).",
+                CommandOptionType.SingleValue
+            );
+            _serverInterface = Application.Option(
+                "-i | --interface",
+                "Server interface address (defaults to 'localhost').",
+                CommandOptionType.SingleValue
+            );
         }
 
         public int Port => _port.GetValueOrDefault(2000);

@@ -4,6 +4,6 @@ namespace OmniSharp.Abstractions.Models.V1.FixAll
     {
         Document = 0,
         Project = 1,
-        Solution = 2
+        Solution = 2,
     }
 }

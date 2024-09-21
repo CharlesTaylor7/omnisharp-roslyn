@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -46,8 +46,7 @@ namespace OmniSharp.Cake.Configuration
         public string GetValue(string key)
         {
             key = KeyNormalizer.Normalize(key);
-            return _lookup.ContainsKey(key)
-                ? _lookup[key] : null;
+            return _lookup.ContainsKey(key) ? _lookup[key] : null;
         }
     }
 }

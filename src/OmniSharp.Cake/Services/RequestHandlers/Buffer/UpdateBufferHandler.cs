@@ -13,9 +13,7 @@ namespace OmniSharp.Cake.Services.RequestHandlers.Buffer
         private readonly ICakeScriptService _scriptService;
 
         [ImportingConstructor]
-        public UpdateBufferHandler(
-            OmniSharpWorkspace workspace,
-            ICakeScriptService scriptService)
+        public UpdateBufferHandler(OmniSharpWorkspace workspace, ICakeScriptService scriptService)
         {
             _workspace = workspace;
             _scriptService = scriptService;
@@ -28,23 +26,22 @@ namespace OmniSharp.Cake.Services.RequestHandlers.Buffer
                 return true;
             }
 
-            var fileChange = new FileChange
-            {
-                FileName = request.FileName
-            };
+            var fileChange = new FileChange { FileName = request.FileName };
 
-            if(request.Changes != null)
+            if (request.Changes != null)
             {
-                foreach(var change in request.Changes)
+                foreach (var change in request.Changes)
                 {
-                    fileChange.LineChanges.Add(new LineChange
-                    {
-                        StartLine = change.StartLine,
-                        StartColumn = change.StartColumn,
-                        EndLine = change.EndLine,
-                        EndColumn = change.EndColumn,
-                        NewText = change.NewText
-                    });
+                    fileChange.LineChanges.Add(
+                        new LineChange
+                        {
+                            StartLine = change.StartLine,
+                            StartColumn = change.StartColumn,
+                            EndLine = change.EndLine,
+                            EndColumn = change.EndColumn,
+                            NewText = change.NewText,
+                        }
+                    );
                 }
 
                 fileChange.FromDisk = false;

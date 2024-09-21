@@ -22,7 +22,8 @@ namespace OmniSharp.Roslyn.CSharp.Services.Refactoring
         public FixUsingService(
             OmniSharpWorkspace workspace,
             OmniSharpOptions options,
-            [ImportMany] IEnumerable<ICodeActionProvider> codeActionProviders)
+            [ImportMany] IEnumerable<ICodeActionProvider> codeActionProviders
+        )
         {
             _workspace = workspace;
             _options = options;
@@ -36,8 +37,10 @@ namespace OmniSharp.Roslyn.CSharp.Services.Refactoring
             var oldDocument = _workspace.GetDocument(request.FileName);
             if (oldDocument != null)
             {
-                var fixUsingsResponse = await new FixUsingsWorker(_providers, _options)
-                    .FixUsingsAsync(oldDocument);
+                var fixUsingsResponse = await new FixUsingsWorker(
+                    _providers,
+                    _options
+                ).FixUsingsAsync(oldDocument);
 
                 response.AmbiguousResults = fixUsingsResponse.AmbiguousResults;
 

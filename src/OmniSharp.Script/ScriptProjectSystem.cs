@@ -22,7 +22,8 @@ namespace OmniSharp.Script
     public class ScriptProjectSystem : IProjectSystem
     {
         private const string CsxExtension = ".csx";
-        private readonly ConcurrentDictionary<string, ProjectInfo> _projects = new ConcurrentDictionary<string, ProjectInfo>();
+        private readonly ConcurrentDictionary<string, ProjectInfo> _projects =
+            new ConcurrentDictionary<string, ProjectInfo>();
         private readonly ScriptContextProvider _scriptContextProvider;
         private readonly OmniSharpWorkspace _workspace;
         private readonly IOmniSharpEnvironment _env;
@@ -33,8 +34,14 @@ namespace OmniSharp.Script
         private Lazy<ScriptContext> _scriptContext;
 
         [ImportingConstructor]
-        public ScriptProjectSystem(OmniSharpWorkspace workspace, IOmniSharpEnvironment env, ILoggerFactory loggerFactory,
-            ScriptContextProvider scriptContextProvider, IFileSystemWatcher fileSystemWatcher, FileSystemHelper fileSystemHelper)
+        public ScriptProjectSystem(
+            OmniSharpWorkspace workspace,
+            IOmniSharpEnvironment env,
+            ILoggerFactory loggerFactory,
+            ScriptContextProvider scriptContextProvider,
+            IFileSystemWatcher fileSystemWatcher,
+            FileSystemHelper fileSystemHelper
+        )
         {
             _workspace = workspace;
             _env = env;
@@ -52,7 +59,8 @@ namespace OmniSharp.Script
 
         public void Initalize(IConfiguration configuration)
         {
-            if (Initialized) return;
+            if (Initialized)
+                return;
 
             _scriptOptions = new ScriptOptions();
 
@@ -63,7 +71,14 @@ namespace OmniSharp.Script
             // Nothing to do if there are no CSX files
             var allCsxFiles = _fileSystemHelper.GetFiles("**/*.csx").ToArray();
 
-            _scriptContext = new Lazy<ScriptContext>(() => _scriptContextProvider.CreateScriptContext(_scriptOptions, allCsxFiles, _workspace.EditorConfigEnabled));
+            _scriptContext = new Lazy<ScriptContext>(
+                () =>
+                    _scriptContextProvider.CreateScriptContext(
+                        _scriptOptions,
+                        allCsxFiles,
+                        _workspace.EditorConfigEnabled
+                    )
+            );
 
             if (allCsxFiles.Length == 0)
             {
@@ -92,14 +107,18 @@ namespace OmniSharp.Script
 
         private void OnCsxFileChanged(string filePath, FileChangeType changeType)
         {
-            if (changeType == FileChangeType.Unspecified && !File.Exists(filePath) ||
-                changeType == FileChangeType.Delete)
+            if (
+                changeType == FileChangeType.Unspecified && !File.Exists(filePath)
+                || changeType == FileChangeType.Delete
+            )
             {
                 RemoveFromWorkspace(filePath);
             }
 
-            if (changeType == FileChangeType.Unspecified && File.Exists(filePath) ||
-                changeType == FileChangeType.Create)
+            if (
+                changeType == FileChangeType.Unspecified && File.Exists(filePath)
+                || changeType == FileChangeType.Create
+            )
             {
                 AddToWorkspace(filePath);
             }
@@ -110,14 +129,22 @@ namespace OmniSharp.Script
             try
             {
                 var csxFileName = Path.GetFileName(csxPath);
-                var project = _scriptContext.Value.ScriptProjectProvider.CreateProject(csxFileName, _scriptContext.Value.MetadataReferences, csxPath, _scriptContext.Value.GlobalsType);
+                var project = _scriptContext.Value.ScriptProjectProvider.CreateProject(
+                    csxFileName,
+                    _scriptContext.Value.MetadataReferences,
+                    csxPath,
+                    _scriptContext.Value.GlobalsType
+                );
 
                 if (_scriptOptions.IsNugetEnabled())
                 {
-                    var scriptMap = _scriptContext.Value.CompilationDependencies.ToDictionary(rdt => rdt.Name, rdt => rdt.Scripts);
+                    var scriptMap = _scriptContext.Value.CompilationDependencies.ToDictionary(
+                        rdt => rdt.Name,
+                        rdt => rdt.Scripts
+                    );
                     var options = project.CompilationOptions.WithSourceReferenceResolver(
-                        new NuGetSourceReferenceResolver(ScriptSourceResolver.Default,
-                            scriptMap));
+                        new NuGetSourceReferenceResolver(ScriptSourceResolver.Default, scriptMap)
+                    );
                     project = project.WithCompilationOptions(options);
                 }
 
@@ -163,9 +190,7 @@ namespace OmniSharp.Script
             }
 
             var document = _workspace.GetDocument(filePath);
-            var projectFilePath = document != null
-                ? document.Project.FilePath
-                : filePath;
+            var projectFilePath = document != null ? document.Project.FilePath : filePath;
 
             var projectInfo = GetProjectFileInfo(projectFilePath);
             if (projectInfo == null)

@@ -1,4 +1,4 @@
-﻿namespace OmniSharp.Cake
+namespace OmniSharp.Cake
 {
     internal class CakeContextModel
     {

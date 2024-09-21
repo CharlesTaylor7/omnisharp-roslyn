@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -26,7 +26,8 @@ namespace OmniSharp.Models.TypeLookup
             string remarksText = "",
             string exampleText = "",
             string valueText = "",
-            DocumentationItem[] exception = null)
+            DocumentationItem[] exception = null
+        )
         {
             SummaryText = summaryText;
             TypeParamElements = typeParamElements ?? Array.Empty<DocumentationItem>();
@@ -77,7 +78,8 @@ namespace OmniSharp.Models.TypeLookup
                                     currentSectionBuilder = exampleText;
                                     break;
                                 case "exception":
-                                    DocumentationItemBuilder exceptionInstance = new DocumentationItemBuilder();
+                                    DocumentationItemBuilder exceptionInstance =
+                                        new DocumentationItemBuilder();
                                     exceptionInstance.Name = GetCref(xml["cref"]).TrimEnd();
                                     currentSectionBuilder = exceptionInstance.Documentation;
                                     exception.Add(exceptionInstance);
@@ -101,8 +103,12 @@ namespace OmniSharp.Models.TypeLookup
                                     currentSectionBuilder.Append(" ");
                                     break;
                                 case "param":
-                                    DocumentationItemBuilder paramInstance = new DocumentationItemBuilder();
-                                    paramInstance.Name = TrimMultiLineString(xml["name"], lineEnding);
+                                    DocumentationItemBuilder paramInstance =
+                                        new DocumentationItemBuilder();
+                                    paramInstance.Name = TrimMultiLineString(
+                                        xml["name"],
+                                        lineEnding
+                                    );
                                     currentSectionBuilder = paramInstance.Documentation;
                                     paramElements.Add(paramInstance);
                                     break;
@@ -111,8 +117,12 @@ namespace OmniSharp.Models.TypeLookup
                                     currentSectionBuilder.Append(" ");
                                     break;
                                 case "typeparam":
-                                    DocumentationItemBuilder typeParamInstance = new DocumentationItemBuilder();
-                                    typeParamInstance.Name = TrimMultiLineString(xml["name"], lineEnding);
+                                    DocumentationItemBuilder typeParamInstance =
+                                        new DocumentationItemBuilder();
+                                    typeParamInstance.Name = TrimMultiLineString(
+                                        xml["name"],
+                                        lineEnding
+                                    );
                                     currentSectionBuilder = typeParamInstance.Documentation;
                                     typeParamElements.Add(typeParamInstance);
                                     break;
@@ -133,7 +143,9 @@ namespace OmniSharp.Models.TypeLookup
                             }
                             else
                             {
-                                currentSectionBuilder.Append(TrimMultiLineString(xml.Value, lineEnding));
+                                currentSectionBuilder.Append(
+                                    TrimMultiLineString(xml.Value, lineEnding)
+                                );
                             }
                         }
                     } while (xml.Read());
@@ -152,13 +164,20 @@ namespace OmniSharp.Models.TypeLookup
                 remarksText.ToString(),
                 exampleText.ToString(),
                 valueText.ToString(),
-                exception.Select(s => s.ConvertToDocumentedObject()).ToArray());
+                exception.Select(s => s.ConvertToDocumentedObject()).ToArray()
+            );
         }
 
         private static string TrimMultiLineString(string input, string lineEnding)
         {
-            var lines = input.Split(new string[] { "\n", "\r\n" }, StringSplitOptions.RemoveEmptyEntries);
-            return string.Join(lineEnding, lines.Select(l => TrimStartRetainingSingleLeadingSpace(l)));
+            var lines = input.Split(
+                new string[] { "\n", "\r\n" },
+                StringSplitOptions.RemoveEmptyEntries
+            );
+            return string.Join(
+                lineEnding,
+                lines.Select(l => TrimStartRetainingSingleLeadingSpace(l))
+            );
         }
 
         private static string GetCref(string cref)
@@ -187,11 +206,13 @@ namespace OmniSharp.Models.TypeLookup
             return $" {input.TrimStart()}";
         }
 
-        public string GetParameterText(string name)
-            => Array.Find(ParamElements, parameter => parameter.Name == name)?.Documentation ?? string.Empty;
+        public string GetParameterText(string name) =>
+            Array.Find(ParamElements, parameter => parameter.Name == name)?.Documentation
+            ?? string.Empty;
 
-        public string GetTypeParameterText(string name)
-            => Array.Find(TypeParamElements, typeParam => typeParam.Name == name)?.Documentation ?? string.Empty;
+        public string GetTypeParameterText(string name) =>
+            Array.Find(TypeParamElements, typeParam => typeParam.Name == name)?.Documentation
+            ?? string.Empty;
 
         public static readonly DocumentationComment Empty = new DocumentationComment();
     }

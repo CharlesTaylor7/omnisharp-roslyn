@@ -30,43 +30,59 @@ namespace OmniSharp.LanguageServerProtocol.Eventing
                 case EventTypes.Diagnostic:
                     if (args is DiagnosticMessage message)
                     {
-                        var groups = message.Results
-                            .GroupBy(z => Helpers.ToUri(z.FileName), z => z.QuickFixes);
+                        var groups = message.Results.GroupBy(
+                            z => Helpers.ToUri(z.FileName),
+                            z => z.QuickFixes
+                        );
 
                         foreach (var group in groups)
                         {
-                            _server.TextDocument.PublishDiagnostics(new PublishDiagnosticsParams()
-                            {
-                                Uri = group.Key,
-                                Version = _documentVersions.GetVersion(group.Key),
-                                Diagnostics = group
-                                    .SelectMany(z => z.Select(v => v.ToDiagnostic()))
-                                    .ToArray()
-                            });
+                            _server.TextDocument.PublishDiagnostics(
+                                new PublishDiagnosticsParams()
+                                {
+                                    Uri = group.Key,
+                                    Version = _documentVersions.GetVersion(group.Key),
+                                    Diagnostics = group
+                                        .SelectMany(z => z.Select(v => v.ToDiagnostic()))
+                                        .ToArray(),
+                                }
+                            );
                         }
                     }
                     break;
                 case EventTypes.ProjectAdded:
                 case EventTypes.ProjectChanged:
                 case EventTypes.ProjectRemoved:
-                    _server.SendNotification($"o#/{kind}".ToLowerInvariant(), JToken.FromObject(args)); // ProjectInformationResponse
+                    _server.SendNotification(
+                        $"o#/{kind}".ToLowerInvariant(),
+                        JToken.FromObject(args)
+                    ); // ProjectInformationResponse
                     break;
 
                 // work done??
                 case EventTypes.PackageRestoreStarted:
                 case EventTypes.PackageRestoreFinished:
                 case EventTypes.UnresolvedDependencies:
-                    _server.SendNotification($"o#/{kind}".ToLowerInvariant(), JToken.FromObject(args));
+                    _server.SendNotification(
+                        $"o#/{kind}".ToLowerInvariant(),
+                        JToken.FromObject(args)
+                    );
                     break;
 
                 case EventTypes.Error:
                 case EventTypes.ProjectConfiguration:
                 case EventTypes.ProjectDiagnosticStatus:
-                    _server.SendNotification($"o#/{kind}".ToLowerInvariant(), JToken.FromObject(args));
+                    _server.SendNotification(
+                        $"o#/{kind}".ToLowerInvariant(),
+                        JToken.FromObject(args)
+                    );
                     break;
 
                 default:
-                    _server.SendNotification($"o#/{kind}".ToLowerInvariant(), JToken.FromObject(args));
+                    _server.SendNotification(
+                        $"o#/{kind}".ToLowerInvariant(),
+                        JToken.FromObject(args)
+                    );
                     break;
             }
         }

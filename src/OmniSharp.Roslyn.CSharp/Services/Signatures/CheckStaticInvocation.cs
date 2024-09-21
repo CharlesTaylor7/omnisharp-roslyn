@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 // Adapted from https://github.com/dotnet/roslyn/blob/master/src/Workspaces/CSharp/Portable/Extensions/SyntaxNodeExtensions.cs
 using System;
 using System.Collections.Generic;
@@ -35,8 +35,8 @@ namespace OmniSharp.Roslyn.CSharp.Services.Signatures
                     return GetModifiers(memberDeclaration).Any(SyntaxKind.StaticKeyword);
 
                 case SyntaxKind.PropertyDeclaration:
-                    return GetModifiers(memberDeclaration).Any(SyntaxKind.StaticKeyword) ||
-                        node.IsFoundUnder((PropertyDeclarationSyntax p) => p.Initializer);
+                    return GetModifiers(memberDeclaration).Any(SyntaxKind.StaticKeyword)
+                        || node.IsFoundUnder((PropertyDeclarationSyntax p) => p.Initializer);
 
                 case SyntaxKind.FieldDeclaration:
                 case SyntaxKind.EventFieldDeclaration:
@@ -102,8 +102,11 @@ namespace OmniSharp.Roslyn.CSharp.Services.Signatures
             return default;
         }
 
-        public static bool IsFoundUnder<TParent>(this SyntaxNode node, Func<TParent, SyntaxNode> childGetter)
-           where TParent : SyntaxNode
+        public static bool IsFoundUnder<TParent>(
+            this SyntaxNode node,
+            Func<TParent, SyntaxNode> childGetter
+        )
+            where TParent : SyntaxNode
         {
             var ancestor = node.GetAncestor<TParent>();
             if (ancestor == null)
@@ -118,7 +121,7 @@ namespace OmniSharp.Roslyn.CSharp.Services.Signatures
         }
 
         public static TNode GetAncestor<TNode>(this SyntaxNode node)
-           where TNode : SyntaxNode
+            where TNode : SyntaxNode
         {
             var current = node.Parent;
             while (current != null)
@@ -136,10 +139,15 @@ namespace OmniSharp.Roslyn.CSharp.Services.Signatures
 
         private static SyntaxNode GetParent(this SyntaxNode node)
         {
-            return node is IStructuredTriviaSyntax trivia ? trivia.ParentTrivia.Token.Parent : node.Parent;
+            return node is IStructuredTriviaSyntax trivia
+                ? trivia.ParentTrivia.Token.Parent
+                : node.Parent;
         }
 
-        public static TNode FirstAncestorOrSelfUntil<TNode>(this SyntaxNode node, Func<SyntaxNode, bool> predicate)
+        public static TNode FirstAncestorOrSelfUntil<TNode>(
+            this SyntaxNode node,
+            Func<SyntaxNode, bool> predicate
+        )
             where TNode : SyntaxNode
         {
             for (var current = node; current != null; current = current.GetParent())
@@ -159,7 +167,7 @@ namespace OmniSharp.Roslyn.CSharp.Services.Signatures
         }
 
         public static TNode GetAncestorOrThis<TNode>(this SyntaxNode node)
-                where TNode : SyntaxNode
+            where TNode : SyntaxNode
         {
             return node?.GetAncestorsOrThis<TNode>().FirstOrDefault();
         }
@@ -180,4 +188,3 @@ namespace OmniSharp.Roslyn.CSharp.Services.Signatures
         }
     }
 }
-

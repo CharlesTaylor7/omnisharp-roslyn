@@ -1,4 +1,4 @@
-﻿using System.Composition;
+using System.Composition;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -34,7 +34,11 @@ namespace OmniSharp.Roslyn.CSharp.Services
         private readonly ILogger<QuickInfoProvider>? _logger;
 
         [ImportingConstructor]
-        public QuickInfoProvider(OmniSharpWorkspace workspace, FormattingOptions formattingOptions, ILoggerFactory? loggerFactory)
+        public QuickInfoProvider(
+            OmniSharpWorkspace workspace,
+            FormattingOptions formattingOptions,
+            ILoggerFactory? loggerFactory
+        )
         {
             _workspace = workspace;
             _formattingOptions = formattingOptions;
@@ -64,20 +68,26 @@ namespace OmniSharp.Roslyn.CSharp.Services
             var quickInfo = await quickInfoService.GetQuickInfoAsync(document, position);
             if (quickInfo is null)
             {
-                _logger?.LogTrace($"No QuickInfo found for {document.FilePath}:{request.Line},{request.Column}");
+                _logger?.LogTrace(
+                    $"No QuickInfo found for {document.FilePath}:{request.Line},{request.Column}"
+                );
                 return response;
             }
 
             var finalTextBuilder = new StringBuilder();
 
             bool lastSectionHadLineBreak = true;
-            var description = quickInfo.Sections.FirstOrDefault(s => s.Kind == QuickInfoSectionKinds.Description);
+            var description = quickInfo.Sections.FirstOrDefault(s =>
+                s.Kind == QuickInfoSectionKinds.Description
+            );
             if (description is object)
             {
                 appendSection(description, MarkdownFormat.AllTextAsCSharp);
             }
 
-            var summary = quickInfo.Sections.FirstOrDefault(s => s.Kind == QuickInfoSectionKinds.DocumentationComments);
+            var summary = quickInfo.Sections.FirstOrDefault(s =>
+                s.Kind == QuickInfoSectionKinds.DocumentationComments
+            );
             if (summary is object)
             {
                 appendSection(summary, MarkdownFormat.Default);
@@ -123,7 +133,13 @@ namespace OmniSharp.Roslyn.CSharp.Services
                     finalTextBuilder.Append(_formattingOptions.NewLine);
                     finalTextBuilder.Append(_formattingOptions.NewLine);
                 }
-                MarkdownHelpers.TaggedTextToMarkdown(section.TaggedParts, finalTextBuilder, _formattingOptions, format, out lastSectionHadLineBreak);
+                MarkdownHelpers.TaggedTextToMarkdown(
+                    section.TaggedParts,
+                    finalTextBuilder,
+                    _formattingOptions,
+                    format,
+                    out lastSectionHadLineBreak
+                );
             }
         }
     }

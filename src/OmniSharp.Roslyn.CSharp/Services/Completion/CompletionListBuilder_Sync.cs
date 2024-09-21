@@ -1,4 +1,4 @@
-﻿#nullable enable
+#nullable enable
 
 using System.Collections.Generic;
 using System.Collections.Immutable;
@@ -33,29 +33,44 @@ namespace OmniSharp.Roslyn.CSharp.Services.Completion
             CSharpCompletionList completions,
             TextSpan typedSpan,
             bool expectingImportedItems,
-            bool isSuggestionMode)
+            bool isSuggestionMode
+        )
         {
             var completionsBuilder = new List<CompletionItem>(completions.ItemsList.Count);
             var seenUnimportedCompletions = false;
-            var commitCharacterRuleCache = new Dictionary<ImmutableArray<CharacterSetModificationRule>, IReadOnlyList<char>>();
+            var commitCharacterRuleCache =
+                new Dictionary<ImmutableArray<CharacterSetModificationRule>, IReadOnlyList<char>>();
             var commitCharacterRuleBuilder = new HashSet<char>();
 
-            var completionTasksAndProviderNamesBuilder = ImmutableArray.CreateBuilder<(Task<CompletionChange>?, string? providerName)>();
+            var completionTasksAndProviderNamesBuilder = ImmutableArray.CreateBuilder<(
+                Task<CompletionChange>?,
+                string? providerName
+            )>();
             for (int i = 0; i < completions.ItemsList.Count; i++)
             {
                 var completion = completions.ItemsList[i];
                 var providerName = completion.GetProviderName();
-                if (providerName is TypeImportCompletionProvider or
-                                    ExtensionMethodImportCompletionProvider)
+                if (
+                    providerName
+                    is TypeImportCompletionProvider
+                        or ExtensionMethodImportCompletionProvider
+                )
                 {
                     completionTasksAndProviderNamesBuilder.Add((null, providerName));
                 }
                 else
                 {
-                    completionTasksAndProviderNamesBuilder.Add(((Task<CompletionChange>?)completionService.GetChangeAsync(document, completion), providerName));
+                    completionTasksAndProviderNamesBuilder.Add(
+                        (
+                            (Task<CompletionChange>?)
+                                completionService.GetChangeAsync(document, completion),
+                            providerName
+                        )
+                    );
                 }
             }
-            var completionTasksAndProviderNames = completionTasksAndProviderNamesBuilder.ToImmutable();
+            var completionTasksAndProviderNames =
+                completionTasksAndProviderNamesBuilder.ToImmutable();
 
             for (int i = 0; i < completions.ItemsList.Count; i++)
             {
@@ -69,7 +84,10 @@ namespace OmniSharp.Roslyn.CSharp.Services.Completion
                 }
 
                 var insertTextFormat = InsertTextFormat.PlainText;
-                string labelText = completion.DisplayTextPrefix + completion.DisplayText + completion.DisplayTextSuffix;
+                string labelText =
+                    completion.DisplayTextPrefix
+                    + completion.DisplayText
+                    + completion.DisplayTextSuffix;
                 List<LinePositionSpanTextChange>? additionalTextEdits = null;
                 string? insertText = null;
                 string? filterText = null;
@@ -77,7 +95,8 @@ namespace OmniSharp.Roslyn.CSharp.Services.Completion
                 var (changeTask, providerName) = completionTasksAndProviderNames[i];
                 switch (providerName)
                 {
-                    case TypeImportCompletionProvider or ExtensionMethodImportCompletionProvider:
+                    case TypeImportCompletionProvider
+                    or ExtensionMethodImportCompletionProvider:
                         changeSpan = typedSpan;
                         insertText = completion.DisplayText;
                         seenUnimportedCompletions = true;
@@ -87,46 +106,62 @@ namespace OmniSharp.Roslyn.CSharp.Services.Completion
 
                     case InternalsVisibleToCompletionProvider:
                         // if the completion is for the hidden Misc files project, skip it
-                        if (completion.DisplayText == Configuration.OmniSharpMiscProjectName) continue;
+                        if (completion.DisplayText == Configuration.OmniSharpMiscProjectName)
+                            continue;
                         goto default;
 
                     default:
-                        {
-                            // Except for import completion, we just resolve the change up front in the sync version. It's only expensive
-                            // for override completion, but there's not a heck of a lot we can do about that for the sync scenario
-                            Debug.Assert(changeTask is not null);
+                    {
+                        // Except for import completion, we just resolve the change up front in the sync version. It's only expensive
+                        // for override completion, but there's not a heck of a lot we can do about that for the sync scenario
+                        Debug.Assert(changeTask is not null);
 
-                            GetCompletionInfo(
-                                sourceText,
-                                position,
-                                completion,
-                                await changeTask!,
-                                typedSpan,
-                                labelText,
-                                expectingImportedItems,
-                                out insertText, out filterText, out sortText, out insertTextFormat, out changeSpan, out additionalTextEdits);
+                        GetCompletionInfo(
+                            sourceText,
+                            position,
+                            completion,
+                            await changeTask!,
+                            typedSpan,
+                            labelText,
+                            expectingImportedItems,
+                            out insertText,
+                            out filterText,
+                            out sortText,
+                            out insertTextFormat,
+                            out changeSpan,
+                            out additionalTextEdits
+                        );
 
-                            break;
-                        }
+                        break;
+                    }
                 }
 
-                var treatAsASuggestion = isSuggestionMode || ShouldTreatCompletionItemAsSuggestion(completion, typedSpan);
-                var commitCharacters = BuildCommitCharacters(completion.Rules.CommitCharacterRules, treatAsASuggestion, commitCharacterRuleCache, commitCharacterRuleBuilder);
+                var treatAsASuggestion =
+                    isSuggestionMode
+                    || ShouldTreatCompletionItemAsSuggestion(completion, typedSpan);
+                var commitCharacters = BuildCommitCharacters(
+                    completion.Rules.CommitCharacterRules,
+                    treatAsASuggestion,
+                    commitCharacterRuleCache,
+                    commitCharacterRuleBuilder
+                );
 
-                completionsBuilder.Add(new CompletionItem
-                {
-                    Label = labelText,
-                    TextEdit = GetChangeForTextAndSpan(insertText!, changeSpan, sourceText),
-                    InsertTextFormat = insertTextFormat,
-                    AdditionalTextEdits = additionalTextEdits,
-                    SortText = sortText,
-                    FilterText = filterText,
-                    Kind = GetCompletionItemKind(completion.Tags),
-                    Detail = completion.InlineDescription,
-                    Data = (cacheId, i),
-                    Preselect = completion.Rules.MatchPriority == MatchPriority.Preselect,
-                    CommitCharacters = commitCharacters,
-                });
+                completionsBuilder.Add(
+                    new CompletionItem
+                    {
+                        Label = labelText,
+                        TextEdit = GetChangeForTextAndSpan(insertText!, changeSpan, sourceText),
+                        InsertTextFormat = insertTextFormat,
+                        AdditionalTextEdits = additionalTextEdits,
+                        SortText = sortText,
+                        FilterText = filterText,
+                        Kind = GetCompletionItemKind(completion.Tags),
+                        Detail = completion.InlineDescription,
+                        Data = (cacheId, i),
+                        Preselect = completion.Rules.MatchPriority == MatchPriority.Preselect,
+                        CommitCharacters = commitCharacters,
+                    }
+                );
             }
 
             return (completionsBuilder, seenUnimportedCompletions);
@@ -145,7 +180,8 @@ namespace OmniSharp.Roslyn.CSharp.Services.Completion
             out string? sortText,
             out InsertTextFormat insertTextFormat,
             out TextSpan changeSpan,
-            out List<LinePositionSpanTextChange>? additionalTextEdits)
+            out List<LinePositionSpanTextChange>? additionalTextEdits
+        )
         {
             insertTextFormat = InsertTextFormat.PlainText;
             changeSpan = typedSpan;
@@ -162,7 +198,10 @@ namespace OmniSharp.Roslyn.CSharp.Services.Completion
             var adjustedNewPosition = change!.NewPosition;
 
             var cursorPoint = sourceText.GetPointFromPosition(position);
-            var lineStartPosition = sourceText.GetPositionFromLineAndOffset(cursorPoint.Line, offset: 0);
+            var lineStartPosition = sourceText.GetPositionFromLineAndOffset(
+                cursorPoint.Line,
+                offset: 0
+            );
 
             // There must be at least one change that affects the current location, or something is seriously wrong
             Debug.Assert(change.TextChanges.Any(change => change.Span.IntersectsWith(position)));
@@ -171,16 +210,25 @@ namespace OmniSharp.Roslyn.CSharp.Services.Completion
             {
                 if (!textChange.Span.IntersectsWith(position))
                 {
-                    handleNonInsertsectingEdit(sourceText, ref additionalTextEdits, ref adjustedNewPosition, textChange);
+                    handleNonInsertsectingEdit(
+                        sourceText,
+                        ref additionalTextEdits,
+                        ref adjustedNewPosition,
+                        textChange
+                    );
                 }
                 else
                 {
                     // Either there should be no new position, or it should be within the text that is being added
                     // by this change.
                     int changeSpanStart = textChange.Span.Start;
-                    Debug.Assert(adjustedNewPosition is null ||
-                        (adjustedNewPosition.Value <= changeSpanStart + textChange.NewText!.Length) &&
-                        (adjustedNewPosition.Value >= changeSpanStart));
+                    Debug.Assert(
+                        adjustedNewPosition is null
+                            || (
+                                adjustedNewPosition.Value
+                                <= changeSpanStart + textChange.NewText!.Length
+                            ) && (adjustedNewPosition.Value >= changeSpanStart)
+                    );
 
                     // Filtering needs a range that is a _single_ line. Consider a case like this (whitespace documented with escapes):
                     //
@@ -206,7 +254,11 @@ namespace OmniSharp.Roslyn.CSharp.Services.Completion
 
                         // Now count that many newlines forward in the edited text
                         int cutoffPosition = 0;
-                        for (int numNewlinesFound = 0; numNewlinesFound < numLinesEdited; cutoffPosition++)
+                        for (
+                            int numNewlinesFound = 0;
+                            numNewlinesFound < numLinesEdited;
+                            cutoffPosition++
+                        )
                         {
                             if (textChange.NewText![cutoffPosition] == '\n')
                             {
@@ -215,9 +267,26 @@ namespace OmniSharp.Roslyn.CSharp.Services.Completion
                         }
 
                         // Now that we've found the cuttoff, we can build our two subchanges
-                        var prefixChange = new TextChange(new TextSpan(changeSpanStart, length: lineStartPosition - changeSpanStart), textChange.NewText!.Substring(0, cutoffPosition));
-                        handleNonInsertsectingEdit(sourceText, ref additionalTextEdits, ref adjustedNewPosition, prefixChange);
-                        updatedChange = new TextChange(new TextSpan(lineStartPosition, length: textChange.Span.End - lineStartPosition), textChange.NewText.Substring(cutoffPosition));
+                        var prefixChange = new TextChange(
+                            new TextSpan(
+                                changeSpanStart,
+                                length: lineStartPosition - changeSpanStart
+                            ),
+                            textChange.NewText!.Substring(0, cutoffPosition)
+                        );
+                        handleNonInsertsectingEdit(
+                            sourceText,
+                            ref additionalTextEdits,
+                            ref adjustedNewPosition,
+                            prefixChange
+                        );
+                        updatedChange = new TextChange(
+                            new TextSpan(
+                                lineStartPosition,
+                                length: textChange.Span.End - lineStartPosition
+                            ),
+                            textChange.NewText.Substring(cutoffPosition)
+                        );
                     }
 
                     changeSpan = updatedChange.Span;
@@ -230,7 +299,10 @@ namespace OmniSharp.Roslyn.CSharp.Services.Completion
                         changeSpan = new(changeSpan.Start, length: position - changeSpan.Start);
                     }
 
-                    (insertText, insertTextFormat) = getPossiblySnippetizedInsertText(updatedChange, adjustedNewPosition);
+                    (insertText, insertTextFormat) = getPossiblySnippetizedInsertText(
+                        updatedChange,
+                        adjustedNewPosition
+                    );
 
                     // If we're expecting there to be unimported types, put in an explicit sort text to put things already in scope first.
                     // Otherwise, omit the sort text if it's the same as the label to save on space.
@@ -255,25 +327,43 @@ namespace OmniSharp.Roslyn.CSharp.Services.Completion
                             // change, so chop off changeSpan.Start - typedSpan.Start from the filter text to get it to match
                             // up with the range
                             int prefixMatchElement = changeSpan.Start - typedSpan.Start;
-                            Debug.Assert(completion.FilterText!.StartsWith(sourceText.GetSubText(new TextSpan(typedSpan.Start, prefixMatchElement)).ToString()));
+                            Debug.Assert(
+                                completion.FilterText!.StartsWith(
+                                    sourceText
+                                        .GetSubText(
+                                            new TextSpan(typedSpan.Start, prefixMatchElement)
+                                        )
+                                        .ToString()
+                                )
+                            );
                             filterText = completion.FilterText.Substring(prefixMatchElement);
                         }
                         else
                         {
-                            var prefix = sourceText.GetSubText(TextSpan.FromBounds(changeSpan.Start, typedSpan.Start)).ToString();
+                            var prefix = sourceText
+                                .GetSubText(TextSpan.FromBounds(changeSpan.Start, typedSpan.Start))
+                                .ToString();
                             filterText = prefix + completion.FilterText;
                         }
                     }
                     else
                     {
-                        filterText = labelText == completion.FilterText ? null : completion.FilterText;
+                        filterText =
+                            labelText == completion.FilterText ? null : completion.FilterText;
                     }
                 }
             }
 
-            static (string?, InsertTextFormat) getPossiblySnippetizedInsertText(TextChange change, int? adjustedNewPosition)
+            static (string?, InsertTextFormat) getPossiblySnippetizedInsertText(
+                TextChange change,
+                int? adjustedNewPosition
+            )
             {
-                if (adjustedNewPosition is not int newPosition || change.NewText is null || newPosition == change.Span.Start + change.NewText.Length)
+                if (
+                    adjustedNewPosition is not int newPosition
+                    || change.NewText is null
+                    || newPosition == change.Span.Start + change.NewText.Length
+                )
                 {
                     return (change.NewText, InsertTextFormat.PlainText);
                 }
@@ -288,7 +378,12 @@ namespace OmniSharp.Roslyn.CSharp.Services.Completion
                 return ($"{beforeText}$0{afterText}", InsertTextFormat.Snippet);
             }
 
-            static void handleNonInsertsectingEdit(SourceText sourceText, ref List<LinePositionSpanTextChange>? additionalTextEdits, ref int? adjustedNewPosition, TextChange textChange)
+            static void handleNonInsertsectingEdit(
+                SourceText sourceText,
+                ref List<LinePositionSpanTextChange>? additionalTextEdits,
+                ref int? adjustedNewPosition,
+                TextChange textChange
+            )
             {
                 additionalTextEdits ??= new();
                 additionalTextEdits.Add(TextChanges.Convert(sourceText, textChange));
@@ -307,11 +402,15 @@ namespace OmniSharp.Roslyn.CSharp.Services.Completion
             }
         }
 
-        private static string? GetSortText(CSharpCompletionItem completion, string labelText, bool expectingImportedItems)
+        private static string? GetSortText(
+            CSharpCompletionItem completion,
+            string labelText,
+            bool expectingImportedItems
+        )
         {
-            return expectingImportedItems
-                ? '0' + completion.SortText
-                : labelText == completion.SortText ? null : completion.SortText;
+            return expectingImportedItems ? '0' + completion.SortText
+                : labelText == completion.SortText ? null
+                : completion.SortText;
         }
     }
 }

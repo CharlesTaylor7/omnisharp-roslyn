@@ -9,7 +9,11 @@ namespace OmniSharp.LanguageServerProtocol
     {
         private readonly IEnumerable<IRequestHandler> _handlers;
 
-        public RequestHandlerCollection(string language, IEnumerable<IRequestHandler> handlers, TextDocumentSelector documentSelector)
+        public RequestHandlerCollection(
+            string language,
+            IEnumerable<IRequestHandler> handlers,
+            TextDocumentSelector documentSelector
+        )
         {
             DocumentSelector = documentSelector;
             _handlers = handlers;

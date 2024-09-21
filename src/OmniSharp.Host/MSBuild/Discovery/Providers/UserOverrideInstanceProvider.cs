@@ -1,7 +1,7 @@
-﻿using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
 using System.Collections.Immutable;
 using System.IO;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 
 namespace OmniSharp.MSBuild.Discovery.Providers
 {
@@ -9,10 +9,15 @@ namespace OmniSharp.MSBuild.Discovery.Providers
     {
         private readonly MSBuildOverrideOptions _options;
 
-        public UserOverrideInstanceProvider(ILoggerFactory loggerFactory, IConfiguration msbuildConfiguration)
+        public UserOverrideInstanceProvider(
+            ILoggerFactory loggerFactory,
+            IConfiguration msbuildConfiguration
+        )
             : base(loggerFactory)
         {
-            _options = msbuildConfiguration?.GetSection("msbuildoverride").Get<MSBuildOverrideOptions>();
+            _options = msbuildConfiguration
+                ?.GetSection("msbuildoverride")
+                .Get<MSBuildOverrideOptions>();
         }
 
         public override ImmutableArray<MSBuildInstance> GetInstances()
@@ -22,7 +27,9 @@ namespace OmniSharp.MSBuild.Discovery.Providers
                 return ImmutableArray<MSBuildInstance>.Empty;
             }
 
-            var version = GetMSBuildVersion(Path.Combine(_options.MSBuildPath, "Microsoft.Build.dll"));
+            var version = GetMSBuildVersion(
+                Path.Combine(_options.MSBuildPath, "Microsoft.Build.dll")
+            );
 
             var builder = ImmutableArray.CreateBuilder<MSBuildInstance>();
             builder.Add(
@@ -31,7 +38,9 @@ namespace OmniSharp.MSBuild.Discovery.Providers
                     _options.MSBuildPath,
                     version,
                     DiscoveryType.UserOverride,
-                    _options.PropertyOverrides?.ToImmutableDictionary()));
+                    _options.PropertyOverrides?.ToImmutableDictionary()
+                )
+            );
             return builder.ToImmutable();
         }
     }

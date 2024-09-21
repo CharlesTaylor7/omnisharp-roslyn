@@ -10,7 +10,8 @@ using OmniSharp.Models.FilesChanged;
 namespace OmniSharp.Roslyn.CSharp.Services.Files
 {
     [OmniSharpHandler(OmniSharpEndpoints.FilesChanged, LanguageNames.CSharp)]
-    public class OnFilesChangedService : IRequestHandler<IEnumerable<FilesChangedRequest>, FilesChangedResponse>
+    public class OnFilesChangedService
+        : IRequestHandler<IEnumerable<FilesChangedRequest>, FilesChangedResponse>
     {
         private readonly IFileSystemNotifier _notifier;
 

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using Microsoft.CodeAnalysis;
@@ -11,7 +11,9 @@ namespace OmniSharp.Script
 
         public ScriptOptions()
         {
-            _nullableDiagnostics = new Lazy<Dictionary<string, ReportDiagnostic>>(CreateNullableDiagnostics);
+            _nullableDiagnostics = new Lazy<Dictionary<string, ReportDiagnostic>>(
+                CreateNullableDiagnostics
+            );
         }
 
         private Dictionary<string, ReportDiagnostic> CreateNullableDiagnostics()
@@ -33,14 +35,21 @@ namespace OmniSharp.Script
         ///  Nuget for scripts is enabled when <see cref="EnableScriptNuGetReferences"/> is enabled or when <see cref="DefaultTargetFramework"/> is .NET Core
         /// </summary>
         public bool IsNugetEnabled() =>
-            EnableScriptNuGetReferences ||
-            (DefaultTargetFramework != null && DefaultTargetFramework.StartsWith("netcoreapp", System.StringComparison.OrdinalIgnoreCase));
+            EnableScriptNuGetReferences
+            || (
+                DefaultTargetFramework != null
+                && DefaultTargetFramework.StartsWith(
+                    "netcoreapp",
+                    System.StringComparison.OrdinalIgnoreCase
+                )
+            );
 
         public string RspFilePath { get; set; }
 
         public string GetNormalizedRspFilePath(IOmniSharpEnvironment env)
         {
-            if (string.IsNullOrWhiteSpace(RspFilePath)) return null;
+            if (string.IsNullOrWhiteSpace(RspFilePath))
+                return null;
 
             var expandedPath = Environment.ExpandEnvironmentVariables(RspFilePath);
 
@@ -49,6 +58,7 @@ namespace OmniSharp.Script
                 : Path.Combine(env.TargetDirectory, expandedPath);
         }
 
-        public Dictionary<string, ReportDiagnostic> NullableDiagnostics => _nullableDiagnostics.Value;
+        public Dictionary<string, ReportDiagnostic> NullableDiagnostics =>
+            _nullableDiagnostics.Value;
     }
 }

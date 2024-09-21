@@ -5,7 +5,8 @@ namespace OmniSharp.Services
 {
     public class DotNetVersion
     {
-        public static DotNetVersion FailedToStartError { get; } = new DotNetVersion("`dotnet --version` failed to start.");
+        public static DotNetVersion FailedToStartError { get; } =
+            new DotNetVersion("`dotnet --version` failed to start.");
 
         public bool HasError { get; }
         public string ErrorMessage { get; }
@@ -46,11 +47,17 @@ namespace OmniSharp.Services
                     var name = line.Substring(0, colonIndex).Trim();
                     var value = line.Substring(colonIndex + 1).Trim();
 
-                    if (string.IsNullOrEmpty(requestedSdkVersion) && name.Equals("Requested SDK version", StringComparison.OrdinalIgnoreCase))
+                    if (
+                        string.IsNullOrEmpty(requestedSdkVersion)
+                        && name.Equals("Requested SDK version", StringComparison.OrdinalIgnoreCase)
+                    )
                     {
                         requestedSdkVersion = value;
                     }
-                    else if (string.IsNullOrEmpty(globalJsonFile) && name.Equals("global.json file", StringComparison.OrdinalIgnoreCase))
+                    else if (
+                        string.IsNullOrEmpty(globalJsonFile)
+                        && name.Equals("global.json file", StringComparison.OrdinalIgnoreCase)
+                    )
                     {
                         globalJsonFile = value;
                     }
@@ -58,8 +65,12 @@ namespace OmniSharp.Services
             }
 
             return requestedSdkVersion.Length > 0 && globalJsonFile.Length > 0
-                ? new DotNetVersion($"Install the [{requestedSdkVersion}] .NET SDK or update [{globalJsonFile}] to match an installed SDK.")
-                : new DotNetVersion($"Unexpected output from `dotnet --version`: {string.Join(Environment.NewLine, lines)}");
+                ? new DotNetVersion(
+                    $"Install the [{requestedSdkVersion}] .NET SDK or update [{globalJsonFile}] to match an installed SDK."
+                )
+                : new DotNetVersion(
+                    $"Unexpected output from `dotnet --version`: {string.Join(Environment.NewLine, lines)}"
+                );
         }
     }
 }

@@ -25,7 +25,14 @@ namespace TestUtility
     {
         public static OmniSharpWorkspace CreateCsxWorkspace(TestFile testFile)
         {
-            var workspace = new OmniSharpWorkspace(new HostServicesAggregator(Enumerable.Empty<IHostServicesProvider>(), new LoggerFactory()), new LoggerFactory(), new ManualFileSystemWatcher());
+            var workspace = new OmniSharpWorkspace(
+                new HostServicesAggregator(
+                    Enumerable.Empty<IHostServicesProvider>(),
+                    new LoggerFactory()
+                ),
+                new LoggerFactory(),
+                new ManualFileSystemWatcher()
+            );
             AddCsxProjectToWorkspace(workspace, testFile);
             return workspace;
         }
@@ -33,20 +40,49 @@ namespace TestUtility
         public static void AddCsxProjectToWorkspace(OmniSharpWorkspace workspace, TestFile testFile)
         {
             var references = GetReferences();
-            var scriptHelper = new ScriptProjectProvider(new ScriptOptions(), new OmniSharpEnvironment(), new LoggerFactory(), isDesktopClr: true, editorConfigEnabled: true);
-            var project = scriptHelper.CreateProject(testFile.FileName, references.Union(new[] { MetadataReference.CreateFromFile(typeof(CommandLineScriptGlobals).GetTypeInfo().Assembly.Location) }), testFile.FileName, typeof(CommandLineScriptGlobals), Enumerable.Empty<string>());
+            var scriptHelper = new ScriptProjectProvider(
+                new ScriptOptions(),
+                new OmniSharpEnvironment(),
+                new LoggerFactory(),
+                isDesktopClr: true,
+                editorConfigEnabled: true
+            );
+            var project = scriptHelper.CreateProject(
+                testFile.FileName,
+                references.Union(
+                    new[]
+                    {
+                        MetadataReference.CreateFromFile(
+                            typeof(CommandLineScriptGlobals).GetTypeInfo().Assembly.Location
+                        ),
+                    }
+                ),
+                testFile.FileName,
+                typeof(CommandLineScriptGlobals),
+                Enumerable.Empty<string>()
+            );
             workspace.AddProject(project);
 
             var documentInfo = DocumentInfo.Create(
                 id: DocumentId.CreateNewId(project.Id),
                 name: testFile.FileName,
                 sourceCodeKind: SourceCodeKind.Script,
-                loader: TextLoader.From(TextAndVersion.Create(testFile.Content.Text, VersionStamp.Create())),
-                filePath: testFile.FileName);
+                loader: TextLoader.From(
+                    TextAndVersion.Create(testFile.Content.Text, VersionStamp.Create())
+                ),
+                filePath: testFile.FileName
+            );
             workspace.AddDocument(documentInfo);
         }
 
-        public static IEnumerable<ProjectId> AddProjectToWorkspace(OmniSharpWorkspace workspace, string filePath, string[] frameworks, TestFile[] testFiles, TestFile[] otherFiles = null, ImmutableArray<AnalyzerReference> analyzerRefs = default)
+        public static IEnumerable<ProjectId> AddProjectToWorkspace(
+            OmniSharpWorkspace workspace,
+            string filePath,
+            string[] frameworks,
+            TestFile[] testFiles,
+            TestFile[] otherFiles = null,
+            ImmutableArray<AnalyzerReference> analyzerRefs = default
+        )
         {
             otherFiles ??= Array.Empty<TestFile>();
 
@@ -59,23 +95,28 @@ namespace TestUtility
             foreach (var framework in frameworks)
             {
                 var projectId = ProjectId.CreateNewId();
-                var analyzerConfigDocuments = editorConfigPaths.Select(path =>
+                var analyzerConfigDocuments = editorConfigPaths
+                    .Select(path =>
                         DocumentInfo.Create(
                             DocumentId.CreateNewId(projectId),
                             name: ".editorconfig",
                             loader: new FileTextLoader(path, Encoding.UTF8),
-                            filePath: path))
+                            filePath: path
+                        )
+                    )
                     .ToImmutableArray();
 
-                var projectInfo = ProjectInfo.Create(
-                    id: projectId,
-                    version: versionStamp,
-                    name: "OmniSharp+" + framework,
-                    assemblyName: "AssemblyName",
-                    language: LanguageNames.CSharp,
-                    filePath: filePath,
-                    metadataReferences: references,
-                    analyzerReferences: analyzerRefs)
+                var projectInfo = ProjectInfo
+                    .Create(
+                        id: projectId,
+                        version: versionStamp,
+                        name: "OmniSharp+" + framework,
+                        assemblyName: "AssemblyName",
+                        language: LanguageNames.CSharp,
+                        filePath: filePath,
+                        metadataReferences: references,
+                        analyzerReferences: analyzerRefs
+                    )
                     .WithDefaultNamespace("OmniSharpTest")
                     .WithAnalyzerConfigDocuments(analyzerConfigDocuments);
 
@@ -83,12 +124,21 @@ namespace TestUtility
 
                 foreach (var testFile in testFiles)
                 {
-                    workspace.AddDocument(projectInfo.Id, testFile.FileName, TextLoader.From(TextAndVersion.Create(testFile.Content.Text, versionStamp)), SourceCodeKind.Regular);
+                    workspace.AddDocument(
+                        projectInfo.Id,
+                        testFile.FileName,
+                        TextLoader.From(TextAndVersion.Create(testFile.Content.Text, versionStamp)),
+                        SourceCodeKind.Regular
+                    );
                 }
 
                 foreach (var otherFile in otherFiles)
                 {
-                    workspace.AddAdditionalDocument(projectInfo.Id, otherFile.FileName, TextLoader.From(TextAndVersion.Create(otherFile.Content.Text, versionStamp)));
+                    workspace.AddAdditionalDocument(
+                        projectInfo.Id,
+                        otherFile.FileName,
+                        TextLoader.From(TextAndVersion.Create(otherFile.Content.Text, versionStamp))
+                    );
                 }
 
                 projectsIds.Add(projectInfo.Id);
@@ -135,11 +185,7 @@ namespace TestUtility
         {
             const string dotnetSdkResolver = "Microsoft.DotNet.MSBuildSdkResolver";
 
-            var directory = Path.Combine(
-                instance.MSBuildPath,
-                "SdkResolvers",
-                dotnetSdkResolver
-            );
+            var directory = Path.Combine(instance.MSBuildPath, "SdkResolvers", dotnetSdkResolver);
 
             Directory.CreateDirectory(directory);
 
@@ -152,35 +198,61 @@ namespace TestUtility
             bool roslynAnalyzersEnabled = false,
             bool analyzeOpenDocumentsOnly = false,
             bool editorConfigEnabled = false,
-            Dictionary<string, string> existingConfiguration = null)
+            Dictionary<string, string> existingConfiguration = null
+        )
         {
             if (existingConfiguration == null)
             {
                 return new Dictionary<string, string>()
                 {
-                    { "RoslynExtensionsOptions:EnableAnalyzersSupport", roslynAnalyzersEnabled.ToString() },
-                    { "RoslynExtensionsOptions:AnalyzeOpenDocumentsOnly", analyzeOpenDocumentsOnly.ToString() },
-                    { "FormattingOptions:EnableEditorConfigSupport", editorConfigEnabled.ToString() }
+                    {
+                        "RoslynExtensionsOptions:EnableAnalyzersSupport",
+                        roslynAnalyzersEnabled.ToString()
+                    },
+                    {
+                        "RoslynExtensionsOptions:AnalyzeOpenDocumentsOnly",
+                        analyzeOpenDocumentsOnly.ToString()
+                    },
+                    {
+                        "FormattingOptions:EnableEditorConfigSupport",
+                        editorConfigEnabled.ToString()
+                    },
                 }.ToConfiguration();
             }
 
-            var copyOfExistingConfigs = existingConfiguration.ToDictionary(x => x.Key, x => x.Value);
-            copyOfExistingConfigs.Add("RoslynExtensionsOptions:EnableAnalyzersSupport", roslynAnalyzersEnabled.ToString());
-            copyOfExistingConfigs.Add("RoslynExtensionsOptions:AnalyzeOpenDocumentsOnly", analyzeOpenDocumentsOnly.ToString());
-            copyOfExistingConfigs.Add("FormattingOptions:EnableEditorConfigSupport", editorConfigEnabled.ToString());
+            var copyOfExistingConfigs = existingConfiguration.ToDictionary(
+                x => x.Key,
+                x => x.Value
+            );
+            copyOfExistingConfigs.Add(
+                "RoslynExtensionsOptions:EnableAnalyzersSupport",
+                roslynAnalyzersEnabled.ToString()
+            );
+            copyOfExistingConfigs.Add(
+                "RoslynExtensionsOptions:AnalyzeOpenDocumentsOnly",
+                analyzeOpenDocumentsOnly.ToString()
+            );
+            copyOfExistingConfigs.Add(
+                "FormattingOptions:EnableEditorConfigSupport",
+                editorConfigEnabled.ToString()
+            );
 
             return copyOfExistingConfigs.ToConfiguration();
         }
 
-        public static async Task WaitUntil(Func<Task<bool>> condition, int frequency = 25, int timeout = -1)
+        public static async Task WaitUntil(
+            Func<Task<bool>> condition,
+            int frequency = 25,
+            int timeout = -1
+        )
         {
             var waitTask = Task.Run(async () =>
             {
-                while (!await condition()) await Task.Delay(frequency);
+                while (!await condition())
+                    await Task.Delay(frequency);
             });
 
-            if (waitTask != await Task.WhenAny(waitTask,
-                    Task.Delay(timeout)))
+            if (waitTask != await Task.WhenAny(waitTask, Task.Delay(timeout)))
                 throw new TimeoutException();
         }
 

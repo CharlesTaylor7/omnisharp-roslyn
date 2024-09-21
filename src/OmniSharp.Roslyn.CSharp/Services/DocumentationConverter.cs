@@ -114,7 +114,10 @@ namespace OmniSharp.Roslyn.CSharp.Services.Documentation
 
         private static string TrimMultiLineString(string input, string lineEnding)
         {
-            var lines = input.Split(new string[] { "\n", "\r\n" }, StringSplitOptions.RemoveEmptyEntries);
+            var lines = input.Split(
+                new string[] { "\n", "\r\n" },
+                StringSplitOptions.RemoveEmptyEntries
+            );
             return string.Join(lineEnding, lines.Select(l => l.TrimStart()));
         }
 
@@ -135,45 +138,74 @@ namespace OmniSharp.Roslyn.CSharp.Services.Documentation
             return cref + " ";
         }
 
-        public static DocumentationComment GetStructuredDocumentation(string xmlDocumentation, string lineEnding)
+        public static DocumentationComment GetStructuredDocumentation(
+            string xmlDocumentation,
+            string lineEnding
+        )
         {
             return DocumentationComment.From(xmlDocumentation, lineEnding);
         }
 
-        public static DocumentationComment GetStructuredDocumentation(ISymbol symbol, string lineEnding = "\n")
+        public static DocumentationComment GetStructuredDocumentation(
+            ISymbol symbol,
+            string lineEnding = "\n"
+        )
         {
             switch (symbol)
             {
                 case IParameterSymbol parameter:
-                    return new DocumentationComment(summaryText: GetParameterDocumentation(parameter, lineEnding));
+                    return new DocumentationComment(
+                        summaryText: GetParameterDocumentation(parameter, lineEnding)
+                    );
                 case ITypeParameterSymbol typeParam:
-                    return new DocumentationComment(summaryText: GetTypeParameterDocumentation(typeParam, lineEnding));
+                    return new DocumentationComment(
+                        summaryText: GetTypeParameterDocumentation(typeParam, lineEnding)
+                    );
                 case IAliasSymbol alias:
-                    return new DocumentationComment(summaryText: GetAliasDocumentation(alias, lineEnding));
+                    return new DocumentationComment(
+                        summaryText: GetAliasDocumentation(alias, lineEnding)
+                    );
                 default:
-                    return GetStructuredDocumentation(symbol.GetDocumentationCommentXml(), lineEnding);
+                    return GetStructuredDocumentation(
+                        symbol.GetDocumentationCommentXml(),
+                        lineEnding
+                    );
             }
         }
 
-        private static string GetParameterDocumentation(IParameterSymbol parameter, string lineEnding = "\n")
+        private static string GetParameterDocumentation(
+            IParameterSymbol parameter,
+            string lineEnding = "\n"
+        )
         {
             var contaningSymbolDef = parameter.ContainingSymbol.OriginalDefinition;
-            return GetStructuredDocumentation(contaningSymbolDef.GetDocumentationCommentXml(), lineEnding)
-                    .GetParameterText(parameter.Name);
+            return GetStructuredDocumentation(
+                    contaningSymbolDef.GetDocumentationCommentXml(),
+                    lineEnding
+                )
+                .GetParameterText(parameter.Name);
         }
 
-        private static string GetTypeParameterDocumentation(ITypeParameterSymbol typeParam, string lineEnding = "\n")
+        private static string GetTypeParameterDocumentation(
+            ITypeParameterSymbol typeParam,
+            string lineEnding = "\n"
+        )
         {
             var contaningSymbol = typeParam.ContainingSymbol;
-            return GetStructuredDocumentation(contaningSymbol.GetDocumentationCommentXml(), lineEnding)
-                    .GetTypeParameterText(typeParam.Name);
+            return GetStructuredDocumentation(
+                    contaningSymbol.GetDocumentationCommentXml(),
+                    lineEnding
+                )
+                .GetTypeParameterText(typeParam.Name);
         }
 
         private static string GetAliasDocumentation(IAliasSymbol alias, string lineEnding = "\n")
         {
             var target = alias.Target;
-            return GetStructuredDocumentation(target.GetDocumentationCommentXml(), lineEnding).SummaryText;
+            return GetStructuredDocumentation(
+                target.GetDocumentationCommentXml(),
+                lineEnding
+            ).SummaryText;
         }
     }
 }
-

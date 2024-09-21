@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 
 namespace OmniSharp.Utilities
@@ -8,14 +8,14 @@ namespace OmniSharp.Utilities
         Unknown,
         Windows,
         MacOS,
-        Linux
+        Linux,
     }
 
     public enum Architecture
     {
         Unknown,
         x86,
-        x64
+        x64,
     }
 
     public sealed class Platform
@@ -31,7 +31,8 @@ namespace OmniSharp.Utilities
             OperatingSystem os = OperatingSystem.Unknown,
             Architecture architecture = Architecture.Unknown,
             Version version = null,
-            string linuxDistributionName = null)
+            string linuxDistributionName = null
+        )
         {
             OperatingSystem = os;
             Architecture = architecture;
@@ -39,8 +40,8 @@ namespace OmniSharp.Utilities
             LinuxDistributionName = linuxDistributionName ?? string.Empty;
         }
 
-        public override string ToString()
-            => !string.IsNullOrEmpty(LinuxDistributionName)
+        public override string ToString() =>
+            !string.IsNullOrEmpty(LinuxDistributionName)
                 ? $"{LinuxDistributionName} {Version} ({Architecture})"
                 : $"{OperatingSystem} {Version} ({Architecture})";
 
@@ -68,8 +69,10 @@ namespace OmniSharp.Utilities
             {
                 os = OperatingSystem.Windows;
 
-                if (Environment.GetEnvironmentVariable("PROCESSOR_ARCHITECTURE") == "x86" &&
-                    Environment.GetEnvironmentVariable("PROCESSOR_ARCHITEW6432") == null)
+                if (
+                    Environment.GetEnvironmentVariable("PROCESSOR_ARCHITECTURE") == "x86"
+                    && Environment.GetEnvironmentVariable("PROCESSOR_ARCHITEW6432") == null
+                )
                 {
                     architecture = Architecture.x86;
                 }
@@ -196,7 +199,7 @@ namespace OmniSharp.Utilities
             return null;
         }
 
-        private static string RunOnShellAndCaptureOutput(string fileName, string arguments)
-            => ProcessHelper.RunAndCaptureOutput("/bin/sh", $"-c '{fileName} {arguments}'");
+        private static string RunOnShellAndCaptureOutput(string fileName, string arguments) =>
+            ProcessHelper.RunAndCaptureOutput("/bin/sh", $"-c '{fileName} {arguments}'");
     }
 }

@@ -40,14 +40,12 @@ namespace TestUtility
             IMSBuildLocator msbuildLocator,
             IEventEmitter eventEmitter,
             IDotNetCliService dotNetCliService,
-            IConfigurationRoot configuration)
+            IConfigurationRoot configuration
+        )
         {
             _logger = loggerFactory.CreateLogger<TestServiceProvider>();
             var services = _services = new ServiceCollection();
-            services
-                .AddLogging()
-                .AddOptions()
-                .AddMemoryCache();
+            services.AddLogging().AddOptions().AddMemoryCache();
 
             services
                 .AddSingleton(environment)
@@ -64,8 +62,12 @@ namespace TestUtility
                 .AddSingleton(analyzerAssemblyLoader);
 
             services.TryAddSingleton(_ => new ManualFileSystemWatcher());
-            services.TryAddSingleton<IFileSystemNotifier>(_ => _.GetRequiredService<ManualFileSystemWatcher>());
-            services.TryAddSingleton<IFileSystemWatcher>(_ => _.GetRequiredService<ManualFileSystemWatcher>());
+            services.TryAddSingleton<IFileSystemNotifier>(_ =>
+                _.GetRequiredService<ManualFileSystemWatcher>()
+            );
+            services.TryAddSingleton<IFileSystemWatcher>(_ =>
+                _.GetRequiredService<ManualFileSystemWatcher>()
+            );
 
             _serviceProvider = services.BuildServiceProvider();
         }
@@ -75,23 +77,40 @@ namespace TestUtility
             IOmniSharpEnvironment environment,
             IConfiguration configurationData = null,
             DotNetCliVersion dotNetCliVersion = DotNetCliVersion.Current,
-            IEventEmitter eventEmitter = null)
+            IEventEmitter eventEmitter = null
+        )
         {
-            var loggerFactory = new LoggerFactory()
-                .AddXunit(testOutput);
+            var loggerFactory = new LoggerFactory().AddXunit(testOutput);
 
             eventEmitter = eventEmitter ?? NullEventEmitter.Instance;
 
             var assemblyLoader = CreateAssemblyLoader(loggerFactory);
-            var dotNetCliService = CreateDotNetCliService(dotNetCliVersion, loggerFactory, environment, eventEmitter);
+            var dotNetCliService = CreateDotNetCliService(
+                dotNetCliVersion,
+                loggerFactory,
+                environment,
+                eventEmitter
+            );
             var configuration = CreateConfiguration(configurationData);
-            var msbuildLocator = CreateMSBuildLocator(loggerFactory, assemblyLoader, configurationData);
+            var msbuildLocator = CreateMSBuildLocator(
+                loggerFactory,
+                assemblyLoader,
+                configurationData
+            );
             var sharedTextWriter = CreateSharedTextWriter(testOutput);
             var analyzerAssemblyLoader = ShadowCopyAnalyzerAssemblyLoader.Instance;
 
             return new TestServiceProvider(
-                environment, loggerFactory, assemblyLoader, analyzerAssemblyLoader, sharedTextWriter,
-                msbuildLocator, eventEmitter, dotNetCliService, configuration);
+                environment,
+                loggerFactory,
+                assemblyLoader,
+                analyzerAssemblyLoader,
+                sharedTextWriter,
+                msbuildLocator,
+                eventEmitter,
+                dotNetCliService,
+                configuration
+            );
         }
 
         public static IServiceProvider Create(
@@ -103,21 +122,35 @@ namespace TestUtility
             IMSBuildLocator msbuildLocator,
             IConfiguration configurationData = null,
             DotNetCliVersion dotNetCliVersion = DotNetCliVersion.Current,
-            IEventEmitter eventEmitter = null)
+            IEventEmitter eventEmitter = null
+        )
         {
             eventEmitter = eventEmitter ?? NullEventEmitter.Instance;
 
-            var dotNetCliService = CreateDotNetCliService(dotNetCliVersion, loggerFactory, environment, eventEmitter);
+            var dotNetCliService = CreateDotNetCliService(
+                dotNetCliVersion,
+                loggerFactory,
+                environment,
+                eventEmitter
+            );
             var configuration = CreateConfiguration(configurationData);
             var sharedTextWriter = CreateSharedTextWriter(testOutput);
 
             return new TestServiceProvider(
-                environment, loggerFactory, assemblyLoader, analyzerAssemblyLoader, sharedTextWriter,
-                msbuildLocator, eventEmitter, dotNetCliService, configuration);
+                environment,
+                loggerFactory,
+                assemblyLoader,
+                analyzerAssemblyLoader,
+                sharedTextWriter,
+                msbuildLocator,
+                eventEmitter,
+                dotNetCliService,
+                configuration
+            );
         }
 
-        private static IAssemblyLoader CreateAssemblyLoader(ILoggerFactory loggerFactory)
-            => new AssemblyLoader(loggerFactory);
+        private static IAssemblyLoader CreateAssemblyLoader(ILoggerFactory loggerFactory) =>
+            new AssemblyLoader(loggerFactory);
 
         private static IConfigurationRoot CreateConfiguration(IConfiguration configurationData)
         {
@@ -136,7 +169,7 @@ namespace TestUtility
             // within the appropriate .NET Core SDK.
             var msbuildProperties = new Dictionary<string, string>()
             {
-                [$"MSBuild:{nameof(MSBuildOptions.UseLegacySdkResolver)}"] = "true"
+                [$"MSBuild:{nameof(MSBuildOptions.UseLegacySdkResolver)}"] = "true",
             };
 
             builder.AddInMemoryCollection(msbuildProperties);
@@ -148,34 +181,45 @@ namespace TestUtility
             DotNetCliVersion dotNetCliVersion,
             ILoggerFactory loggerFactory,
             IOmniSharpEnvironment environment,
-            IEventEmitter eventEmitter)
+            IEventEmitter eventEmitter
+        )
         {
             var dotnetPath = Path.Combine(
                 TestAssets.Instance.RootFolder,
-                dotNetCliVersion.GetFolderName());
+                dotNetCliVersion.GetFolderName()
+            );
 
             var options = new DotNetCliOptions { LocationPaths = new[] { dotnetPath } };
 
             if (!Directory.Exists(dotnetPath))
             {
                 throw new InvalidOperationException(
-                    $"Local .NET CLI path does not exist. Did you run build.(ps1|sh) from the command line?");
+                    $"Local .NET CLI path does not exist. Did you run build.(ps1|sh) from the command line?"
+                );
             }
 
-            return new DotNetCliService(loggerFactory, NullEventEmitter.Instance, Options.Create(options), environment);
+            return new DotNetCliService(
+                loggerFactory,
+                NullEventEmitter.Instance,
+                Options.Create(options),
+                environment
+            );
         }
 
-        private static IMSBuildLocator CreateMSBuildLocator(ILoggerFactory loggerFactory,
+        private static IMSBuildLocator CreateMSBuildLocator(
+            ILoggerFactory loggerFactory,
             IAssemblyLoader assemblyLoader,
-            IConfiguration configurationData = null)
-            => MSBuildLocator.CreateDefault(loggerFactory, assemblyLoader, configurationData);
+            IConfiguration configurationData = null
+        ) => MSBuildLocator.CreateDefault(loggerFactory, assemblyLoader, configurationData);
 
-        private static ISharedTextWriter CreateSharedTextWriter(ITestOutputHelper testOutput)
-            => new TestSharedTextWriter(testOutput);
+        private static ISharedTextWriter CreateSharedTextWriter(ITestOutputHelper testOutput) =>
+            new TestSharedTextWriter(testOutput);
 
         ~TestServiceProvider()
         {
-            throw new InvalidOperationException($"{nameof(TestServiceProvider)}.{nameof(Dispose)}() not called.");
+            throw new InvalidOperationException(
+                $"{nameof(TestServiceProvider)}.{nameof(Dispose)}() not called."
+            );
         }
 
         protected override void DisposeCore(bool disposing)
@@ -200,7 +244,9 @@ namespace TestUtility
             }
             else
             {
-                _logger.LogInformation($"{nameof(GetService)}: {serviceType.Name} => {result.GetType().Name}");
+                _logger.LogInformation(
+                    $"{nameof(GetService)}: {serviceType.Name} => {result.GetType().Name}"
+                );
             }
 
             return result;

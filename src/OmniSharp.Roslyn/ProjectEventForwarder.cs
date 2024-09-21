@@ -23,7 +23,8 @@ namespace OmniSharp.Roslyn
         public ProjectEventForwarder(
             OmniSharpWorkspace workspace,
             [ImportMany] IEnumerable<IProjectSystem> projectSystems,
-            IEventEmitter emitter)
+            IEventEmitter emitter
+        )
         {
             _projectSystems = projectSystems;
             _workspace = workspace;
@@ -42,14 +43,23 @@ namespace OmniSharp.Roslyn
             switch (args.Kind)
             {
                 case WorkspaceChangeKind.ProjectAdded:
-                    e = new SimpleWorkspaceEvent(args.NewSolution.GetProject(args.ProjectId).FilePath, EventTypes.ProjectAdded);
+                    e = new SimpleWorkspaceEvent(
+                        args.NewSolution.GetProject(args.ProjectId).FilePath,
+                        EventTypes.ProjectAdded
+                    );
                     break;
                 case WorkspaceChangeKind.ProjectChanged:
                 case WorkspaceChangeKind.ProjectReloaded:
-                    e = new SimpleWorkspaceEvent(args.NewSolution.GetProject(args.ProjectId).FilePath, EventTypes.ProjectChanged);
+                    e = new SimpleWorkspaceEvent(
+                        args.NewSolution.GetProject(args.ProjectId).FilePath,
+                        EventTypes.ProjectChanged
+                    );
                     break;
                 case WorkspaceChangeKind.ProjectRemoved:
-                    e = new SimpleWorkspaceEvent(args.OldSolution.GetProject(args.ProjectId).FilePath, EventTypes.ProjectRemoved);
+                    e = new SimpleWorkspaceEvent(
+                        args.OldSolution.GetProject(args.ProjectId).FilePath,
+                        EventTypes.ProjectRemoved
+                    );
                     break;
             }
 
@@ -110,9 +120,7 @@ namespace OmniSharp.Roslyn
             public override bool Equals(object obj)
             {
                 var other = obj as SimpleWorkspaceEvent;
-                return other != null
-                    && EventType == other.EventType
-                    && FileName == other.FileName;
+                return other != null && EventType == other.EventType && FileName == other.FileName;
             }
 
             public override int GetHashCode() =>

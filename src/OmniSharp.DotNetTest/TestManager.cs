@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Diagnostics;
 using System.IO;
 using System.Net;
@@ -39,24 +39,44 @@ namespace OmniSharp.DotNetTest
 
         public bool IsConnected => _isConnected;
 
-        protected TestManager(Project project, string workingDirectory, IDotNetCliService dotNetCli, SemanticVersion dotNetCliVersion, IEventEmitter eventEmitter, ILogger logger)
+        protected TestManager(
+            Project project,
+            string workingDirectory,
+            IDotNetCliService dotNetCli,
+            SemanticVersion dotNetCliVersion,
+            IEventEmitter eventEmitter,
+            ILogger logger
+        )
         {
             Project = project ?? throw new ArgumentNullException(nameof(project));
-            WorkingDirectory = workingDirectory ?? throw new ArgumentNullException(nameof(workingDirectory));
+            WorkingDirectory =
+                workingDirectory ?? throw new ArgumentNullException(nameof(workingDirectory));
             DotNetCli = dotNetCli ?? throw new ArgumentNullException(nameof(dotNetCli));
-            DotNetCliVersion = dotNetCliVersion ?? throw new ArgumentNullException(nameof(dotNetCliVersion));
+            DotNetCliVersion =
+                dotNetCliVersion ?? throw new ArgumentNullException(nameof(dotNetCliVersion));
             EventEmitter = eventEmitter ?? throw new ArgumentNullException(nameof(eventEmitter));
             Logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
-        public static TestManager Start(Project project, IDotNetCliService dotNetCli, IEventEmitter eventEmitter, ILoggerFactory loggerFactory, bool noBuild)
+        public static TestManager Start(
+            Project project,
+            IDotNetCliService dotNetCli,
+            IEventEmitter eventEmitter,
+            ILoggerFactory loggerFactory,
+            bool noBuild
+        )
         {
             var manager = Create(project, dotNetCli, eventEmitter, loggerFactory);
             manager.Connect(noBuild);
             return manager;
         }
 
-        public static TestManager Create(Project project, IDotNetCliService dotNetCli, IEventEmitter eventEmitter, ILoggerFactory loggerFactory)
+        public static TestManager Create(
+            Project project,
+            IDotNetCliService dotNetCli,
+            IEventEmitter eventEmitter,
+            ILoggerFactory loggerFactory
+        )
         {
             var workingDirectory = Path.GetDirectoryName(project.FilePath);
 
@@ -73,27 +93,79 @@ namespace OmniSharp.DotNetTest
                 throw new NotSupportedException("Legacy .NET SDK is not supported");
             }
 
-            return (TestManager)new VSTestManager(project, workingDirectory, dotNetCli, version.Version, eventEmitter, loggerFactory);
+            return (TestManager)
+                new VSTestManager(
+                    project,
+                    workingDirectory,
+                    dotNetCli,
+                    version.Version,
+                    eventEmitter,
+                    loggerFactory
+                );
         }
 
         protected abstract string GetCliTestArguments(int port, int parentProcessId);
         protected abstract void VersionCheck();
 
 #nullable enable
-        public abstract Task<(string[]? MethodNames, string? TestFramework)> GetContextTestMethodNames(int line, int column, Document contextDocument, CancellationToken cancellationToken);
+        public abstract Task<(
+            string[]? MethodNames,
+            string? TestFramework
+        )> GetContextTestMethodNames(
+            int line,
+            int column,
+            Document contextDocument,
+            CancellationToken cancellationToken
+        );
+
 #nullable restore
 
-        public abstract Task<RunTestResponse> RunTestAsync(string methodName, string runSettings, string testFrameworkName, string targetFrameworkVersion, CancellationToken cancellationToken);
+        public abstract Task<RunTestResponse> RunTestAsync(
+            string methodName,
+            string runSettings,
+            string testFrameworkName,
+            string targetFrameworkVersion,
+            CancellationToken cancellationToken
+        );
 
-        public abstract Task<RunTestResponse> RunTestAsync(string[] methodNames, string runSettings, string testFrameworkName, string targetFrameworkVersion, CancellationToken cancellationToken);
+        public abstract Task<RunTestResponse> RunTestAsync(
+            string[] methodNames,
+            string runSettings,
+            string testFrameworkName,
+            string targetFrameworkVersion,
+            CancellationToken cancellationToken
+        );
 
-        public abstract Task<DiscoverTestsResponse> DiscoverTestsAsync(string runSettings, string testFrameworkName, string targetFrameworkVersion, CancellationToken cancellationToken);
+        public abstract Task<DiscoverTestsResponse> DiscoverTestsAsync(
+            string runSettings,
+            string testFrameworkName,
+            string targetFrameworkVersion,
+            CancellationToken cancellationToken
+        );
 
-        public abstract Task<GetTestStartInfoResponse> GetTestStartInfoAsync(string methodName, string runSettings, string testFrameworkName, string targetFrameworkVersion, CancellationToken cancellationToken);
+        public abstract Task<GetTestStartInfoResponse> GetTestStartInfoAsync(
+            string methodName,
+            string runSettings,
+            string testFrameworkName,
+            string targetFrameworkVersion,
+            CancellationToken cancellationToken
+        );
 
-        public abstract Task<DebugTestGetStartInfoResponse> DebugGetStartInfoAsync(string methodName, string runSettings, string testFrameworkName, string targetFrameworkVersion, CancellationToken cancellationToken);
+        public abstract Task<DebugTestGetStartInfoResponse> DebugGetStartInfoAsync(
+            string methodName,
+            string runSettings,
+            string testFrameworkName,
+            string targetFrameworkVersion,
+            CancellationToken cancellationToken
+        );
 
-        public abstract Task<DebugTestGetStartInfoResponse> DebugGetStartInfoAsync(string[] methodNames, string runSettings, string testFrameworkName, string targetFrameworkVersion, CancellationToken cancellationToken);
+        public abstract Task<DebugTestGetStartInfoResponse> DebugGetStartInfoAsync(
+            string[] methodNames,
+            string runSettings,
+            string testFrameworkName,
+            string targetFrameworkVersion,
+            CancellationToken cancellationToken
+        );
 
         public abstract Task DebugLaunchAsync(CancellationToken cancellationToken);
 
@@ -117,12 +189,19 @@ namespace OmniSharp.DotNetTest
 
             var port = FindFreePort();
 
-            var listener = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+            var listener = new Socket(
+                AddressFamily.InterNetwork,
+                SocketType.Stream,
+                ProtocolType.Tcp
+            );
             listener.Bind(new IPEndPoint(IPAddress.Loopback, port));
             listener.Listen(1);
 
             var currentProcess = Process.GetCurrentProcess();
-            _process = DotNetCli.Start(GetCliTestArguments(port, currentProcess.Id), WorkingDirectory);
+            _process = DotNetCli.Start(
+                GetCliTestArguments(port, currentProcess.Id),
+                WorkingDirectory
+            );
 
             _outputBuilder = new StringBuilder();
             _errorBuilder = new StringBuilder();
@@ -143,7 +222,9 @@ namespace OmniSharp.DotNetTest
 
             if (message.MessageType != MessageType.SessionConnected)
             {
-                throw new InvalidOperationException($"Expected {MessageType.SessionConnected} but was {message.MessageType}");
+                throw new InvalidOperationException(
+                    $"Expected {MessageType.SessionConnected} but was {message.MessageType}"
+                );
             }
 
             VersionCheck();
@@ -198,7 +279,13 @@ namespace OmniSharp.DotNetTest
 
         private static int FindFreePort()
         {
-            using (var socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp))
+            using (
+                var socket = new Socket(
+                    AddressFamily.InterNetwork,
+                    SocketType.Stream,
+                    ProtocolType.Tcp
+                )
+            )
             {
                 socket.Bind(new IPEndPoint(IPAddress.Loopback, 0));
                 return ((IPEndPoint)socket.LocalEndPoint).Port;
@@ -210,14 +297,20 @@ namespace OmniSharp.DotNetTest
             EventEmitter.Emit("TestCompleted", result);
         }
 
-        private static void EmitTestMessage(IEventEmitter eventEmitter, TestMessageLevel messageLevel, string message)
+        private static void EmitTestMessage(
+            IEventEmitter eventEmitter,
+            TestMessageLevel messageLevel,
+            string message
+        )
         {
-            eventEmitter.Emit(TestMessageEvent.Id,
+            eventEmitter.Emit(
+                TestMessageEvent.Id,
                 new TestMessageEvent
                 {
                     MessageLevel = messageLevel.ToString().ToLowerInvariant(),
-                    Message = message
-                });
+                    Message = message,
+                }
+            );
         }
 
         protected void EmitTestMessage(TestMessageLevel messageLevel, string message)
@@ -240,7 +333,10 @@ namespace OmniSharp.DotNetTest
 
         protected void SendMessage(string messageType)
         {
-            var rawMessage = JsonDataSerializer.Instance.SerializePayload(messageType, new object());
+            var rawMessage = JsonDataSerializer.Instance.SerializePayload(
+                messageType,
+                new object()
+            );
             Logger.LogDebug($"send: {rawMessage}");
 
             _writer.Write(rawMessage);
@@ -254,7 +350,9 @@ namespace OmniSharp.DotNetTest
             _writer.Write(rawMessage);
         }
 
-        protected async Task<(bool succeeded, Message message)> TryReadMessageAsync(CancellationToken cancellationToken)
+        protected async Task<(bool succeeded, Message message)> TryReadMessageAsync(
+            CancellationToken cancellationToken
+        )
         {
             var rawMessage = await Task.Run(() => ReadRawMessage(cancellationToken));
 
@@ -265,7 +363,10 @@ namespace OmniSharp.DotNetTest
 
             Logger.LogDebug($"read: {rawMessage}");
 
-            return (succeeded: true, message: JsonDataSerializer.Instance.DeserializeMessage(rawMessage));
+            return (
+                succeeded: true,
+                message: JsonDataSerializer.Instance.DeserializeMessage(rawMessage)
+            );
         }
 
         protected async Task<Message> ReadMessageAsync(CancellationToken cancellationToken)
@@ -287,7 +388,9 @@ namespace OmniSharp.DotNetTest
             bool success = false;
 
             // We set a read timeout below to avoid blocking.
-            while (!cancellationToken.IsCancellationRequested && !success && IsConnected && !IsDisposed)
+            while (
+                !cancellationToken.IsCancellationRequested && !success && IsConnected && !IsDisposed
+            )
             {
                 try
                 {
@@ -297,10 +400,15 @@ namespace OmniSharp.DotNetTest
                         success = true;
                     }
                 }
-                catch (IOException ex) when (ex.InnerException is SocketException se &&
-                                             se.SocketErrorCode == SocketError.TimedOut)
+                catch (IOException ex)
+                    when (ex.InnerException is SocketException se
+                        && se.SocketErrorCode == SocketError.TimedOut
+                    )
                 {
-                    Logger.LogTrace(se, $"{nameof(ReadRawMessage)}: failed to receive message because it timed out.");
+                    Logger.LogTrace(
+                        se,
+                        $"{nameof(ReadRawMessage)}: failed to receive message because it timed out."
+                    );
                 }
                 catch (Exception ex)
                 {

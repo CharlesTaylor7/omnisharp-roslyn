@@ -10,10 +10,11 @@ namespace OmniSharp.Tests
 {
     public class StructureFacts : AbstractTestFixture
     {
-        public StructureFacts(ITestOutputHelper output, SharedOmniSharpHostFixture sharedOmniSharpHostFixture)
-            : base(output, sharedOmniSharpHostFixture)
-        {
-        }
+        public StructureFacts(
+            ITestOutputHelper output,
+            SharedOmniSharpHostFixture sharedOmniSharpHostFixture
+        )
+            : base(output, sharedOmniSharpHostFixture) { }
 
         [Fact]
         public async Task SimpleClass()
@@ -40,7 +41,6 @@ namespace OmniSharp.Tests
                     public void M() { }
                     public event Action E;
                 }";
-
 
             var nodes = await GetStructureAsync(source);
             Assert.Single(nodes);
@@ -86,12 +86,16 @@ namespace OmniSharp.Tests
             Assert.Equal(fileName, nodes[0].Location.FileName);
         }
 
-
-        private async Task<FileMemberElement[]> GetStructureAsync(string source, string fileName = "d.cs")
+        private async Task<FileMemberElement[]> GetStructureAsync(
+            string source,
+            string fileName = "d.cs"
+        )
         {
             var testFile = new TestFile(fileName, source);
             SharedOmniSharpTestHost.AddFilesToWorkspace(testFile);
-            var nodes = await StructureComputer.Compute(SharedOmniSharpTestHost.Workspace.GetDocuments(testFile.FileName));
+            var nodes = await StructureComputer.Compute(
+                SharedOmniSharpTestHost.Workspace.GetDocuments(testFile.FileName)
+            );
             return nodes.ToArray();
         }
     }

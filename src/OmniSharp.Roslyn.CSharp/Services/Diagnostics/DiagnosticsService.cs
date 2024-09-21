@@ -16,7 +16,10 @@ namespace OmniSharp.Roslyn.CSharp.Services.Diagnostics
         private readonly ICsDiagnosticWorker _diagWorker;
 
         [ImportingConstructor]
-        public DiagnosticsService(DiagnosticEventForwarder forwarder, ICsDiagnosticWorker diagWorker)
+        public DiagnosticsService(
+            DiagnosticEventForwarder forwarder,
+            ICsDiagnosticWorker diagWorker
+        )
         {
             _forwarder = forwarder;
             _diagWorker = diagWorker;

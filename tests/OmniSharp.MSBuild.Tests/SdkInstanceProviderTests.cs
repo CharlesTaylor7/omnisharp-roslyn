@@ -9,9 +9,7 @@ namespace OmniSharp.MSBuild.Tests
     public class SdkInstanceProviderTests : AbstractTestFixture
     {
         public SdkInstanceProviderTests(ITestOutputHelper output)
-            : base(output)
-        {
-        }
+            : base(output) { }
 
         [Fact]
         public void VersionString_Malformed_DoesNotParse()
@@ -21,7 +19,8 @@ namespace OmniSharp.MSBuild.Tests
             var parsed = SdkInstanceProvider.TryParseVersion(
                 versionString,
                 out var version,
-                out var errorMessage);
+                out var errorMessage
+            );
 
             Assert.False(parsed);
             Assert.NotNull(errorMessage);
@@ -35,7 +34,8 @@ namespace OmniSharp.MSBuild.Tests
             var parsed = SdkInstanceProvider.TryParseVersion(
                 versionString,
                 out var version,
-                out var errorMessage);
+                out var errorMessage
+            );
 
             Assert.False(parsed);
             Assert.NotNull(errorMessage);
@@ -49,7 +49,8 @@ namespace OmniSharp.MSBuild.Tests
             var parsed = SdkInstanceProvider.TryParseVersion(
                 versionString,
                 out var version,
-                out var errorMessage);
+                out var errorMessage
+            );
 
             Assert.True(parsed);
             Assert.Equal(versionString, version.ToString());
@@ -64,7 +65,8 @@ namespace OmniSharp.MSBuild.Tests
             var parsed = SdkInstanceProvider.TryParseVersion(
                 versionString,
                 out var version,
-                out var errorMessage);
+                out var errorMessage
+            );
 
             Assert.True(parsed);
             Assert.Equal(versionString, version.ToString());
@@ -79,7 +81,8 @@ namespace OmniSharp.MSBuild.Tests
             var include = SdkInstanceProvider.IncludeSdkInstance(
                 sdkPath,
                 targetVersion: null,
-                includePrerelease: false);
+                includePrerelease: false
+            );
 
             Assert.False(include);
         }
@@ -92,7 +95,8 @@ namespace OmniSharp.MSBuild.Tests
             var include = SdkInstanceProvider.IncludeSdkInstance(
                 sdkPath,
                 targetVersion: null,
-                includePrerelease: false);
+                includePrerelease: false
+            );
 
             Assert.True(include);
         }
@@ -105,7 +109,8 @@ namespace OmniSharp.MSBuild.Tests
             var include = SdkInstanceProvider.IncludeSdkInstance(
                 sdkPath,
                 targetVersion: new("6.0.101"),
-                includePrerelease: false);
+                includePrerelease: false
+            );
 
             Assert.False(include);
         }
@@ -118,7 +123,8 @@ namespace OmniSharp.MSBuild.Tests
             var include = SdkInstanceProvider.IncludeSdkInstance(
                 sdkPath,
                 targetVersion: new("6.0.101"),
-                includePrerelease: false);
+                includePrerelease: false
+            );
 
             Assert.True(include);
         }
@@ -131,7 +137,8 @@ namespace OmniSharp.MSBuild.Tests
             var include = SdkInstanceProvider.IncludeSdkInstance(
                 sdkPath,
                 targetVersion: null,
-                includePrerelease: false);
+                includePrerelease: false
+            );
 
             Assert.False(include);
         }
@@ -144,7 +151,8 @@ namespace OmniSharp.MSBuild.Tests
             var include = SdkInstanceProvider.IncludeSdkInstance(
                 sdkPath,
                 targetVersion: null,
-                includePrerelease: true);
+                includePrerelease: true
+            );
 
             Assert.True(include);
         }
@@ -157,7 +165,8 @@ namespace OmniSharp.MSBuild.Tests
             var include = SdkInstanceProvider.IncludeSdkInstance(
                 sdkPath,
                 targetVersion: new("7.0.100-preview.2"),
-                includePrerelease: false);
+                includePrerelease: false
+            );
 
             Assert.True(include);
         }
@@ -170,7 +179,8 @@ namespace OmniSharp.MSBuild.Tests
             var got = SdkOverrideInstanceProvider.TryGetVersion(
                 sdkPath,
                 out var version,
-                out var errorString);
+                out var errorString
+            );
 
             Assert.False(got);
             Assert.NotNull(errorString);
@@ -184,7 +194,8 @@ namespace OmniSharp.MSBuild.Tests
             var got = SdkOverrideInstanceProvider.TryGetVersion(
                 sdkPath,
                 out var version,
-                out var errorString);
+                out var errorString
+            );
 
             Assert.False(got);
             Assert.NotNull(errorString);
@@ -199,7 +210,8 @@ namespace OmniSharp.MSBuild.Tests
             var got = SdkOverrideInstanceProvider.TryGetVersion(
                 sdkPath,
                 out var version,
-                out var errorString);
+                out var errorString
+            );
 
             Assert.False(got);
             Assert.NotNull(errorString);
@@ -214,7 +226,8 @@ namespace OmniSharp.MSBuild.Tests
             var got = SdkOverrideInstanceProvider.TryGetVersion(
                 sdkPath,
                 out var version,
-                out var errorString);
+                out var errorString
+            );
 
             Assert.Null(errorString);
             Assert.True(got);
@@ -230,7 +243,8 @@ namespace OmniSharp.MSBuild.Tests
             var got = SdkOverrideInstanceProvider.TryGetVersion(
                 sdkPath,
                 out var version,
-                out var errorString);
+                out var errorString
+            );
 
             Assert.Null(errorString);
             Assert.True(got);

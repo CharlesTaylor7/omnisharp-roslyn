@@ -6,10 +6,13 @@ namespace OmniSharp.Models.V2.CodeActions
     {
         public OmniSharpCodeAction(string identifier, string name, string codeActionKind)
         {
-            Debug.Assert(codeActionKind is CodeActions.CodeActionKind.QuickFix
-                                        or CodeActions.CodeActionKind.Refactor
-                                        or CodeActions.CodeActionKind.RefactorExtract
-                                        or CodeActions.CodeActionKind.RefactorInline);
+            Debug.Assert(
+                codeActionKind
+                    is CodeActions.CodeActionKind.QuickFix
+                        or CodeActions.CodeActionKind.Refactor
+                        or CodeActions.CodeActionKind.RefactorExtract
+                        or CodeActions.CodeActionKind.RefactorInline
+            );
             Identifier = identifier;
             Name = name;
             CodeActionKind = codeActionKind;

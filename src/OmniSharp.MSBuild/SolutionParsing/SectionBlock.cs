@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Immutable;
 
 namespace OmniSharp.MSBuild.SolutionParsing
@@ -15,7 +15,11 @@ namespace OmniSharp.MSBuild.SolutionParsing
         }
 
         protected static (string name, ImmutableArray<Property> properties) ParseNameAndProperties(
-            string startSection, string endSection, string headerLine, Scanner scanner)
+            string startSection,
+            string endSection,
+            string headerLine,
+            Scanner scanner
+        )
         {
             var startIndex = startSection.Length;
             if (!startSection.EndsWith("("))
@@ -24,9 +28,10 @@ namespace OmniSharp.MSBuild.SolutionParsing
             }
 
             var endIndex = headerLine.IndexOf(')', startIndex);
-            var name = endIndex >= startIndex
-                ? headerLine.Substring(startIndex, endIndex - startIndex)
-                : headerLine.Substring(startIndex);
+            var name =
+                endIndex >= startIndex
+                    ? headerLine.Substring(startIndex, endIndex - startIndex)
+                    : headerLine.Substring(startIndex);
 
             var properties = ImmutableArray.CreateBuilder<Property>();
 

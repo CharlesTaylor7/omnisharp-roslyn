@@ -13,12 +13,17 @@ namespace OmniSharp.Roslyn.CSharp.Tests
     {
         private readonly object _lock = new();
         private readonly List<T> _messages = new();
-        private readonly List<(Predicate<T> Predicate, TaskCompletionSource<object> TaskCompletionSource)> _predicates = new();
+        private readonly List<(
+            Predicate<T> Predicate,
+            TaskCompletionSource<object> TaskCompletionSource
+        )> _predicates = new();
 
         public async Task ExpectForEmitted(Expression<Predicate<T>> predicate)
         {
             var asCompiledPredicate = predicate.Compile();
-            var tcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var tcs = new TaskCompletionSource<object>(
+                TaskCreationOptions.RunContinuationsAsynchronously
+            );
 
             lock (_lock)
             {
@@ -38,9 +43,14 @@ namespace OmniSharp.Roslyn.CSharp.Tests
             }
             catch (OperationCanceledException)
             {
-                var messages = string.Join(";", _messages.Select(x => JsonConvert.SerializeObject(x)));
+                var messages = string.Join(
+                    ";",
+                    _messages.Select(x => JsonConvert.SerializeObject(x))
+                );
 
-                throw new InvalidOperationException($"Timeout reached before expected event count reached before prediction {predicate} came true, current diagnostics '{messages}'");
+                throw new InvalidOperationException(
+                    $"Timeout reached before expected event count reached before prediction {predicate} came true, current diagnostics '{messages}'"
+                );
             }
             finally
             {

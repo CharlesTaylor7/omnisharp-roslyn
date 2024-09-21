@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -23,7 +23,9 @@ namespace OmniSharp.Cake.Configuration
 
         public ConfigurationTokenStream(IEnumerable<ConfigurationToken> tokens)
         {
-            _tokens = new List<ConfigurationToken>(tokens ?? Enumerable.Empty<ConfigurationToken>());
+            _tokens = new List<ConfigurationToken>(
+                tokens ?? Enumerable.Empty<ConfigurationToken>()
+            );
         }
 
         public ConfigurationToken Peek()

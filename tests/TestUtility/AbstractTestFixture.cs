@@ -19,15 +19,16 @@ namespace TestUtility
         protected AbstractTestFixture(ITestOutputHelper output)
         {
             TestOutput = output;
-            LoggerFactory = new LoggerFactory()
-                .AddXunit(output);
+            LoggerFactory = new LoggerFactory().AddXunit(output);
         }
 
-        protected AbstractTestFixture(ITestOutputHelper output, SharedOmniSharpHostFixture sharedOmniSharpHostFixture)
+        protected AbstractTestFixture(
+            ITestOutputHelper output,
+            SharedOmniSharpHostFixture sharedOmniSharpHostFixture
+        )
         {
             TestOutput = output;
-            LoggerFactory = new LoggerFactory()
-                .AddXunit(output);
+            LoggerFactory = new LoggerFactory().AddXunit(output);
 
             if (sharedOmniSharpHostFixture.OmniSharpTestHost == null)
             {
@@ -41,7 +42,8 @@ namespace TestUtility
             SharedOmniSharpTestHost = sharedOmniSharpHostFixture.OmniSharpTestHost;
         }
 
-        protected virtual OmniSharpTestHost CreateSharedOmniSharpTestHost() => CreateOmniSharpHost();
+        protected virtual OmniSharpTestHost CreateSharedOmniSharpTestHost() =>
+            CreateOmniSharpHost();
 
         protected OmniSharpTestHost CreateEmptyOmniSharpHost()
         {
@@ -55,15 +57,30 @@ namespace TestUtility
             string path = null,
             IEnumerable<KeyValuePair<string, string>> configurationData = null,
             DotNetCliVersion dotNetCliVersion = DotNetCliVersion.Current,
-            IEnumerable<ExportDescriptorProvider> additionalExports = null)
-            => OmniSharpTestHost.Create(path, this.TestOutput, configurationData.ToConfiguration(), dotNetCliVersion, additionalExports);
+            IEnumerable<ExportDescriptorProvider> additionalExports = null
+        ) =>
+            OmniSharpTestHost.Create(
+                path,
+                this.TestOutput,
+                configurationData.ToConfiguration(),
+                dotNetCliVersion,
+                additionalExports
+            );
 
         protected OmniSharpTestHost CreateOmniSharpHost(params TestFile[] testFiles) =>
             CreateOmniSharpHost(testFiles, null);
 
-        protected OmniSharpTestHost CreateOmniSharpHost(TestFile[] testFiles, IEnumerable<KeyValuePair<string, string>> configurationData, string path = null)
+        protected OmniSharpTestHost CreateOmniSharpHost(
+            TestFile[] testFiles,
+            IEnumerable<KeyValuePair<string, string>> configurationData,
+            string path = null
+        )
         {
-            var host = OmniSharpTestHost.Create(path: path, testOutput: this.TestOutput, configurationData: configurationData.ToConfiguration());
+            var host = OmniSharpTestHost.Create(
+                path: path,
+                testOutput: this.TestOutput,
+                configurationData: configurationData.ToConfiguration()
+            );
 
             if (testFiles.Length > 0)
             {

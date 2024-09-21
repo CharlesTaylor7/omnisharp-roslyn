@@ -11,11 +11,12 @@ namespace OmniSharp.Cake.Services.RequestHandlers.Navigation
     {
         [ImportingConstructor]
         public NavigateUpHandler(OmniSharpWorkspace workspace)
-            : base(workspace)
-        {
-        }
+            : base(workspace) { }
 
-        protected override Task<NavigateResponse> TranslateResponse(NavigateResponse response, NavigateUpRequest request)
+        protected override Task<NavigateResponse> TranslateResponse(
+            NavigateResponse response,
+            NavigateUpRequest request
+        )
         {
             return response.TranslateAsync(Workspace, request);
         }
@@ -26,11 +27,12 @@ namespace OmniSharp.Cake.Services.RequestHandlers.Navigation
     {
         [ImportingConstructor]
         public NavigateDownHandler(OmniSharpWorkspace workspace)
-            : base(workspace)
-        {
-        }
+            : base(workspace) { }
 
-        protected override Task<NavigateResponse> TranslateResponse(NavigateResponse response, NavigateDownRequest request)
+        protected override Task<NavigateResponse> TranslateResponse(
+            NavigateResponse response,
+            NavigateDownRequest request
+        )
         {
             return response.TranslateAsync(Workspace, request);
         }

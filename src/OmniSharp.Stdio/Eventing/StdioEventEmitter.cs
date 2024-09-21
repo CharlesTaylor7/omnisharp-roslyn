@@ -15,11 +15,7 @@ namespace OmniSharp.Stdio.Eventing
 
         public void Emit(string kind, object args)
         {
-            var packet = new EventPacket
-            {
-                Event = kind,
-                Body = args
-            };
+            var packet = new EventPacket { Event = kind, Body = args };
 
             _writer.WriteLine(packet);
         }

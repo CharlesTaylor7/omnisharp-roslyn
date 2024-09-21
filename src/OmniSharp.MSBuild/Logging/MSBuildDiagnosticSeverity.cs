@@ -1,8 +1,8 @@
-﻿namespace OmniSharp.MSBuild.Logging
+namespace OmniSharp.MSBuild.Logging
 {
     public enum MSBuildDiagnosticSeverity
     {
         Error,
-        Warning
+        Warning,
     }
 }

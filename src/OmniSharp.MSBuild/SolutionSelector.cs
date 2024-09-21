@@ -13,7 +13,9 @@ namespace OmniSharp.MSBuild
                 case 1:
                     return new Result(solutionFilePaths[0]);
                 case 2:
-                    var unitySolution = solutionFilePaths.FirstOrDefault(s => s.EndsWith("-csharp.sln"));
+                    var unitySolution = solutionFilePaths.FirstOrDefault(s =>
+                        s.EndsWith("-csharp.sln")
+                    );
                     if (unitySolution != null)
                     {
                         return new Result(unitySolution);

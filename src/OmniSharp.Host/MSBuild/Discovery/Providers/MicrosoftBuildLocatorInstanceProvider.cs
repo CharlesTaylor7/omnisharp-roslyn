@@ -3,18 +3,16 @@ using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
 using Microsoft.Extensions.Logging;
+using OmniSharp.Utilities;
 using MicrosoftBuildLocator = Microsoft.Build.Locator.MSBuildLocator;
 using MicrosoftDiscoveryType = Microsoft.Build.Locator.DiscoveryType;
-using OmniSharp.Utilities;
 
 namespace OmniSharp.MSBuild.Discovery.Providers
 {
     internal class MicrosoftBuildLocatorInstanceProvider : MSBuildInstanceProvider
     {
         public MicrosoftBuildLocatorInstanceProvider(ILoggerFactory loggerFactory)
-            : base(loggerFactory)
-        {
-        }
+            : base(loggerFactory) { }
 
         public override ImmutableArray<MSBuildInstance> GetInstances()
         {
@@ -23,18 +21,24 @@ namespace OmniSharp.MSBuild.Discovery.Providers
                 return NoInstances;
             }
 
-            return MicrosoftBuildLocator.QueryVisualStudioInstances()
+            return MicrosoftBuildLocator
+                .QueryVisualStudioInstances()
                 .Select(instance =>
                 {
-                    var microsoftBuildPath = Path.Combine(instance.MSBuildPath, "Microsoft.Build.dll");
+                    var microsoftBuildPath = Path.Combine(
+                        instance.MSBuildPath,
+                        "Microsoft.Build.dll"
+                    );
                     var version = GetMSBuildVersion(microsoftBuildPath);
 
                     return new MSBuildInstance(
                         $"{instance.Name} {instance.Version}",
                         instance.MSBuildPath,
                         version,
-                        GetDiscoveryType(instance.DiscoveryType));
-                }).ToImmutableArray();
+                        GetDiscoveryType(instance.DiscoveryType)
+                    );
+                })
+                .ToImmutableArray();
 
             static DiscoveryType GetDiscoveryType(MicrosoftDiscoveryType discoveryType)
             {
@@ -42,7 +46,7 @@ namespace OmniSharp.MSBuild.Discovery.Providers
                 {
                     MicrosoftDiscoveryType.DeveloperConsole => DiscoveryType.DeveloperConsole,
                     MicrosoftDiscoveryType.VisualStudioSetup => DiscoveryType.VisualStudioSetup,
-                    _ => throw new ArgumentException()
+                    _ => throw new ArgumentException(),
                 };
             }
         }
