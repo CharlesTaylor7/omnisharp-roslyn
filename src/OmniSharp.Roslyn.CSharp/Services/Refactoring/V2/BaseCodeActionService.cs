@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
@@ -33,7 +33,8 @@ using FixAllScope = OmniSharp.Abstractions.Models.V1.FixAll.FixAllScope;
 
 namespace OmniSharp.Roslyn.CSharp.Services.Refactoring.V2
 {
-    public abstract class BaseCodeActionService<TRequest, TResponse> : IRequestHandler<TRequest, TResponse>
+    public abstract class BaseCodeActionService<TRequest, TResponse>
+        : IRequestHandler<TRequest, TResponse>
     {
         protected readonly OmniSharpWorkspace Workspace;
         protected readonly IEnumerable<ICodeActionProvider> Providers;
@@ -45,9 +46,12 @@ namespace OmniSharp.Roslyn.CSharp.Services.Refactoring.V2
         protected Lazy<List<CodeRefactoringProvider>> OrderedCodeRefactoringProviders;
 
         // CS8019 isn't directly used (via roslyn) but has an analyzer that reports different diagnostic based on CS8019 to improve user experience.
-        private readonly Dictionary<string, string> customDiagVsFixMap = new Dictionary<string, string>
+        private readonly Dictionary<string, string> customDiagVsFixMap = new Dictionary<
+            string,
+            string
+        >
         {
-            { "CS8019", "RemoveUnnecessaryImportsFixable" }
+            { "CS8019", "RemoveUnnecessaryImportsFixable" },
         };
 
         protected BaseCodeActionService(
@@ -56,7 +60,8 @@ namespace OmniSharp.Roslyn.CSharp.Services.Refactoring.V2
             ILogger logger,
             ICsDiagnosticWorker diagnostics,
             CachingCodeFixProviderForProjects codeFixesForProject,
-            OmniSharpOptions options)
+            OmniSharpOptions options
+        )
         {
             Workspace = workspace;
             Providers = providers;
@@ -64,15 +69,21 @@ namespace OmniSharp.Roslyn.CSharp.Services.Refactoring.V2
             Options = options;
             _diagnostics = diagnostics;
             _codeFixesForProject = codeFixesForProject;
-            OrderedCodeRefactoringProviders = new Lazy<List<CodeRefactoringProvider>>(() => GetSortedCodeRefactoringProviders());
+            OrderedCodeRefactoringProviders = new Lazy<List<CodeRefactoringProvider>>(
+                () => GetSortedCodeRefactoringProviders()
+            );
         }
 
         public abstract Task<TResponse> Handle(TRequest request);
 
-        protected async Task<IEnumerable<AvailableCodeAction>> GetAvailableCodeActions(ICodeActionRequest request)
+        protected async Task<IEnumerable<AvailableCodeAction>> GetAvailableCodeActions(
+            ICodeActionRequest request
+        )
         {
             // To produce a complete list of code actions for the document wait until all projects are loaded.
-            var document = await this.Workspace.GetDocumentFromFullProjectModelAsync(request.FileName);
+            var document = await this.Workspace.GetDocumentFromFullProjectModelAsync(
+                request.FileName
+            );
             if (document == null)
             {
                 return Array.Empty<AvailableCodeAction>();
@@ -86,23 +97,29 @@ namespace OmniSharp.Roslyn.CSharp.Services.Refactoring.V2
             await CollectCodeFixesActions(document, span, codeActions);
             await CollectRefactoringActions(document, span, codeActions);
 
-            var distinctActions = codeActions.GroupBy(x => x.CodeAction.Title).Select(x => x.First());
+            var distinctActions = codeActions
+                .GroupBy(x => x.CodeAction.Title)
+                .Select(x => x.First());
 
             var availableActions = ConvertToAvailableCodeAction(distinctActions);
 
             return FilterBlacklistedCodeActions(availableActions);
         }
 
-        private static IEnumerable<AvailableCodeAction> FilterBlacklistedCodeActions(IEnumerable<AvailableCodeAction> codeActions)
+        private static IEnumerable<AvailableCodeAction> FilterBlacklistedCodeActions(
+            IEnumerable<AvailableCodeAction> codeActions
+        )
         {
             // Most of actions with UI works fine with defaults, however there's few exceptions:
             return codeActions.Where(x =>
             {
                 var actionName = x.CodeAction.GetType().Name;
 
-                return actionName != "GenerateTypeCodeActionWithOption" &&         // Blacklisted because doesn't give additional value over non UI generate type (when defaults used.)
-                        actionName != "ChangeSignatureCodeAction" &&                // Blacklisted because cannot be used without proper UI.
-                        actionName != "PullMemberUpWithDialogCodeAction";           // Blacklisted because doesn't give additional value over non UI generate type (when defaults used.)
+                return actionName != "GenerateTypeCodeActionWithOption"
+                    && // Blacklisted because doesn't give additional value over non UI generate type (when defaults used.)
+                    actionName != "ChangeSignatureCodeAction"
+                    && // Blacklisted because cannot be used without proper UI.
+                    actionName != "PullMemberUpWithDialogCodeAction"; // Blacklisted because doesn't give additional value over non UI generate type (when defaults used.)
             });
         }
 
@@ -117,31 +134,51 @@ namespace OmniSharp.Roslyn.CSharp.Services.Refactoring.V2
             return new TextSpan(position, length: 0);
         }
 
-        private async Task CollectCodeFixesActions(Document document, TextSpan span, List<(CodeAction CodeAction, string CodeActionKind)> codeActions)
+        private async Task CollectCodeFixesActions(
+            Document document,
+            TextSpan span,
+            List<(CodeAction CodeAction, string CodeActionKind)> codeActions
+        )
         {
-            var diagnosticsWithProjects = await _diagnostics.GetDiagnostics(ImmutableArray.Create(document.FilePath));
+            var diagnosticsWithProjects = await _diagnostics.GetDiagnostics(
+                ImmutableArray.Create(document.FilePath)
+            );
 
             var groupedBySpan = diagnosticsWithProjects
-                    .SelectMany(x => x.Diagnostics)
-                    .Where(diagnostic => span.IntersectsWith(diagnostic.Location.SourceSpan))
-                    .GroupBy(diagnostic => diagnostic.Location.SourceSpan);
+                .SelectMany(x => x.Diagnostics)
+                .Where(diagnostic => span.IntersectsWith(diagnostic.Location.SourceSpan))
+                .GroupBy(diagnostic => diagnostic.Location.SourceSpan);
 
             foreach (var diagnosticGroupedBySpan in groupedBySpan)
             {
                 var diagnosticSpan = diagnosticGroupedBySpan.Key;
-                var diagnosticsWithSameSpan = diagnosticGroupedBySpan.OrderByDescending(d => d.Severity);
+                var diagnosticsWithSameSpan = diagnosticGroupedBySpan.OrderByDescending(d =>
+                    d.Severity
+                );
 
-                await AppendFixesAsync(document, diagnosticSpan, diagnosticsWithSameSpan, codeActions);
+                await AppendFixesAsync(
+                    document,
+                    diagnosticSpan,
+                    diagnosticsWithSameSpan,
+                    codeActions
+                );
             }
         }
 
-        private async Task AppendFixesAsync(Document document, TextSpan span, IEnumerable<Diagnostic> diagnostics, List<(CodeAction CodeAction, string CodeActionKind)> codeActions)
+        private async Task AppendFixesAsync(
+            Document document,
+            TextSpan span,
+            IEnumerable<Diagnostic> diagnostics,
+            List<(CodeAction CodeAction, string CodeActionKind)> codeActions
+        )
         {
             var codeActionOptions = CodeActionOptionsFactory.Create(Options);
 
             foreach (var codeFixProvider in GetSortedCodeFixProviders(document))
             {
-                var fixableDiagnostics = diagnostics.Where(d => HasFix(codeFixProvider, d.Id)).ToImmutableArray();
+                var fixableDiagnostics = diagnostics
+                    .Where(d => HasFix(codeFixProvider, d.Id))
+                    .ToImmutableArray();
 
                 if (fixableDiagnostics.Length > 0)
                 {
@@ -151,7 +188,8 @@ namespace OmniSharp.Roslyn.CSharp.Services.Refactoring.V2
                         fixableDiagnostics,
                         (a, _) => codeActions.Add((a, CodeActionKind.QuickFix)),
                         codeActionOptions,
-                        CancellationToken.None);
+                        CancellationToken.None
+                    );
 
                     try
                     {
@@ -159,7 +197,10 @@ namespace OmniSharp.Roslyn.CSharp.Services.Refactoring.V2
                     }
                     catch (Exception ex)
                     {
-                        this.Logger.LogError(ex, $"Error registering code fixes for {codeFixProvider.GetType().FullName}");
+                        this.Logger.LogError(
+                            ex,
+                            $"Error registering code fixes for {codeFixProvider.GetType().FullName}"
+                        );
                     }
                 }
             }
@@ -167,22 +208,43 @@ namespace OmniSharp.Roslyn.CSharp.Services.Refactoring.V2
 
         private List<CodeFixProvider> GetSortedCodeFixProviders(Document document)
         {
-            return ExtensionOrderer.GetOrderedOrUnorderedList<CodeFixProvider, ExportCodeFixProviderAttribute>(_codeFixesForProject.GetAllCodeFixesForProject(document.Project.Id), attribute => attribute.Name).ToList();
+            return ExtensionOrderer
+                .GetOrderedOrUnorderedList<CodeFixProvider, ExportCodeFixProviderAttribute>(
+                    _codeFixesForProject.GetAllCodeFixesForProject(document.Project.Id),
+                    attribute => attribute.Name
+                )
+                .ToList();
         }
 
         private List<CodeRefactoringProvider> GetSortedCodeRefactoringProviders()
         {
-            var providerList = this.Providers.SelectMany(provider => provider.CodeRefactoringProviders);
-            return ExtensionOrderer.GetOrderedOrUnorderedList<CodeRefactoringProvider, ExportCodeFixProviderAttribute>(providerList, attribute => attribute.Name).ToList();
+            var providerList = this.Providers.SelectMany(provider =>
+                provider.CodeRefactoringProviders
+            );
+            return ExtensionOrderer
+                .GetOrderedOrUnorderedList<CodeRefactoringProvider, ExportCodeFixProviderAttribute>(
+                    providerList,
+                    attribute => attribute.Name
+                )
+                .ToList();
         }
 
         private bool HasFix(CodeFixProvider codeFixProvider, string diagnosticId)
         {
             return codeFixProvider.FixableDiagnosticIds.Any(id => id == diagnosticId)
-                || (customDiagVsFixMap.ContainsKey(diagnosticId) && codeFixProvider.FixableDiagnosticIds.Any(id => id == customDiagVsFixMap[diagnosticId]));
+                || (
+                    customDiagVsFixMap.ContainsKey(diagnosticId)
+                    && codeFixProvider.FixableDiagnosticIds.Any(id =>
+                        id == customDiagVsFixMap[diagnosticId]
+                    )
+                );
         }
 
-        private async Task CollectRefactoringActions(Document document, TextSpan span, List<(CodeAction CodeAction, string CodeActionKind)> codeActions)
+        private async Task CollectRefactoringActions(
+            Document document,
+            TextSpan span,
+            List<(CodeAction CodeAction, string CodeActionKind)> codeActions
+        )
         {
             var codeActionOptions = CodeActionOptionsFactory.Create(Options);
             var availableRefactorings = OrderedCodeRefactoringProviders.Value;
@@ -212,38 +274,58 @@ namespace OmniSharp.Roslyn.CSharp.Services.Refactoring.V2
                             codeActions.Add((a, kind));
                         },
                         codeActionOptions,
-                        CancellationToken.None);
+                        CancellationToken.None
+                    );
 
                     await codeRefactoringProvider.ComputeRefactoringsAsync(context);
                 }
                 catch (Exception ex)
                 {
-                    this.Logger.LogError(ex, $"Error computing refactorings for {codeRefactoringProvider.GetType().FullName}");
+                    this.Logger.LogError(
+                        ex,
+                        $"Error computing refactorings for {codeRefactoringProvider.GetType().FullName}"
+                    );
                 }
             }
         }
 
-        private IEnumerable<AvailableCodeAction> ConvertToAvailableCodeAction(IEnumerable<(CodeAction CodeAction, string CodeActionKind)> actions)
+        private IEnumerable<AvailableCodeAction> ConvertToAvailableCodeAction(
+            IEnumerable<(CodeAction CodeAction, string CodeActionKind)> actions
+        )
         {
             return actions.SelectMany(action =>
             {
                 var nestedActions = action.CodeAction.NestedActions;
                 if (!nestedActions.IsDefaultOrEmpty)
                 {
-                    return nestedActions.Select(nestedAction => new AvailableCodeAction(nestedAction, action.CodeActionKind, action.CodeAction));
+                    return nestedActions.Select(nestedAction => new AvailableCodeAction(
+                        nestedAction,
+                        action.CodeActionKind,
+                        action.CodeAction
+                    ));
                 }
 
                 return new[] { new AvailableCodeAction(action.CodeAction, action.CodeActionKind) };
             });
         }
 
-        protected async Task<(DocumentId DocumentId, Diagnostic Diagnostic)> GetDocumentIdAndDiagnosticForGivenId(FixAllScope scope, Document document, string diagnosticId)
+        protected async Task<(
+            DocumentId DocumentId,
+            Diagnostic Diagnostic
+        )> GetDocumentIdAndDiagnosticForGivenId(
+            FixAllScope scope,
+            Document document,
+            string diagnosticId
+        )
         {
             var allDocumentDiagnostics = await GetDiagnosticsAsync(scope, document);
 
             foreach (var documentAndDiagnostics in allDocumentDiagnostics)
             {
-                if (documentAndDiagnostics.Diagnostics.FirstOrDefault(d => d.Id == diagnosticId) is Diagnostic diagnostic)
+                if (
+                    documentAndDiagnostics.Diagnostics.FirstOrDefault(d => d.Id == diagnosticId)
+                    is Diagnostic diagnostic
+                )
                 {
                     return (documentAndDiagnostics.DocumentId, diagnostic);
                 }
@@ -261,27 +343,48 @@ namespace OmniSharp.Roslyn.CSharp.Services.Refactoring.V2
         {
             // If Roslyn ever comes up with a UI for selecting what provider the user prefers, we might consider replicating.
             // https://github.com/dotnet/roslyn/issues/27066
-            return _codeFixesForProject.GetAllCodeFixesForProject(document.Project.Id).FirstOrDefault(provider => provider.HasFixForId(id));
+            return _codeFixesForProject
+                .GetAllCodeFixesForProject(document.Project.Id)
+                .FirstOrDefault(provider => provider.HasFixForId(id));
         }
 
-        protected async Task<ImmutableArray<DocumentDiagnostics>> GetDiagnosticsAsync(FixAllScope scope, Document document)
+        protected async Task<ImmutableArray<DocumentDiagnostics>> GetDiagnosticsAsync(
+            FixAllScope scope,
+            Document document
+        )
         {
             switch (scope)
             {
                 case FixAllScope.Solution:
-                    var documentsInSolution = document.Project.Solution.Projects.SelectMany(p => p.Documents).Select(d => d.FilePath).ToImmutableArray();
+                    var documentsInSolution = document
+                        .Project.Solution.Projects.SelectMany(p => p.Documents)
+                        .Select(d => d.FilePath)
+                        .ToImmutableArray();
                     return await _diagnostics.GetDiagnostics(documentsInSolution);
                 case FixAllScope.Project:
-                    var documentsInProject = document.Project.Documents.Select(d => d.FilePath).ToImmutableArray();
+                    var documentsInProject = document
+                        .Project.Documents.Select(d => d.FilePath)
+                        .ToImmutableArray();
                     return await _diagnostics.GetDiagnostics(documentsInProject);
                 case FixAllScope.Document:
-                    return await _diagnostics.GetDiagnostics(ImmutableArray.Create(document.FilePath));
+                    return await _diagnostics.GetDiagnostics(
+                        ImmutableArray.Create(document.FilePath)
+                    );
                 default:
                     throw new InvalidOperationException();
             }
         }
 
-        protected async Task<(Solution Solution, IEnumerable<FileOperationResponse> FileChanges)> GetFileChangesAsync(Solution newSolution, Solution oldSolution, string directory, bool wantTextChanges, bool wantsAllCodeActionOperations)
+        protected async Task<(
+            Solution Solution,
+            IEnumerable<FileOperationResponse> FileChanges
+        )> GetFileChangesAsync(
+            Solution newSolution,
+            Solution oldSolution,
+            string directory,
+            bool wantTextChanges,
+            bool wantsAllCodeActionOperations
+        )
         {
             var solution = oldSolution;
             var filePathToResponseMap = new Dictionary<string, FileOperationResponse>();
@@ -295,18 +398,17 @@ namespace OmniSharp.Roslyn.CSharp.Services.Refactoring.V2
                     var newDocument = newSolution.GetDocument(documentId);
                     var text = await newDocument!.GetTextAsync();
 
-                    var newFilePath = newDocument.FilePath == null || !Path.IsPathRooted(newDocument.FilePath)
-                        ? Path.Combine(directory, newDocument.Name)
-                        : newDocument.FilePath;
+                    var newFilePath =
+                        newDocument.FilePath == null || !Path.IsPathRooted(newDocument.FilePath)
+                            ? Path.Combine(directory, newDocument.Name)
+                            : newDocument.FilePath;
 
                     var modifiedFileResponse = new ModifiedFileResponse(newFilePath)
                     {
-                        Changes = new[] {
-                            new LinePositionSpanTextChange
-                            {
-                                NewText = text.ToString()
-                            }
-                        }
+                        Changes = new[]
+                        {
+                            new LinePositionSpanTextChange { NewText = text.ToString() },
+                        },
                     };
 
                     filePathToResponseMap[newFilePath] = modifiedFileResponse;
@@ -332,7 +434,12 @@ namespace OmniSharp.Roslyn.CSharp.Services.Refactoring.V2
                             }
                         }
 
-                        this.Workspace.AddDocument(documentId, projectChange.NewProject, newFilePath, newDocument.SourceCodeKind);
+                        this.Workspace.AddDocument(
+                            documentId,
+                            projectChange.NewProject,
+                            newFilePath,
+                            newDocument.SourceCodeKind
+                        );
                         solution = this.Workspace.CurrentSolution;
                     }
                     else
@@ -356,12 +463,24 @@ namespace OmniSharp.Roslyn.CSharp.Services.Refactoring.V2
                     {
                         if (wantsAllCodeActionOperations)
                         {
-                            var newFilePath = GetNewFilePath(newDocument.Name, oldDocument.FilePath!);
+                            var newFilePath = GetNewFilePath(
+                                newDocument.Name,
+                                oldDocument.FilePath!
+                            );
                             var text = await oldDocument.GetTextAsync();
                             var temp = solution.RemoveDocument(documentId);
-                            solution = temp.AddDocument(DocumentId.CreateNewId(oldDocument.Project.Id, newDocument.Name), newDocument.Name, text, oldDocument.Folders, newFilePath);
+                            solution = temp.AddDocument(
+                                DocumentId.CreateNewId(oldDocument.Project.Id, newDocument.Name),
+                                newDocument.Name,
+                                text,
+                                oldDocument.Folders,
+                                newFilePath
+                            );
 
-                            filePathToResponseMap[filePath] = new RenamedFileResponse(oldDocument.FilePath, newFilePath);
+                            filePathToResponseMap[filePath] = new RenamedFileResponse(
+                                oldDocument.FilePath,
+                                newFilePath
+                            );
                             filePathToResponseMap[newFilePath] = new OpenFileResponse(newFilePath);
                         }
                         continue;
@@ -377,11 +496,17 @@ namespace OmniSharp.Roslyn.CSharp.Services.Refactoring.V2
                     {
                         if (wantTextChanges)
                         {
-                            var linePositionSpanTextChanges = await TextChanges.GetAsync(newDocument, oldDocument);
+                            var linePositionSpanTextChanges = await TextChanges.GetAsync(
+                                newDocument,
+                                oldDocument
+                            );
 
-                            modifiedFileResponse.Changes = modifiedFileResponse.Changes != null
-                                ? modifiedFileResponse.Changes.Union(linePositionSpanTextChanges)
-                                : linePositionSpanTextChanges;
+                            modifiedFileResponse.Changes =
+                                modifiedFileResponse.Changes != null
+                                    ? modifiedFileResponse.Changes.Union(
+                                        linePositionSpanTextChanges
+                                    )
+                                    : linePositionSpanTextChanges;
                         }
                         else
                         {

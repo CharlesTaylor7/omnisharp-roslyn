@@ -1,6 +1,6 @@
 using OmniSharp.Mef;
 
-﻿namespace OmniSharp.Models.Rename
+namespace OmniSharp.Models.Rename
 {
     [OmniSharpEndpoint(OmniSharpEndpoints.Rename, typeof(RenameRequest), typeof(RenameResponse))]
     public class RenameRequest : Request

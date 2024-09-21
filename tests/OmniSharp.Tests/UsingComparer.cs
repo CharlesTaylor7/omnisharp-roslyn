@@ -17,11 +17,19 @@ namespace OmniSharp.Tests
                 return 0;
             }
 
-            var usingNamespace1 = using1 != null && using1.Alias == null && !using1.StaticKeyword.IsKind(SyntaxKind.StaticKeyword);
-            var usingNamespace2 = using2 != null && using2.Alias == null && !using2.StaticKeyword.IsKind(SyntaxKind.StaticKeyword);
+            var usingNamespace1 =
+                using1 != null
+                && using1.Alias == null
+                && !using1.StaticKeyword.IsKind(SyntaxKind.StaticKeyword);
+            var usingNamespace2 =
+                using2 != null
+                && using2.Alias == null
+                && !using2.StaticKeyword.IsKind(SyntaxKind.StaticKeyword);
 
-            var usingStatic1 = using1 != null && using1.StaticKeyword.IsKind(SyntaxKind.StaticKeyword);
-            var usingStatic2 = using2 != null && using2.StaticKeyword.IsKind(SyntaxKind.StaticKeyword);
+            var usingStatic1 =
+                using1 != null && using1.StaticKeyword.IsKind(SyntaxKind.StaticKeyword);
+            var usingStatic2 =
+                using2 != null && using2.StaticKeyword.IsKind(SyntaxKind.StaticKeyword);
 
             var usingAlias1 = using1 != null && using1.Alias != null;
             var usingAlias2 = using2 != null && using2.Alias != null;
@@ -53,7 +61,10 @@ namespace OmniSharp.Tests
 
             if (usingAlias1)
             {
-                var aliasComparisonResult = StringComparer.CurrentCulture.Compare(using1.Alias.ToString(), using2.Alias.ToString());
+                var aliasComparisonResult = StringComparer.CurrentCulture.Compare(
+                    using1.Alias.ToString(),
+                    using2.Alias.ToString()
+                );
 
                 if (aliasComparisonResult != 0)
                 {

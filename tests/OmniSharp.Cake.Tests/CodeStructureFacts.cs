@@ -18,7 +18,8 @@ namespace OmniSharp.Cake.Tests
     {
         private readonly ILogger _logger;
 
-        public CodeStructureFacts(ITestOutputHelper testOutput) : base(testOutput)
+        public CodeStructureFacts(ITestOutputHelper testOutput)
+            : base(testOutput)
         {
             _logger = LoggerFactory.CreateLogger<CodeStructureHandler>();
         }
@@ -28,7 +29,8 @@ namespace OmniSharp.Cake.Tests
         [Fact]
         public async Task AllTypes()
         {
-            const string source = @"
+            const string source =
+                @"
 class C { }
 delegate void D(int i, ref string s);
 enum E { One, Two, Three }
@@ -44,7 +46,12 @@ struct S { }
             AssertElement(response.Elements[2], SymbolKinds.Enum, "E", "E");
             AssertElement(response.Elements[2].Children[0], SymbolKinds.EnumMember, "One", "One");
             AssertElement(response.Elements[2].Children[1], SymbolKinds.EnumMember, "Two", "Two");
-            AssertElement(response.Elements[2].Children[2], SymbolKinds.EnumMember, "Three", "Three");
+            AssertElement(
+                response.Elements[2].Children[2],
+                SymbolKinds.EnumMember,
+                "Three",
+                "Three"
+            );
             AssertElement(response.Elements[3], SymbolKinds.Interface, "I", "I");
             AssertElement(response.Elements[4], SymbolKinds.Struct, "S", "S");
         }
@@ -52,7 +59,8 @@ struct S { }
         [Fact]
         public async Task AllTypesWithLoadedFile()
         {
-            const string source = @"
+            const string source =
+                @"
 #load foo.cake
 class C { }
 delegate void D(int i, ref string s);
@@ -74,7 +82,8 @@ struct S { }
         [Fact]
         public async Task TestClassMembersNameRanges()
         {
-            const string source = @"
+            const string source =
+                @"
 class C
 {
     private int {|name_f:_f|};
@@ -119,7 +128,8 @@ class C
         [Fact]
         public async Task TestClassMembersNameRangesWithLoadedFile()
         {
-            const string source = @"
+            const string source =
+                @"
 class C
 {
     private int {|name_f:_f|};
@@ -162,14 +172,26 @@ class C
             AssertRange(elementC.Children[15], testFile.Content, "nameThis", "name");
         }
 
-        private static void AssertRange(CodeElement elementC, TestContent content, string contentSpanName, string elementRangeName)
+        private static void AssertRange(
+            CodeElement elementC,
+            TestContent content,
+            string contentSpanName,
+            string elementRangeName
+        )
         {
             var span = Assert.Single(content.GetSpans(contentSpanName));
             var range = content.GetRangeFromSpan(span).ToRange();
             Assert.Equal(range, elementC.Ranges[elementRangeName]);
         }
 
-        private static void AssertElement(CodeElement element, string kind, string name, string displayName, string accessibility = null, bool? @static = null)
+        private static void AssertElement(
+            CodeElement element,
+            string kind,
+            string name,
+            string displayName,
+            string accessibility = null,
+            bool? @static = null
+        )
         {
             Assert.Equal(kind, element.Kind);
             Assert.Equal(name, element.Name);
@@ -188,21 +210,26 @@ class C
 
         private async Task<(CodeStructureResponse, TestFile)> GetCodeStructureAsync(string contents)
         {
-            using (var testProject = await TestAssets.Instance.GetTestProjectAsync("CakeProject", shadowCopy : false))
+            using (
+                var testProject = await TestAssets.Instance.GetTestProjectAsync(
+                    "CakeProject",
+                    shadowCopy: false
+                )
+            )
             using (var host = CreateOmniSharpHost(testProject.Directory))
             {
-                var testFile = new TestFile(Path.Combine(testProject.Directory, "build.cake"), contents);
+                var testFile = new TestFile(
+                    Path.Combine(testProject.Directory, "build.cake"),
+                    contents
+                );
 
-                var request = new CodeStructureRequest
-                {
-                    FileName = testFile.FileName
-                };
+                var request = new CodeStructureRequest { FileName = testFile.FileName };
 
                 var updateBufferRequest = new UpdateBufferRequest
                 {
                     Buffer = testFile.Content.Code,
                     FileName = testFile.FileName,
-                    FromDisk = false
+                    FromDisk = false,
                 };
 
                 await GetUpdateBufferHandler(host).Handle(updateBufferRequest);

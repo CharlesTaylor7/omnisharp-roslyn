@@ -14,7 +14,13 @@ namespace TestUtility
 
         public static void AssertIgnoringIndentAndNewlines(string expected, string actual)
         {
-            Assert.Equal(TrimAndRemoveNewLines(expected), TrimAndRemoveNewLines(actual), false, true, true);
+            Assert.Equal(
+                TrimAndRemoveNewLines(expected),
+                TrimAndRemoveNewLines(actual),
+                false,
+                true,
+                true
+            );
         }
 
         private static string TrimAndRemoveNewLines(string source)

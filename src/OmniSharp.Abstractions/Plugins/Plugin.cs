@@ -17,7 +17,8 @@ namespace OmniSharp.Plugins
         private readonly CancellationTokenSource _cancellation;
         private readonly Process _process = null;
         private readonly ILogger<Plugin> _logger;
-        private readonly ConcurrentDictionary<int, Action<string>> _requests = new ConcurrentDictionary<int, Action<string>>();
+        private readonly ConcurrentDictionary<int, Action<string>> _requests =
+            new ConcurrentDictionary<int, Action<string>>();
         public PluginConfig Config { get; set; }
 
         public Plugin(ILogger<Plugin> logger, PluginConfig config)
@@ -39,21 +40,20 @@ namespace OmniSharp.Plugins
 
         public Task<TResponse> Handle<TRequest, TResponse>(string endpoint, TRequest request)
         {
-            var oopRequest = new PluginRequest()
-            {
-                Command = endpoint,
-                Arguments = request
-            };
+            var oopRequest = new PluginRequest() { Command = endpoint, Arguments = request };
 
             _process.StandardInput.WriteLine(JsonConvert.SerializeObject(oopRequest));
             // Complete Task
             var tcs = new TaskCompletionSource<TResponse>();
 
-            _requests.TryAdd(oopRequest.Seq, (result) =>
-            {
-                var response = JsonConvert.DeserializeObject<TResponse>(result);
-                tcs.SetResult(response);
-            });
+            _requests.TryAdd(
+                oopRequest.Seq,
+                (result) =>
+                {
+                    var response = JsonConvert.DeserializeObject<TResponse>(result);
+                    tcs.SetResult(response);
+                }
+            );
 
             return tcs.Task;
         }
@@ -80,7 +80,12 @@ namespace OmniSharp.Plugins
                             return;
                         }
 
-                        if (!_requests.TryGetValue(response.Request_seq, out Action<string> requestHandler))
+                        if (
+                            !_requests.TryGetValue(
+                                response.Request_seq,
+                                out Action<string> requestHandler
+                            )
+                        )
                         {
                             throw new ArgumentException("invalid seq-value");
                         }
@@ -102,7 +107,8 @@ namespace OmniSharp.Plugins
 
         public void Initalize(IConfiguration configuration)
         {
-            if (Initialized) return;
+            if (Initialized)
+                return;
             Initialized = true;
             Task.Run(() => Run());
         }

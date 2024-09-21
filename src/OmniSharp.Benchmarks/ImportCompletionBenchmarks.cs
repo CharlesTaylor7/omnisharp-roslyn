@@ -1,11 +1,11 @@
-using BenchmarkDotNet.Attributes;
-using BenchmarkDotNet.Diagnostics.Windows.Configs;
-using OmniSharp.Models.v1.Completion;
-using OmniSharp.Roslyn.CSharp.Services.Completion;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using BenchmarkDotNet.Attributes;
+using BenchmarkDotNet.Diagnostics.Windows.Configs;
+using OmniSharp.Models.v1.Completion;
+using OmniSharp.Roslyn.CSharp.Services.Completion;
 using TestUtility;
 
 namespace OmniSharp.Benchmarks
@@ -18,7 +18,12 @@ namespace OmniSharp.Benchmarks
         [GlobalSetup]
         public async Task SetupAsync()
         {
-            Setup(new KeyValuePair<string, string?>("RoslynExtensionsOptions:EnableImportCompletion", "true"));
+            Setup(
+                new KeyValuePair<string, string?>(
+                    "RoslynExtensionsOptions:EnableImportCompletion",
+                    "true"
+                )
+            );
 
             var builder = new StringBuilder();
 
@@ -41,7 +46,7 @@ namespace OmniSharp.Benchmarks
                 CompletionTrigger = CompletionTriggerKind.Invoked,
                 Line = point.Line,
                 Column = point.Offset,
-                FileName = FileName
+                FileName = FileName,
             };
 
             // Trigger completion once to ensure that all the runs have a warmed-up server, with full completions loaded
@@ -50,13 +55,14 @@ namespace OmniSharp.Benchmarks
             {
                 completions = await ImportCompletionListAsync();
             } while (!completions.Items.Any(i => i.Label == "Console"));
-
         }
 
         [Benchmark]
         public async Task<CompletionResponse> ImportCompletionListAsync()
         {
-            var handler = OmniSharpTestHost.GetRequestHandler<CompletionService>(OmniSharpEndpoints.Completion);
+            var handler = OmniSharpTestHost.GetRequestHandler<CompletionService>(
+                OmniSharpEndpoints.Completion
+            );
             return await handler.Handle(Request);
         }
     }

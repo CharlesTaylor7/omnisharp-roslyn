@@ -1,14 +1,13 @@
-﻿using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.Diagnostics;
-using System;
+﻿using System;
 using System.Collections.Immutable;
 using System.Runtime.CompilerServices;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.Diagnostics;
 
 namespace OmniSharp.Roslyn.CSharp.Tests
 {
     public class TestSourceGenerator : ISourceGenerator
     {
-
         public TestSourceGenerator(Action<GeneratorExecutionContext> execute)
         {
             _execute = execute;
@@ -21,9 +20,7 @@ namespace OmniSharp.Roslyn.CSharp.Tests
             _execute(context);
         }
 
-        public void Initialize(GeneratorInitializationContext context)
-        {
-        }
+        public void Initialize(GeneratorInitializationContext context) { }
     }
 
     public class TestGeneratorReference : AnalyzerReference
@@ -32,25 +29,34 @@ namespace OmniSharp.Roslyn.CSharp.Tests
         private readonly Action<GeneratorExecutionContext> _execute;
         private readonly ImmutableArray<ISourceGenerator> _generators;
 
-        public TestGeneratorReference(Action<GeneratorExecutionContext> execute, [CallerMemberName] string testId = "", bool isEnabledByDefault = true)
+        public TestGeneratorReference(
+            Action<GeneratorExecutionContext> execute,
+            [CallerMemberName] string testId = "",
+            bool isEnabledByDefault = true
+        )
         {
             Id = testId;
             _isEnabledByDefault = isEnabledByDefault;
             _execute = execute;
-            _generators = ImmutableArray.Create<ISourceGenerator>(new TestSourceGenerator(_execute));
+            _generators = ImmutableArray.Create<ISourceGenerator>(
+                new TestSourceGenerator(_execute)
+            );
         }
 
-        public override ImmutableArray<ISourceGenerator> GetGenerators(string language)
-            => _generators;
+        public override ImmutableArray<ISourceGenerator> GetGenerators(string language) =>
+            _generators;
 
-        public override ImmutableArray<ISourceGenerator> GetGeneratorsForAllLanguages()
-            => _generators;
+        public override ImmutableArray<ISourceGenerator> GetGeneratorsForAllLanguages() =>
+            _generators;
 
         public override string FullPath => null;
         public override object Id { get; }
         public override string Display => $"{nameof(TestGeneratorReference)}_{Id}";
 
-        public override ImmutableArray<DiagnosticAnalyzer> GetAnalyzers(string language) => ImmutableArray<DiagnosticAnalyzer>.Empty;
-        public override ImmutableArray<DiagnosticAnalyzer> GetAnalyzersForAllLanguages() => ImmutableArray<DiagnosticAnalyzer>.Empty;
+        public override ImmutableArray<DiagnosticAnalyzer> GetAnalyzers(string language) =>
+            ImmutableArray<DiagnosticAnalyzer>.Empty;
+
+        public override ImmutableArray<DiagnosticAnalyzer> GetAnalyzersForAllLanguages() =>
+            ImmutableArray<DiagnosticAnalyzer>.Empty;
     }
 }

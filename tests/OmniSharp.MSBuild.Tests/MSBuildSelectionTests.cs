@@ -9,9 +9,7 @@ namespace OmniSharp.MSBuild.Tests
     public class MSBuildSelectionTests : AbstractTestFixture
     {
         public MSBuildSelectionTests(ITestOutputHelper output)
-            : base(output)
-        {
-        }
+            : base(output) { }
 
         [Fact]
         public void RegisterDefaultInstanceFindsTheBestInstanceAvailable()
@@ -29,7 +27,9 @@ namespace OmniSharp.MSBuild.Tests
             };
 
             var msbuildLocator = new MSFakeLocator(msBuildInstances);
-            var logger = LoggerFactory.CreateLogger(nameof(RegisterDefaultInstanceFindsTheBestInstanceAvailable));
+            var logger = LoggerFactory.CreateLogger(
+                nameof(RegisterDefaultInstanceFindsTheBestInstanceAvailable)
+            );
 
             // test
             msbuildLocator.RegisterDefaultInstance(logger, dotNetInfo: null);
@@ -53,7 +53,6 @@ namespace OmniSharp.MSBuild.Tests
                     DiscoveryType.VisualStudioSetup
                 ),
                 GetInvalidMsBuildInstance(),
-
                 // Valid + Dotnet Core
                 new MSBuildInstance(
                     "Another Valid Test Instance",
@@ -66,7 +65,9 @@ namespace OmniSharp.MSBuild.Tests
             var msbuildLocator = new MSFakeLocator(msBuildInstances);
 
             var logger = LoggerFactory.CreateLogger(
-                nameof(RegisterDefaultInstanceFindsTheBestInstanceAvailableEvenWithOtherValidInstances)
+                nameof(
+                    RegisterDefaultInstanceFindsTheBestInstanceAvailableEvenWithOtherValidInstances
+                )
             );
 
             // test
@@ -78,7 +79,6 @@ namespace OmniSharp.MSBuild.Tests
             // clean up
             msbuildLocator.DeleteFakeInstancesFolders();
         }
-
 
         [Fact]
         public void RegisterDefaultInstanceFindsTheNewestInstanceAvailableEvenWithOtherValidInstances()
@@ -92,7 +92,6 @@ namespace OmniSharp.MSBuild.Tests
                     DiscoveryType.VisualStudioSetup
                 ).AddDotNetCoreToFakeInstance(),
                 GetInvalidMsBuildInstance(),
-
                 // same but newer minor version
                 new MSBuildInstance(
                     "Another Valid Test Instance",
@@ -105,7 +104,9 @@ namespace OmniSharp.MSBuild.Tests
             var msbuildLocator = new MSFakeLocator(msBuildInstances);
 
             var logger = LoggerFactory.CreateLogger(
-                nameof(RegisterDefaultInstanceFindsTheBestInstanceAvailableEvenWithOtherValidInstances)
+                nameof(
+                    RegisterDefaultInstanceFindsTheBestInstanceAvailableEvenWithOtherValidInstances
+                )
             );
 
             // test
@@ -130,7 +131,6 @@ namespace OmniSharp.MSBuild.Tests
                     DiscoveryType.VisualStudioSetup
                 ),
                 GetInvalidMsBuildInstance(),
-
                 // Valid + Dotnet Core
                 new MSBuildInstance(
                     "Another Valid Test Instance",
@@ -138,7 +138,6 @@ namespace OmniSharp.MSBuild.Tests
                     Version.Parse("16.1.2.3"),
                     DiscoveryType.VisualStudioSetup
                 ).AddDotNetCoreToFakeInstance(),
-
                 // user override
                 new MSBuildInstance(
                     "Manually Overridden",

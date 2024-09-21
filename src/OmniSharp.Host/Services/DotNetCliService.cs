@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -20,12 +20,20 @@ namespace OmniSharp.Services
 
         private readonly ILogger _logger;
         private readonly IEventEmitter _eventEmitter;
-        private readonly ConcurrentDictionary<(string WorkingDirectory, string Arguments), Task> _restoreTasks;
+        private readonly ConcurrentDictionary<
+            (string WorkingDirectory, string Arguments),
+            Task
+        > _restoreTasks;
         private readonly SemaphoreSlim _semaphore;
 
         public string DotNetPath { get; }
 
-        public DotNetCliService(ILoggerFactory loggerFactory, IEventEmitter eventEmitter, IOptions<DotNetCliOptions> dotNetCliOptions, IOmniSharpEnvironment environment)
+        public DotNetCliService(
+            ILoggerFactory loggerFactory,
+            IEventEmitter eventEmitter,
+            IOptions<DotNetCliOptions> dotNetCliOptions,
+            IOmniSharpEnvironment environment
+        )
         {
             _logger = loggerFactory.CreateLogger<DotNetCliService>();
             _eventEmitter = eventEmitter;
@@ -33,7 +41,9 @@ namespace OmniSharp.Services
             _semaphore = new SemaphoreSlim(Environment.ProcessorCount / 2);
 
             // Check if any of the provided paths have a dotnet executable.
-            string executableExtension = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? ".exe" : string.Empty;
+            string executableExtension = RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
+                ? ".exe"
+                : string.Empty;
             foreach (var path in dotNetCliOptions.Value.GetNormalizedLocationPaths(environment))
             {
                 if (File.Exists(Path.Combine(path, $"dotnet{executableExtension}")))
@@ -44,16 +54,23 @@ namespace OmniSharp.Services
                 }
                 else
                 {
-                    _logger.LogInformation($"Provided dotnet CLI path does not contain the dotnet executable: '{path}'.");
+                    _logger.LogInformation(
+                        $"Provided dotnet CLI path does not contain the dotnet executable: '{path}'."
+                    );
                 }
             }
 
             // If we still haven't found a dotnet CLI, check the DOTNET_ROOT environment variable.
             if (DotNetPath is null)
             {
-                _logger.LogInformation("Checking the 'DOTNET_ROOT' environment variable to find a .NET SDK");
+                _logger.LogInformation(
+                    "Checking the 'DOTNET_ROOT' environment variable to find a .NET SDK"
+                );
                 string dotnetRoot = Environment.GetEnvironmentVariable("DOTNET_ROOT");
-                if (!string.IsNullOrEmpty(dotnetRoot) && File.Exists(Path.Combine(dotnetRoot, $"dotnet{executableExtension}")))
+                if (
+                    !string.IsNullOrEmpty(dotnetRoot)
+                    && File.Exists(Path.Combine(dotnetRoot, $"dotnet{executableExtension}"))
+                )
                 {
                     DotNetPath = Path.Combine(dotnetRoot, "dotnet");
                 }
@@ -69,7 +86,9 @@ namespace OmniSharp.Services
             _logger.LogInformation($"DotNetPath set to {DotNetPath}");
         }
 
-        private static void RemoveMSBuildEnvironmentVariables(IDictionary<string, string> environment)
+        private static void RemoveMSBuildEnvironmentVariables(
+            IDictionary<string, string> environment
+        )
         {
             // Remove various MSBuild environment variables set by OmniSharp to ensure that
             // the .NET CLI is not launched with the wrong values.
@@ -77,12 +96,19 @@ namespace OmniSharp.Services
             environment.Remove("MSBuildExtensionsPath");
         }
 
-        public Task RestoreAsync(string workingDirectory, string arguments = null, Action onFailure = null)
+        public Task RestoreAsync(
+            string workingDirectory,
+            string arguments = null,
+            Action onFailure = null
+        )
         {
             return _restoreTasks.GetOrAdd((workingDirectory, arguments), RestoreAsync, onFailure);
         }
 
-        private Task RestoreAsync((string WorkingDirectory, string Arguments) key, Action onFailure = null)
+        private Task RestoreAsync(
+            (string WorkingDirectory, string Arguments) key,
+            Action onFailure = null
+        )
         {
             return Task.Factory.StartNew(() =>
             {
@@ -97,8 +123,14 @@ namespace OmniSharp.Services
                 {
                     // A successful restore will update the project lock file which is monitored
                     // by the dotnet project system which eventually update the Roslyn model
-                    exitStatus = ProcessHelper.Run(DotNetPath, $"restore {arguments}", workingDirectory, updateEnvironment: RemoveMSBuildEnvironmentVariables,
-                        outputDataReceived: (data) => _logger.LogDebug(data), errorDataReceived: (data) => _logger.LogDebug(data));
+                    exitStatus = ProcessHelper.Run(
+                        DotNetPath,
+                        $"restore {arguments}",
+                        workingDirectory,
+                        updateEnvironment: RemoveMSBuildEnvironmentVariables,
+                        outputDataReceived: (data) => _logger.LogDebug(data),
+                        errorDataReceived: (data) => _logger.LogDebug(data)
+                    );
                 }
                 finally
                 {
@@ -113,7 +145,9 @@ namespace OmniSharp.Services
                         onFailure();
                     }
 
-                    _logger.LogInformation($"Finish restoring project {workingDirectory}. Exit code {exitStatus}");
+                    _logger.LogInformation(
+                        $"Finish restoring project {workingDirectory}. Exit code {exitStatus}"
+                    );
                 }
             });
         }
@@ -126,7 +160,7 @@ namespace OmniSharp.Services
                 CreateNoWindow = true,
                 UseShellExecute = false,
                 RedirectStandardOutput = true,
-                RedirectStandardError = true
+                RedirectStandardError = true,
             };
 
             RemoveMSBuildEnvironmentVariables(startInfo.Environment);
@@ -262,12 +296,12 @@ namespace OmniSharp.Services
                 return true;
             }
 
-            if (version.Major == 1 &&
-                version.Minor == 0 &&
-                version.Patch == 0)
+            if (version.Major == 1 && version.Minor == 0 && version.Patch == 0)
             {
-                if (version.PreReleaseLabel.StartsWith("preview1") ||
-                    version.PreReleaseLabel.StartsWith("preview2"))
+                if (
+                    version.PreReleaseLabel.StartsWith("preview1")
+                    || version.PreReleaseLabel.StartsWith("preview2")
+                )
                 {
                     return true;
                 }

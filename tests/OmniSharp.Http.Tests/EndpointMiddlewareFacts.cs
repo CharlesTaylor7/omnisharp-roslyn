@@ -29,12 +29,11 @@ namespace OmniSharp.Http.Tests
     public class EndpointMiddlewareFacts : AbstractTestFixture
     {
         public EndpointMiddlewareFacts(ITestOutputHelper output)
-            : base(output)
-        {
-        }
+            : base(output) { }
 
         [OmniSharpHandler(OmniSharpEndpoints.GotoDefinition, LanguageNames.CSharp)]
-        public class GotoDefinitionService : IRequestHandler<GotoDefinitionRequest, GotoDefinitionResponse>
+        public class GotoDefinitionService
+            : IRequestHandler<GotoDefinitionRequest, GotoDefinitionResponse>
         {
             [Import]
             public OmniSharpWorkspace Workspace { get; set; }
@@ -120,7 +119,10 @@ namespace OmniSharp.Http.Tests
 
         private PlugInHost CreatePlugInHost(params Assembly[] assemblies)
         {
-            var serviceProvider = TestServiceProvider.Create(this.TestOutput, new OmniSharpEnvironment());
+            var serviceProvider = TestServiceProvider.Create(
+                this.TestOutput,
+                new OmniSharpEnvironment()
+            );
             var compositionHost = new CompositionHostBuilder(serviceProvider)
                 .WithAssemblies(assemblies)
                 .Build(workingDirectory: null);
@@ -131,11 +133,19 @@ namespace OmniSharp.Http.Tests
         [Fact]
         public async Task Passes_through_for_invalid_path()
         {
-            RequestDelegate _next = _ => Task.Run(() => { throw new NotImplementedException(); });
+            RequestDelegate _next = _ =>
+                Task.Run(() =>
+                {
+                    throw new NotImplementedException();
+                });
 
             using (var host = CreatePlugInHost(GetAssembly<EndpointMiddlewareFacts>()))
             {
-                var middleware = new EndpointMiddleware(_next, host.CompositionHost, this.LoggerFactory);
+                var middleware = new EndpointMiddleware(
+                    _next,
+                    host.CompositionHost,
+                    this.LoggerFactory
+                );
 
                 var context = new DefaultHttpContext();
                 context.Request.Path = PathString.FromUriComponent("/notvalid");
@@ -147,26 +157,39 @@ namespace OmniSharp.Http.Tests
         [Fact]
         public async Task Does_not_throw_for_valid_path()
         {
-            RequestDelegate _next = _ => Task.Run(() => { throw new NotImplementedException(); });
+            RequestDelegate _next = _ =>
+                Task.Run(() =>
+                {
+                    throw new NotImplementedException();
+                });
 
-            using (var host = CreatePlugInHost(
-                GetAssembly<EndpointMiddlewareFacts>(),
-                GetAssembly<OmniSharpEndpointMetadata>()))
+            using (
+                var host = CreatePlugInHost(
+                    GetAssembly<EndpointMiddlewareFacts>(),
+                    GetAssembly<OmniSharpEndpointMetadata>()
+                )
+            )
             {
-                var middleware = new EndpointMiddleware(_next, host.CompositionHost, this.LoggerFactory);
+                var middleware = new EndpointMiddleware(
+                    _next,
+                    host.CompositionHost,
+                    this.LoggerFactory
+                );
 
                 var context = new DefaultHttpContext();
                 context.Request.Path = PathString.FromUriComponent("/gotodefinition");
 
                 context.Request.Body = new MemoryStream(
                     Encoding.UTF8.GetBytes(
-                        JsonConvert.SerializeObject(new GotoDefinitionRequest
-                        {
-                            FileName = "bar.cs",
-                            Line = 2,
-                            Column = 14,
-                            Timeout = 60000
-                        })
+                        JsonConvert.SerializeObject(
+                            new GotoDefinitionRequest
+                            {
+                                FileName = "bar.cs",
+                                Line = 2,
+                                Column = 14,
+                                Timeout = 60000,
+                            }
+                        )
                     )
                 );
 
@@ -179,26 +202,39 @@ namespace OmniSharp.Http.Tests
         [Fact]
         public async Task Passes_through_to_services()
         {
-            RequestDelegate _next = _ => Task.Run(() => { throw new NotImplementedException(); });
+            RequestDelegate _next = _ =>
+                Task.Run(() =>
+                {
+                    throw new NotImplementedException();
+                });
 
-            using (var host = CreatePlugInHost(
-                GetAssembly<EndpointMiddlewareFacts>(),
-                GetAssembly<OmniSharpEndpointMetadata>()))
+            using (
+                var host = CreatePlugInHost(
+                    GetAssembly<EndpointMiddlewareFacts>(),
+                    GetAssembly<OmniSharpEndpointMetadata>()
+                )
+            )
             {
-                var middleware = new EndpointMiddleware(_next, host.CompositionHost, this.LoggerFactory);
+                var middleware = new EndpointMiddleware(
+                    _next,
+                    host.CompositionHost,
+                    this.LoggerFactory
+                );
 
                 var context = new DefaultHttpContext();
                 context.Request.Path = PathString.FromUriComponent("/gotodefinition");
 
                 context.Request.Body = new MemoryStream(
                     Encoding.UTF8.GetBytes(
-                        JsonConvert.SerializeObject(new GotoDefinitionRequest
-                        {
-                            FileName = "bar.cs",
-                            Line = 2,
-                            Column = 14,
-                            Timeout = 60000
-                        })
+                        JsonConvert.SerializeObject(
+                            new GotoDefinitionRequest
+                            {
+                                FileName = "bar.cs",
+                                Line = 2,
+                                Column = 14,
+                                Timeout = 60000,
+                            }
+                        )
                     )
                 );
 
@@ -211,24 +247,30 @@ namespace OmniSharp.Http.Tests
         [Fact]
         public async Task Passes_through_to_all_services_with_delegate()
         {
-            RequestDelegate _next = _ => Task.Run(() => { throw new NotImplementedException(); });
+            RequestDelegate _next = _ =>
+                Task.Run(() =>
+                {
+                    throw new NotImplementedException();
+                });
 
-            using (var host = CreatePlugInHost(
-                GetAssembly<EndpointMiddlewareFacts>(),
-                GetAssembly<OmniSharpEndpointMetadata>()))
+            using (
+                var host = CreatePlugInHost(
+                    GetAssembly<EndpointMiddlewareFacts>(),
+                    GetAssembly<OmniSharpEndpointMetadata>()
+                )
+            )
             {
-                var middleware = new EndpointMiddleware(_next, host.CompositionHost, this.LoggerFactory);
+                var middleware = new EndpointMiddleware(
+                    _next,
+                    host.CompositionHost,
+                    this.LoggerFactory
+                );
 
                 var context = new DefaultHttpContext();
                 context.Request.Path = PathString.FromUriComponent("/findsymbols");
 
                 context.Request.Body = new MemoryStream(
-                    Encoding.UTF8.GetBytes(
-                        JsonConvert.SerializeObject(new FindSymbolsRequest
-                        {
-
-                        })
-                    )
+                    Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(new FindSymbolsRequest { }))
                 );
 
                 await middleware.Invoke(context);
@@ -240,23 +282,33 @@ namespace OmniSharp.Http.Tests
         [Fact]
         public async Task Passes_through_to_specific_service_with_delegate()
         {
-            RequestDelegate _next = _ => Task.Run(() => { throw new NotImplementedException(); });
+            RequestDelegate _next = _ =>
+                Task.Run(() =>
+                {
+                    throw new NotImplementedException();
+                });
 
-            using (var host = CreatePlugInHost(
-                typeof(EndpointMiddlewareFacts).GetTypeInfo().Assembly,
-                typeof(OmniSharpEndpointMetadata).GetTypeInfo().Assembly))
+            using (
+                var host = CreatePlugInHost(
+                    typeof(EndpointMiddlewareFacts).GetTypeInfo().Assembly,
+                    typeof(OmniSharpEndpointMetadata).GetTypeInfo().Assembly
+                )
+            )
             {
-                var middleware = new EndpointMiddleware(_next, host.CompositionHost, this.LoggerFactory);
+                var middleware = new EndpointMiddleware(
+                    _next,
+                    host.CompositionHost,
+                    this.LoggerFactory
+                );
 
                 var context = new DefaultHttpContext();
                 context.Request.Path = PathString.FromUriComponent("/findsymbols");
 
                 context.Request.Body = new MemoryStream(
                     Encoding.UTF8.GetBytes(
-                        JsonConvert.SerializeObject(new FindSymbolsRequest
-                        {
-                            Language = LanguageNames.CSharp
-                        })
+                        JsonConvert.SerializeObject(
+                            new FindSymbolsRequest { Language = LanguageNames.CSharp }
+                        )
                     )
                 );
 
@@ -273,27 +325,36 @@ namespace OmniSharp.Http.Tests
 
         [OmniSharpEndpoint("/throw", typeof(ThrowRequest), typeof(ThrowResponse))]
         public class ThrowRequest : IRequest { }
+
         public class ThrowResponse { }
 
         [Fact]
         public async Task Should_throw_if_type_is_not_mergeable()
         {
-            RequestDelegate _next = async (ctx) => await Task.Run(() => { throw new NotImplementedException(); });
+            RequestDelegate _next = async (ctx) =>
+                await Task.Run(() =>
+                {
+                    throw new NotImplementedException();
+                });
 
             using (var host = CreatePlugInHost(GetAssembly<EndpointMiddlewareFacts>()))
             {
-                var middleware = new EndpointMiddleware(_next, host.CompositionHost, this.LoggerFactory);
+                var middleware = new EndpointMiddleware(
+                    _next,
+                    host.CompositionHost,
+                    this.LoggerFactory
+                );
 
                 var context = new DefaultHttpContext();
                 context.Request.Path = PathString.FromUriComponent("/throw");
 
                 context.Request.Body = new MemoryStream(
-                    Encoding.UTF8.GetBytes(
-                        JsonConvert.SerializeObject(new ThrowRequest())
-                    )
+                    Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(new ThrowRequest()))
                 );
 
-                await Assert.ThrowsAsync<NotSupportedException>(async () => await middleware.Invoke(context));
+                await Assert.ThrowsAsync<NotSupportedException>(
+                    async () => await middleware.Invoke(context)
+                );
             }
         }
     }

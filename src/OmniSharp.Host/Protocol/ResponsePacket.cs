@@ -1,4 +1,4 @@
-﻿namespace OmniSharp.Protocol
+namespace OmniSharp.Protocol
 {
     public class ResponsePacket : Packet
     {
@@ -14,7 +14,8 @@
 
         public object Body { get; set; }
 
-        public ResponsePacket() : base("response")
+        public ResponsePacket()
+            : base("response")
         {
             Seq = _seqPool++;
         }

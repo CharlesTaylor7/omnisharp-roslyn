@@ -12,7 +12,11 @@ namespace OmniSharp.MSBuild.SolutionParsing
             return Path.GetExtension(filename).Equals(".slnf", StringComparison.OrdinalIgnoreCase);
         }
 
-        public static bool TryRead(string filterFilename, out string solutionFilename, out ImmutableHashSet<string> projectFilter)
+        public static bool TryRead(
+            string filterFilename,
+            out string solutionFilename,
+            out ImmutableHashSet<string> projectFilter
+        )
         {
             try
             {
@@ -21,7 +25,10 @@ namespace OmniSharp.MSBuild.SolutionParsing
                 var document = JObject.Parse(File.ReadAllText(filterFilename));
                 var solution = document["solution"];
                 // Convert directory separators to the platform's default, since that is what MSBuild provide us.
-                var solutionPath = ((string)solution?["path"])?.Replace('\\', Path.DirectorySeparatorChar);
+                var solutionPath = ((string)solution?["path"])?.Replace(
+                    '\\',
+                    Path.DirectorySeparatorChar
+                );
 
                 solutionFilename = Path.GetFullPath(Path.Combine(filterDirectory, solutionPath));
                 if (!File.Exists(solutionFilename))
@@ -33,7 +40,9 @@ namespace OmniSharp.MSBuild.SolutionParsing
                 // The base directory for projects is the solution folder.
                 var solutionDirectory = Path.GetDirectoryName(solutionFilename);
 
-                var filterProjects = ImmutableHashSet.CreateBuilder<string>(StringComparer.OrdinalIgnoreCase);
+                var filterProjects = ImmutableHashSet.CreateBuilder<string>(
+                    StringComparer.OrdinalIgnoreCase
+                );
                 var projects = (JArray)solution?["projects"] ?? new JArray();
                 foreach (string project in projects)
                 {
@@ -45,7 +54,9 @@ namespace OmniSharp.MSBuild.SolutionParsing
                         return false;
                     }
 
-                    var projectFilename = Path.GetFullPath(Path.Combine(solutionDirectory, projectPath));
+                    var projectFilename = Path.GetFullPath(
+                        Path.Combine(solutionDirectory, projectPath)
+                    );
                     if (!File.Exists(projectFilename))
                     {
                         projectFilter = ImmutableHashSet<string>.Empty;

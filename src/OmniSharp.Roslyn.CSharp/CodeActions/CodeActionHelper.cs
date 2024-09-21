@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Composition;
 using System.Linq;
@@ -15,8 +15,10 @@ namespace OmniSharp.Roslyn.CSharp.Services.CodeActions
     [Export, Shared]
     public class CodeActionHelper
     {
-        public const string AddImportProviderName = "Microsoft.CodeAnalysis.CSharp.AddImport.CSharpAddImportCodeFixProvider";
-        public const string RemoveUnnecessaryUsingsProviderName = "Microsoft.CodeAnalysis.CSharp.RemoveUnnecessaryImports.CSharpRemoveUnnecessaryImportsCodeFixProvider";
+        public const string AddImportProviderName =
+            "Microsoft.CodeAnalysis.CSharp.AddImport.CSharpAddImportCodeFixProvider";
+        public const string RemoveUnnecessaryUsingsProviderName =
+            "Microsoft.CodeAnalysis.CSharp.RemoveUnnecessaryImports.CSharpRemoveUnnecessaryImportsCodeFixProvider";
 
         private static readonly HashSet<string> _roslynListToRemove = new HashSet<string>
         {
@@ -24,7 +26,7 @@ namespace OmniSharp.Roslyn.CSharp.Services.CodeActions
             "Microsoft.CodeAnalysis.CSharp.CodeFixes.Async.CSharpConvertToAsyncMethodCodeFixProvider",
             "Microsoft.CodeAnalysis.CSharp.CodeFixes.Iterator.CSharpChangeToIEnumerableCodeFixProvider",
             "Microsoft.CodeAnalysis.ChangeSignature.ChangeSignatureCodeRefactoringProvider",
-            "Microsoft.CodeAnalysis.ExtractInterface.ExtractInterfaceCodeRefactoringProvider"
+            "Microsoft.CodeAnalysis.ExtractInterface.ExtractInterfaceCodeRefactoringProvider",
         };
 
         private static bool s_validated;
@@ -42,16 +44,20 @@ namespace OmniSharp.Roslyn.CSharp.Services.CodeActions
             {
                 loader.Load(Configuration.RoslynCSharpFeatures),
                 loader.Load(Configuration.RoslynFeatures),
-                loader.Load(Configuration.RoslynWorkspaces)
+                loader.Load(Configuration.RoslynWorkspaces),
             };
 
-            var typeNames = _roslynListToRemove.Concat(new[] { AddImportProviderName, RemoveUnnecessaryUsingsProviderName });
+            var typeNames = _roslynListToRemove.Concat(
+                new[] { AddImportProviderName, RemoveUnnecessaryUsingsProviderName }
+            );
 
             foreach (var typeName in typeNames)
             {
                 if (!ExistsInAssemblyList(typeName, assemblies))
                 {
-                    throw new InvalidOperationException($"Could not find '{typeName}'. Has this type name changed?");
+                    throw new InvalidOperationException(
+                        $"Could not find '{typeName}'. Has this type name changed?"
+                    );
                 }
             }
 

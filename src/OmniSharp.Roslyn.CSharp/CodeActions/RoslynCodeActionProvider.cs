@@ -8,9 +8,9 @@ namespace OmniSharp.Roslyn.CSharp.Services.CodeActions
     public class RoslynCodeActionProvider : AbstractCodeActionProvider
     {
         [ImportingConstructor]
-        public RoslynCodeActionProvider(RoslynFeaturesHostServicesProvider featuresHostServicesProvider)
-            : base("Roslyn", featuresHostServicesProvider.Assemblies)
-        {
-        }
+        public RoslynCodeActionProvider(
+            RoslynFeaturesHostServicesProvider featuresHostServicesProvider
+        )
+            : base("Roslyn", featuresHostServicesProvider.Assemblies) { }
     }
 }

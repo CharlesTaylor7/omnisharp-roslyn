@@ -19,7 +19,11 @@ namespace OmniSharp.Roslyn.CSharp.Services.Navigation
         private readonly ExternalSourceServiceFactory _externalSourceServiceFactory;
 
         [ImportingConstructor]
-        public MetadataService(OmniSharpWorkspace workspace, ExternalSourceServiceFactory externalSourceServiceFactory, OmniSharpOptions omniSharpOptions)
+        public MetadataService(
+            OmniSharpWorkspace workspace,
+            ExternalSourceServiceFactory externalSourceServiceFactory,
+            OmniSharpOptions omniSharpOptions
+        )
         {
             _workspace = workspace;
             _externalSourceServiceFactory = externalSourceServiceFactory;
@@ -37,8 +41,16 @@ namespace OmniSharp.Roslyn.CSharp.Services.Navigation
                 var symbol = compilation.GetTypeByMetadataName(request.TypeName);
                 if (symbol != null && symbol.ContainingAssembly.Name == request.AssemblyName)
                 {
-                    var cancellationToken = _externalSourceServiceFactory.CreateCancellationToken(_omniSharpOptions, request.Timeout);
-                    var (metadataDocument, documentPath) = await externalSourceService.GetAndAddExternalSymbolDocument(project, symbol, cancellationToken);
+                    var cancellationToken = _externalSourceServiceFactory.CreateCancellationToken(
+                        _omniSharpOptions,
+                        request.Timeout
+                    );
+                    var (metadataDocument, documentPath) =
+                        await externalSourceService.GetAndAddExternalSymbolDocument(
+                            project,
+                            symbol,
+                            cancellationToken
+                        );
 
                     if (metadataDocument != null)
                     {

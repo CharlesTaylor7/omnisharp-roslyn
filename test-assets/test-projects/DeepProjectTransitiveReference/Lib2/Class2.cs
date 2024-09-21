@@ -2,7 +2,5 @@
 
 namespace Lib
 {
-    public class Class2
-    {
-    }
+    public class Class2 { }
 }

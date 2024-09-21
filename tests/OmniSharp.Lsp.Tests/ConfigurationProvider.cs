@@ -25,7 +25,8 @@ namespace OmniSharp.Lsp.Tests
             ILanguageServer server,
             ILanguageClient client,
             TestConfigurationProvider configurationProvider,
-            CancellationToken cancellationToken)
+            CancellationToken cancellationToken
+        )
         {
             _server = server;
             _client = client;
@@ -35,25 +36,44 @@ namespace OmniSharp.Lsp.Tests
 
         public Task Update(string section, IDictionary<string, string> configuration)
         {
-            if (configuration == null) return Task.CompletedTask;
-            return Update(section, new Microsoft.Extensions.Configuration.ConfigurationBuilder().AddInMemoryCollection(configuration).Build());
+            if (configuration == null)
+                return Task.CompletedTask;
+            return Update(
+                section,
+                new Microsoft.Extensions.Configuration.ConfigurationBuilder()
+                    .AddInMemoryCollection(configuration)
+                    .Build()
+            );
         }
 
         public Task Update(string section, IConfiguration configuration)
         {
-            if (configuration == null) return Task.CompletedTask;
+            if (configuration == null)
+                return Task.CompletedTask;
             return Update(section, null, configuration);
         }
 
-        public Task Update(string section, DocumentUri documentUri, IDictionary<string, string> configuration)
+        public Task Update(
+            string section,
+            DocumentUri documentUri,
+            IDictionary<string, string> configuration
+        )
         {
-            if (configuration == null) return Task.CompletedTask;
-            return Update(section, documentUri, new Microsoft.Extensions.Configuration.ConfigurationBuilder().AddInMemoryCollection(configuration).Build());
+            if (configuration == null)
+                return Task.CompletedTask;
+            return Update(
+                section,
+                documentUri,
+                new Microsoft.Extensions.Configuration.ConfigurationBuilder()
+                    .AddInMemoryCollection(configuration)
+                    .Build()
+            );
         }
 
         public Task Update(string section, DocumentUri documentUri, IConfiguration configuration)
         {
-            if (configuration == null) return Task.CompletedTask;
+            if (configuration == null)
+                return Task.CompletedTask;
             _configurationProvider.Update(section, documentUri, configuration);
             return TriggerChange();
         }

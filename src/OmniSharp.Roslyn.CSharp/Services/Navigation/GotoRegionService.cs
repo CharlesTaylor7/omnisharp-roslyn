@@ -33,8 +33,12 @@ namespace OmniSharp.Roslyn.CSharp.Services.Navigation
                 var regionTrivias = root.DescendantNodesAndTokens()
                     .Where(node => node.HasLeadingTrivia)
                     .SelectMany(node => node.GetLeadingTrivia())
-                    .Where(x => (x.RawKind == (int)SyntaxKind.RegionDirectiveTrivia ||
-                                  x.RawKind == (int)SyntaxKind.EndRegionDirectiveTrivia));
+                    .Where(x =>
+                        (
+                            x.RawKind == (int)SyntaxKind.RegionDirectiveTrivia
+                            || x.RawKind == (int)SyntaxKind.EndRegionDirectiveTrivia
+                        )
+                    );
 
                 foreach (var regionTrivia in regionTrivias.Distinct())
                 {

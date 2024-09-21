@@ -13,7 +13,9 @@ namespace OmniSharp.Tests
         {
             var env = new OmniSharpEnvironment();
             var builder = new ConfigurationBuilder(env);
-            var result = builder.Build(c => c.AddInMemoryCollection(new Dictionary<string, string> { { "key", "value" } }));
+            var result = builder.Build(c =>
+                c.AddInMemoryCollection(new Dictionary<string, string> { { "key", "value" } })
+            );
 
             Assert.False(result.HasError());
             Assert.Equal("value", result.Configuration["key"]);
@@ -42,7 +44,9 @@ namespace OmniSharp.Tests
         [Fact]
         public void FileArgsCanBeRead()
         {
-            var env = new OmniSharpEnvironment(additionalArguments: new string[] { "key:nestedKey=value" });
+            var env = new OmniSharpEnvironment(
+                additionalArguments: new string[] { "key:nestedKey=value" }
+            );
             var builder = new ConfigurationBuilder(env);
             var result = builder.Build();
 

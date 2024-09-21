@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -9,7 +9,11 @@ namespace OmniSharp.Cake.Services
 {
     internal static class ScriptGenerationToolResolver
     {
-        public static string GetExecutablePath(string rootPath, ICakeConfiguration configuration, CakeOptions options)
+        public static string GetExecutablePath(
+            string rootPath,
+            ICakeConfiguration configuration,
+            CakeOptions options
+        )
         {
             // First check if registered through OmniSharp options
             var executablepath = options.BakeryPath;
@@ -29,7 +33,10 @@ namespace OmniSharp.Cake.Services
             return ResolveFromPath();
         }
 
-        private static string ResolveFromToolFolder(string rootPath, ICakeConfiguration configuration)
+        private static string ResolveFromToolFolder(
+            string rootPath,
+            ICakeConfiguration configuration
+        )
         {
             var toolPath = GetToolPath(rootPath, configuration);
 
@@ -51,7 +58,10 @@ namespace OmniSharp.Cake.Services
         private static string GetToolPath(string rootPath, ICakeConfiguration configuration)
         {
             var toolPath = configuration.GetValue(Constants.Paths.Tools);
-            return Path.Combine(rootPath, !string.IsNullOrWhiteSpace(toolPath) ? toolPath : "tools");
+            return Path.Combine(
+                rootPath,
+                !string.IsNullOrWhiteSpace(toolPath) ? toolPath : "tools"
+            );
         }
 
         private static string GetLatestBakeryPath(string toolPath)

@@ -2,7 +2,11 @@ using OmniSharp.Mef;
 
 namespace OmniSharp.Models.GotoTypeDefinition
 {
-    [OmniSharpEndpoint(OmniSharpEndpoints.GotoTypeDefinition, typeof(GotoTypeDefinitionRequest), typeof(GotoTypeDefinitionResponse))]
+    [OmniSharpEndpoint(
+        OmniSharpEndpoints.GotoTypeDefinition,
+        typeof(GotoTypeDefinitionRequest),
+        typeof(GotoTypeDefinitionResponse)
+    )]
     public class GotoTypeDefinitionRequest : Request
     {
         public int Timeout { get; init; } = 10000;

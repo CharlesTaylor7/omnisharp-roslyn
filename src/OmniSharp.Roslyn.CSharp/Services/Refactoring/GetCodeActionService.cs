@@ -15,13 +15,17 @@ using OmniSharp.Services;
 namespace OmniSharp.Roslyn.CSharp.Services.Refactoring
 {
     [OmniSharpHandler(OmniSharpEndpoints.GetCodeAction, LanguageNames.CSharp)]
-    public class GetCodeActionsService : IRequestHandler<GetCodeActionRequest, GetCodeActionsResponse>
+    public class GetCodeActionsService
+        : IRequestHandler<GetCodeActionRequest, GetCodeActionsResponse>
     {
         private readonly OmniSharpWorkspace _workspace;
         private readonly IEnumerable<ICodeActionProvider> _codeActionProviders;
 
         [ImportingConstructor]
-        public GetCodeActionsService(OmniSharpWorkspace workspace, [ImportMany] IEnumerable<ICodeActionProvider> providers)
+        public GetCodeActionsService(
+            OmniSharpWorkspace workspace,
+            [ImportMany] IEnumerable<ICodeActionProvider> providers
+        )
         {
             _workspace = workspace;
             _codeActionProviders = providers;
@@ -35,7 +39,10 @@ namespace OmniSharp.Roslyn.CSharp.Services.Refactoring
             return new GetCodeActionsResponse() { CodeActions = actions.Select(a => a.Title) };
         }
 
-        private async Task<CodeRefactoringContext?> GetContext(CodeActionRequest request, List<CodeAction> actionsDestination)
+        private async Task<CodeRefactoringContext?> GetContext(
+            CodeActionRequest request,
+            List<CodeAction> actionsDestination
+        )
         {
             var document = _workspace.GetDocument(request.FileName);
             if (document != null)
@@ -43,7 +50,12 @@ namespace OmniSharp.Roslyn.CSharp.Services.Refactoring
                 var sourceText = await document.GetTextAsync();
                 var position = sourceText.GetTextPosition(request);
                 var location = new TextSpan(position, 1);
-                return new CodeRefactoringContext(document, location, (a) => actionsDestination.Add(a), CancellationToken.None);
+                return new CodeRefactoringContext(
+                    document,
+                    location,
+                    (a) => actionsDestination.Add(a),
+                    CancellationToken.None
+                );
             }
 
             //todo, handle context creation issues
@@ -70,6 +82,5 @@ namespace OmniSharp.Roslyn.CSharp.Services.Refactoring
                 }
             }
         }
-
     }
 }

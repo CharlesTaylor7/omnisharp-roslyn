@@ -55,11 +55,13 @@ namespace OmniSharp.Tests
                 var source = File.ReadAllText(sourcePath);
                 var syntaxTree = CSharpSyntaxTree.ParseText(source);
 
-                var hasTabs =
-                    syntaxTree.GetRoot()
+                var hasTabs = syntaxTree
+                    .GetRoot()
                     .DescendantTrivia(descendIntoTrivia: true)
-                    .Any(node => node.IsKind(SyntaxKind.WhitespaceTrivia)
-                         && node.ToString().IndexOf('\t') >= 0);
+                    .Any(node =>
+                        node.IsKind(SyntaxKind.WhitespaceTrivia)
+                        && node.ToString().IndexOf('\t') >= 0
+                    );
 
                 Assert.False(hasTabs, sourcePath + " should be formatted with spaces");
             }

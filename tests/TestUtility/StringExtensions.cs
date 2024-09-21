@@ -8,7 +8,6 @@ namespace TestUtility
         /// Given a file or directory path, return a path where all directory separators
         /// are replaced with a forward slash (/) character.
         /// </summary>
-        public static string EnsureForwardSlashes(this string path)
-            => path.Replace('\\', '/');
+        public static string EnsureForwardSlashes(this string path) => path.Replace('\\', '/');
     }
 }

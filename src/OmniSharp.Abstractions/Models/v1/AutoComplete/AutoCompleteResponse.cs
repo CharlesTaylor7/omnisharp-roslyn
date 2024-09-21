@@ -1,4 +1,3 @@
-﻿
 namespace OmniSharp.Models.AutoComplete
 {
     public class AutoCompleteResponse

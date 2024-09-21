@@ -163,6 +163,5 @@ namespace OmniSharp.Options
         public bool NewLineForMembersInAnonymousTypes { get; set; }
 
         public bool NewLineForClausesInQuery { get; set; }
-
     }
 }

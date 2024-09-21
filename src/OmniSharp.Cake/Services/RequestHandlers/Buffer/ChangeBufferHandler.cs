@@ -14,9 +14,7 @@ namespace OmniSharp.Cake.Services.RequestHandlers.Buffer
         private readonly ICakeScriptService _scriptService;
 
         [ImportingConstructor]
-        public ChangeBufferHandler(
-            OmniSharpWorkspace workspace,
-            ICakeScriptService scriptService)
+        public ChangeBufferHandler(OmniSharpWorkspace workspace, ICakeScriptService scriptService)
         {
             _workspace = workspace;
             _scriptService = scriptService;
@@ -29,25 +27,28 @@ namespace OmniSharp.Cake.Services.RequestHandlers.Buffer
                 return true;
             }
 
-            var script = _scriptService.Generate(new FileChange
-            {
-                FileName = request.FileName,
-                LineChanges = { new LineChange
+            var script = _scriptService.Generate(
+                new FileChange
                 {
-                    StartLine = request.StartLine,
-                    StartColumn = request.StartColumn,
-                    EndLine = request.EndLine,
-                    EndColumn = request.EndColumn,
-                    NewText = request.NewText
-                }}
-            });
+                    FileName = request.FileName,
+                    LineChanges =
+                    {
+                        new LineChange
+                        {
+                            StartLine = request.StartLine,
+                            StartColumn = request.StartColumn,
+                            EndLine = request.EndLine,
+                            EndColumn = request.EndColumn,
+                            NewText = request.NewText,
+                        },
+                    },
+                }
+            );
 
             // Redirect to UpdateBuffer
-            await _workspace.BufferManager.UpdateBufferAsync(new UpdateBufferRequest
-            {
-                Buffer = script.Source,
-                FileName = request.FileName
-            });
+            await _workspace.BufferManager.UpdateBufferAsync(
+                new UpdateBufferRequest { Buffer = script.Source, FileName = request.FileName }
+            );
             return true;
         }
     }

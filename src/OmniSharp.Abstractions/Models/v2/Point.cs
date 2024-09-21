@@ -1,5 +1,5 @@
-using Newtonsoft.Json;
 using System;
+using Newtonsoft.Json;
 
 namespace OmniSharp.Models.V2
 {
@@ -7,6 +7,7 @@ namespace OmniSharp.Models.V2
     {
         [JsonConverter(typeof(ZeroBasedIndexConverter))]
         public int Line { get; init; }
+
         [JsonConverter(typeof(ZeroBasedIndexConverter))]
         public int Column { get; init; }
     }

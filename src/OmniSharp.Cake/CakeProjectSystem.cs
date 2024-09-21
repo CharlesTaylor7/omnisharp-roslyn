@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.Immutable;
@@ -56,16 +56,24 @@ namespace OmniSharp.Cake
             ICakeScriptService scriptService,
             IFileSystemWatcher fileSystemWatcher,
             FileSystemHelper fileSystemHelper,
-            ILoggerFactory loggerFactory)
+            ILoggerFactory loggerFactory
+        )
         {
             _workspace = workspace ?? throw new ArgumentNullException(nameof(workspace));
-            _metadataReferenceCache = metadataReferenceCache ?? throw new ArgumentNullException(nameof(metadataReferenceCache));
+            _metadataReferenceCache =
+                metadataReferenceCache
+                ?? throw new ArgumentNullException(nameof(metadataReferenceCache));
             _environment = environment ?? throw new ArgumentNullException(nameof(environment));
-            _assemblyLoader = assemblyLoader ?? throw new ArgumentNullException(nameof(assemblyLoader));
-            _scriptService = scriptService ?? throw new ArgumentNullException(nameof(scriptService));
-            _fileSystemWatcher = fileSystemWatcher ?? throw new ArgumentNullException(nameof(fileSystemWatcher));
+            _assemblyLoader =
+                assemblyLoader ?? throw new ArgumentNullException(nameof(assemblyLoader));
+            _scriptService =
+                scriptService ?? throw new ArgumentNullException(nameof(scriptService));
+            _fileSystemWatcher =
+                fileSystemWatcher ?? throw new ArgumentNullException(nameof(fileSystemWatcher));
             _fileSystemHelper = fileSystemHelper;
-            _logger = loggerFactory?.CreateLogger<CakeProjectSystem>() ?? throw new ArgumentNullException(nameof(loggerFactory));
+            _logger =
+                loggerFactory?.CreateLogger<CakeProjectSystem>()
+                ?? throw new ArgumentNullException(nameof(loggerFactory));
 
             _projects = new ConcurrentDictionary<string, ProjectInfo>();
             _compilationOptions = new Lazy<CSharpCompilationOptions>(CreateCompilationOptions);
@@ -73,7 +81,8 @@ namespace OmniSharp.Cake
 
         public void Initalize(IConfiguration configuration)
         {
-            if (Initialized) return;
+            if (Initialized)
+                return;
 
             _options = new CakeOptions();
             configuration.Bind(_options);
@@ -116,24 +125,28 @@ namespace OmniSharp.Cake
         {
             try
             {
-                var cakeScript = _scriptService.Generate(new FileChange
-                {
-                    FileName = cakeFilePath,
-                    FromDisk = true
-                });
+                var cakeScript = _scriptService.Generate(
+                    new FileChange { FileName = cakeFilePath, FromDisk = true }
+                );
 
                 var project = GetProject(cakeScript, cakeFilePath);
 
                 // add Cake project to workspace
                 _workspace.AddProject(project);
                 var documentId = DocumentId.CreateNewId(project.Id);
-                var loader = TextLoader.From(TextAndVersion.Create(SourceText.From(cakeScript.Source), VersionStamp.Create(DateTime.UtcNow)));
+                var loader = TextLoader.From(
+                    TextAndVersion.Create(
+                        SourceText.From(cakeScript.Source),
+                        VersionStamp.Create(DateTime.UtcNow)
+                    )
+                );
                 var documentInfo = DocumentInfo.Create(
                     documentId,
                     cakeFilePath,
                     filePath: cakeFilePath,
                     loader: loader,
-                    sourceCodeKind: SourceCodeKind.Script);
+                    sourceCodeKind: SourceCodeKind.Script
+                );
 
                 _workspace.AddDocument(documentInfo);
                 _projects[cakeFilePath] = project;
@@ -150,18 +163,26 @@ namespace OmniSharp.Cake
             if (_projects.TryRemove(cakeFilePath, out var projectInfo))
             {
                 _workspace.RemoveProject(projectInfo.Id);
-                _logger.LogInformation($"Removed Cake project '{cakeFilePath}' from the workspace.");
+                _logger.LogInformation(
+                    $"Removed Cake project '{cakeFilePath}' from the workspace."
+                );
             }
         }
 
         private void OnCakeFileChanged(string filePath, FileChangeType changeType)
         {
-            if (changeType == FileChangeType.Unspecified && !File.Exists(filePath) || changeType == FileChangeType.Delete)
+            if (
+                changeType == FileChangeType.Unspecified && !File.Exists(filePath)
+                || changeType == FileChangeType.Delete
+            )
             {
                 RemoveCakeFile(filePath);
             }
 
-            if (changeType == FileChangeType.Unspecified && File.Exists(filePath) || changeType == FileChangeType.Create)
+            if (
+                changeType == FileChangeType.Unspecified && File.Exists(filePath)
+                || changeType == FileChangeType.Create
+            )
             {
                 AddCakeFile(filePath);
             }
@@ -177,9 +198,10 @@ namespace OmniSharp.Cake
                 return;
             }
 
-            var compilationOptions = e.Usings == null
-                ? _compilationOptions.Value
-                : _compilationOptions.Value.WithUsings(e.Usings);
+            var compilationOptions =
+                e.Usings == null
+                    ? _compilationOptions.Value
+                    : _compilationOptions.Value.WithUsings(e.Usings);
 
             foreach (var documentId in documentIds)
             {
@@ -206,8 +228,13 @@ namespace OmniSharp.Cake
                 var project = document.Project;
 
                 var metadataReferences = GetMetadataReferences(e.References);
-                var referencesToRemove = new HashSet<MetadataReference>(project.MetadataReferences, MetadataReferenceEqualityComparer.Instance);
-                var referencesToAdd = new HashSet<MetadataReference>(MetadataReferenceEqualityComparer.Instance);
+                var referencesToRemove = new HashSet<MetadataReference>(
+                    project.MetadataReferences,
+                    MetadataReferenceEqualityComparer.Instance
+                );
+                var referencesToAdd = new HashSet<MetadataReference>(
+                    MetadataReferenceEqualityComparer.Instance
+                );
 
                 foreach (var reference in metadataReferences)
                 {
@@ -253,9 +280,7 @@ namespace OmniSharp.Cake
             }
 
             var document = _workspace.GetDocument(filePath);
-            var projectFilePath = document != null
-                ? document.Project.FilePath
-                : filePath;
+            var projectFilePath = document != null ? document.Project.FilePath : filePath;
 
             var projectInfo = GetProjectFileInfo(projectFilePath);
             if (projectInfo == null)
@@ -269,7 +294,9 @@ namespace OmniSharp.Cake
 
         private ProjectInfo GetProjectFileInfo(string path)
         {
-            return !_projects.TryGetValue(path, out ProjectInfo projectFileInfo) ? null : projectFileInfo;
+            return !_projects.TryGetValue(path, out ProjectInfo projectFileInfo)
+                ? null
+                : projectFileInfo;
         }
 
         private ProjectInfo GetProject(CakeScript cakeScript, string filePath)
@@ -278,12 +305,25 @@ namespace OmniSharp.Cake
 
             if (!File.Exists(cakeScript.Host.AssemblyPath))
             {
-                throw new FileNotFoundException($"Cake is not installed. Path {cakeScript.Host.AssemblyPath} does not exist.");
+                throw new FileNotFoundException(
+                    $"Cake is not installed. Path {cakeScript.Host.AssemblyPath} does not exist."
+                );
             }
-            var hostObjectType = Type.GetType(cakeScript.Host.TypeName, a => _assemblyLoader.LoadFrom(cakeScript.Host.AssemblyPath, dontLockAssemblyOnDisk: true), null, false);
+            var hostObjectType = Type.GetType(
+                cakeScript.Host.TypeName,
+                a =>
+                    _assemblyLoader.LoadFrom(
+                        cakeScript.Host.AssemblyPath,
+                        dontLockAssemblyOnDisk: true
+                    ),
+                null,
+                false
+            );
             if (hostObjectType == null)
             {
-                throw new InvalidOperationException($"Could not get host object type: {cakeScript.Host.TypeName}.");
+                throw new InvalidOperationException(
+                    $"Could not get host object type: {cakeScript.Host.TypeName}."
+                );
             }
 
             var projectId = ProjectId.CreateNewId(Guid.NewGuid().ToString());
@@ -295,23 +335,33 @@ namespace OmniSharp.Cake
                             DocumentId.CreateNewId(projectId),
                             name: ".editorconfig",
                             loader: new FileTextLoader(path, Encoding.UTF8),
-                            filePath: path))
+                            filePath: path
+                        )
+                    )
                     .ToImmutableArray()
                 : ImmutableArray<DocumentInfo>.Empty;
 
-            return ProjectInfo.Create(
-                id: projectId,
-                version: VersionStamp.Create(),
-                name: name,
-                filePath: filePath,
-                assemblyName: $"{name}.dll",
-                language: LanguageNames.CSharp,
-                compilationOptions: cakeScript.Usings == null ? _compilationOptions.Value : _compilationOptions.Value.WithUsings(cakeScript.Usings),
-                parseOptions: new CSharpParseOptions(LanguageVersion.Latest, DocumentationMode.Parse, SourceCodeKind.Script),
-                metadataReferences: GetMetadataReferences(cakeScript.References),
-                // TODO: projectReferences?
-                isSubmission: true,
-                hostObjectType: hostObjectType)
+            return ProjectInfo
+                .Create(
+                    id: projectId,
+                    version: VersionStamp.Create(),
+                    name: name,
+                    filePath: filePath,
+                    assemblyName: $"{name}.dll",
+                    language: LanguageNames.CSharp,
+                    compilationOptions: cakeScript.Usings == null
+                        ? _compilationOptions.Value
+                        : _compilationOptions.Value.WithUsings(cakeScript.Usings),
+                    parseOptions: new CSharpParseOptions(
+                        LanguageVersion.Latest,
+                        DocumentationMode.Parse,
+                        SourceCodeKind.Script
+                    ),
+                    metadataReferences: GetMetadataReferences(cakeScript.References),
+                    // TODO: projectReferences?
+                    isSubmission: true,
+                    hostObjectType: hostObjectType
+                )
                 .WithAnalyzerConfigDocuments(analyzerConfigDocuments);
         }
 
@@ -321,7 +371,9 @@ namespace OmniSharp.Cake
             {
                 if (!File.Exists(reference))
                 {
-                    _logger.LogWarning($"Unable to create MetadataReference. File {reference} does not exist.");
+                    _logger.LogWarning(
+                        $"Unable to create MetadataReference. File {reference} does not exist."
+                    );
                     continue;
                 }
 
@@ -332,21 +384,35 @@ namespace OmniSharp.Cake
         private static CSharpCompilationOptions CreateCompilationOptions()
         {
             var compilationOptions = new CSharpCompilationOptions(
-                    OutputKind.DynamicallyLinkedLibrary,
-                    allowUnsafe: true,
-                    metadataReferenceResolver: new CachingScriptMetadataResolver(),
-                    sourceReferenceResolver: ScriptSourceResolver.Default,
-                    assemblyIdentityComparer: DesktopAssemblyIdentityComparer.Default).
-                    WithSpecificDiagnosticOptions(CompilationOptionsHelper.GetDefaultSuppressedDiagnosticOptions());
+                OutputKind.DynamicallyLinkedLibrary,
+                allowUnsafe: true,
+                metadataReferenceResolver: new CachingScriptMetadataResolver(),
+                sourceReferenceResolver: ScriptSourceResolver.Default,
+                assemblyIdentityComparer: DesktopAssemblyIdentityComparer.Default
+            ).WithSpecificDiagnosticOptions(
+                CompilationOptionsHelper.GetDefaultSuppressedDiagnosticOptions()
+            );
 
-            var topLevelBinderFlagsProperty = typeof(CSharpCompilationOptions).GetProperty("TopLevelBinderFlags", BindingFlags.Instance | BindingFlags.NonPublic);
-            var binderFlagsType = typeof(CSharpCompilationOptions).GetTypeInfo().Assembly.GetType("Microsoft.CodeAnalysis.CSharp.BinderFlags");
+            var topLevelBinderFlagsProperty = typeof(CSharpCompilationOptions).GetProperty(
+                "TopLevelBinderFlags",
+                BindingFlags.Instance | BindingFlags.NonPublic
+            );
+            var binderFlagsType = typeof(CSharpCompilationOptions)
+                .GetTypeInfo()
+                .Assembly.GetType("Microsoft.CodeAnalysis.CSharp.BinderFlags");
 
-            var ignoreCorLibraryDuplicatedTypesMember = binderFlagsType?.GetField("IgnoreCorLibraryDuplicatedTypes", BindingFlags.Static | BindingFlags.Public);
-            var ignoreCorLibraryDuplicatedTypesValue = ignoreCorLibraryDuplicatedTypesMember?.GetValue(null);
+            var ignoreCorLibraryDuplicatedTypesMember = binderFlagsType?.GetField(
+                "IgnoreCorLibraryDuplicatedTypes",
+                BindingFlags.Static | BindingFlags.Public
+            );
+            var ignoreCorLibraryDuplicatedTypesValue =
+                ignoreCorLibraryDuplicatedTypesMember?.GetValue(null);
             if (ignoreCorLibraryDuplicatedTypesValue != null)
             {
-                topLevelBinderFlagsProperty?.SetValue(compilationOptions, ignoreCorLibraryDuplicatedTypesValue);
+                topLevelBinderFlagsProperty?.SetValue(
+                    compilationOptions,
+                    ignoreCorLibraryDuplicatedTypesValue
+                );
             }
 
             return compilationOptions;

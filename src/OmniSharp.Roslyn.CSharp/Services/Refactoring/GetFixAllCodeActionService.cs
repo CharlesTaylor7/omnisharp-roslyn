@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Composition;
 using System.Linq;
@@ -16,7 +16,8 @@ using OmniSharp.Services;
 namespace OmniSharp.Roslyn.CSharp.Services.Refactoring
 {
     [OmniSharpHandler(OmniSharpEndpoints.GetFixAll, LanguageNames.CSharp)]
-    public class GetFixAllCodeActionService : BaseCodeActionService<GetFixAllRequest, GetFixAllResponse>
+    public class GetFixAllCodeActionService
+        : BaseCodeActionService<GetFixAllRequest, GetFixAllResponse>
     {
         [ImportingConstructor]
         public GetFixAllCodeActionService(
@@ -26,9 +27,15 @@ namespace OmniSharp.Roslyn.CSharp.Services.Refactoring
             ICsDiagnosticWorker diagnostics,
             CachingCodeFixProviderForProjects codeFixesForProject,
             OmniSharpOptions options
-        ) : base(workspace, providers, loggerFactory.CreateLogger<GetFixAllCodeActionService>(), diagnostics, codeFixesForProject, options)
-        {
-        }
+        )
+            : base(
+                workspace,
+                providers,
+                loggerFactory.CreateLogger<GetFixAllCodeActionService>(),
+                diagnostics,
+                codeFixesForProject,
+                options
+            ) { }
 
         public override async Task<GetFixAllResponse> Handle(GetFixAllRequest request)
         {
@@ -47,7 +54,9 @@ namespace OmniSharp.Roslyn.CSharp.Services.Refactoring
                     var projectFixProviders = GetCodeFixProviders(grouping.Key);
                     return grouping
                         .SelectMany(docAndDiag => docAndDiag.Diagnostics)
-                        .Where(diag => projectFixProviders.Any(provider => provider.HasFixForId(diag.Id)));
+                        .Where(diag =>
+                            projectFixProviders.Any(provider => provider.HasFixForId(diag.Id))
+                        );
                 })
                 .GroupBy(diag => diag.Id)
                 .Select(grouping => grouping.First())

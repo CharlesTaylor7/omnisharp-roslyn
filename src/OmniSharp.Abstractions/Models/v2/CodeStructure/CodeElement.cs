@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 
 namespace OmniSharp.Models.V2.CodeStructure
 {
@@ -12,10 +12,13 @@ namespace OmniSharp.Models.V2.CodeStructure
         public IReadOnlyDictionary<string, object> Properties { get; }
 
         private CodeElement(
-            string kind, string name, string displayName,
+            string kind,
+            string name,
+            string displayName,
             IReadOnlyList<CodeElement> children,
             IReadOnlyDictionary<string, Range> ranges,
-            IReadOnlyDictionary<string, object> properties)
+            IReadOnlyDictionary<string, object> properties
+        )
         {
             Kind = kind;
             Name = name;
@@ -25,7 +28,6 @@ namespace OmniSharp.Models.V2.CodeStructure
             Properties = properties;
         }
 
-        public override string ToString()
-            => $"{Kind} {Name}";
+        public override string ToString() => $"{Kind} {Name}";
     }
 }

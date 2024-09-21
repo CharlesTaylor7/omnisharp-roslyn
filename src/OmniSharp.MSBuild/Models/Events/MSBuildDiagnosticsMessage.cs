@@ -12,8 +12,8 @@ namespace OmniSharp.MSBuild.Models.Events
         public int EndLine { get; set; }
         public int EndColumn { get; set; }
 
-        internal static MSBuildDiagnosticsMessage FromDiagnostic(MSBuildDiagnostic diagnostic)
-            => new MSBuildDiagnosticsMessage()
+        internal static MSBuildDiagnosticsMessage FromDiagnostic(MSBuildDiagnostic diagnostic) =>
+            new MSBuildDiagnosticsMessage()
             {
                 LogLevel = diagnostic.Severity.ToString(),
                 FileName = diagnostic.File,
@@ -21,7 +21,7 @@ namespace OmniSharp.MSBuild.Models.Events
                 StartLine = diagnostic.LineNumber,
                 StartColumn = diagnostic.ColumnNumber,
                 EndLine = diagnostic.EndLineNumber,
-                EndColumn = diagnostic.EndColumnNumber
+                EndColumn = diagnostic.EndColumnNumber,
             };
     }
 }

@@ -7,7 +7,7 @@ namespace OmniSharp.Models.SignatureHelp
         public IEnumerable<SignatureHelpItem> Signatures { get; set; }
 
         public int ActiveSignature { get; set; }
-        
+
         public int ActiveParameter { get; set; }
     }
 }

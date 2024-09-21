@@ -16,23 +16,33 @@ namespace OmniSharp.Cake.Services.RequestHandlers.Navigation
     {
         [ImportingConstructor]
         public FindSymbolsHandler(OmniSharpWorkspace workspace)
-            : base(workspace)
-        {
-        }
+            : base(workspace) { }
 
         public override Task<QuickFixResponse> Handle(FindSymbolsRequest request)
         {
             if (request?.Filter?.Length < request?.MinFilterLength.GetValueOrDefault())
             {
-                return Task.FromResult(new QuickFixResponse { QuickFixes = Array.Empty<QuickFix>() });
+                return Task.FromResult(
+                    new QuickFixResponse { QuickFixes = Array.Empty<QuickFix>() }
+                );
             }
 
-            var symbolFilter = (SymbolFilter)(request?.SymbolFilter ?? OmniSharpSymbolFilter.TypeAndMember);
+            var symbolFilter = (SymbolFilter)(
+                request?.SymbolFilter ?? OmniSharpSymbolFilter.TypeAndMember
+            );
             int maxItemsToReturn = (request?.MaxItemsToReturn).GetValueOrDefault();
-            return Workspace.CurrentSolution.FindSymbols(request?.Filter, LanguageNames.Cake, maxItemsToReturn, symbolFilter);
+            return Workspace.CurrentSolution.FindSymbols(
+                request?.Filter,
+                LanguageNames.Cake,
+                maxItemsToReturn,
+                symbolFilter
+            );
         }
 
-        protected override Task<QuickFixResponse> TranslateResponse(QuickFixResponse response, FindSymbolsRequest request)
+        protected override Task<QuickFixResponse> TranslateResponse(
+            QuickFixResponse response,
+            FindSymbolsRequest request
+        )
         {
             return response.TranslateAsync(Workspace);
         }

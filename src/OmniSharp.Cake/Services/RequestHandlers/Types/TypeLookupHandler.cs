@@ -1,4 +1,4 @@
-﻿using System.Composition;
+using System.Composition;
 using OmniSharp.Mef;
 using OmniSharp.Models.TypeLookup;
 
@@ -8,8 +8,7 @@ namespace OmniSharp.Cake.Services.RequestHandlers.Types
     public class TypeLookupHandler : CakeRequestHandler<TypeLookupRequest, TypeLookupResponse>
     {
         [ImportingConstructor]
-        public TypeLookupHandler(OmniSharpWorkspace workspace) : base(workspace)
-        {
-        }
+        public TypeLookupHandler(OmniSharpWorkspace workspace)
+            : base(workspace) { }
     }
 }

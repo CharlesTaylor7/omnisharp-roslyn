@@ -19,10 +19,11 @@ namespace OmniSharp.Roslyn.CSharp.Tests
 {
     public class FormattingFacts : AbstractTestFixture
     {
-        public FormattingFacts(ITestOutputHelper output, SharedOmniSharpHostFixture sharedOmniSharpHostFixture)
-            : base(output, sharedOmniSharpHostFixture)
-        {
-        }
+        public FormattingFacts(
+            ITestOutputHelper output,
+            SharedOmniSharpHostFixture sharedOmniSharpHostFixture
+        )
+            : base(output, sharedOmniSharpHostFixture) { }
 
         [Fact]
         public void FindFormatTargetAtCurly()
@@ -33,11 +34,16 @@ namespace OmniSharp.Roslyn.CSharp.Tests
             AssertFormatTargetKind(SyntaxKind.StructDeclaration, @"struct S {}$$");
             AssertFormatTargetKind(SyntaxKind.NamespaceDeclaration, @"namespace N {}$$");
 
-            AssertFormatTargetKind(SyntaxKind.MethodDeclaration, @"
+            AssertFormatTargetKind(
+                SyntaxKind.MethodDeclaration,
+                @"
 class C {
     public void M(){}$$
-}");
-            AssertFormatTargetKind(SyntaxKind.ObjectInitializerExpression, @"
+}"
+            );
+            AssertFormatTargetKind(
+                SyntaxKind.ObjectInitializerExpression,
+                @"
 class C {
     public void M(){
 
@@ -46,53 +52,71 @@ class C {
             B = 7
         }$$
     }
-}");
-            AssertFormatTargetKind(SyntaxKind.ForStatement, @"
+}"
+            );
+            AssertFormatTargetKind(
+                SyntaxKind.ForStatement,
+                @"
 class C {
     public void M ()
     {
         for(;;){}$$
     }
-}");
+}"
+            );
         }
 
         [Fact]
         public void FindFormatTargetAtSemiColon()
         {
-
-            AssertFormatTargetKind(SyntaxKind.FieldDeclaration, @"
+            AssertFormatTargetKind(
+                SyntaxKind.FieldDeclaration,
+                @"
 class C {
     private int F;$$
-}");
-            AssertFormatTargetKind(SyntaxKind.LocalDeclarationStatement, @"
+}"
+            );
+            AssertFormatTargetKind(
+                SyntaxKind.LocalDeclarationStatement,
+                @"
 class C {
     public void M()
     {
         var a = 1234;$$
     }
-}");
-            AssertFormatTargetKind(SyntaxKind.ReturnStatement, @"
+}"
+            );
+            AssertFormatTargetKind(
+                SyntaxKind.ReturnStatement,
+                @"
 class C {
     public int M()
     {
         return 1234;$$
     }
-}");
+}"
+            );
 
-            AssertFormatTargetKind(SyntaxKind.ForStatement, @"
+            AssertFormatTargetKind(
+                SyntaxKind.ForStatement,
+                @"
 class C {
     public void M ()
     {
         for(var i = 0;$$) {}
     }
-}");
-            AssertFormatTargetKind(SyntaxKind.ForStatement, @"
+}"
+            );
+            AssertFormatTargetKind(
+                SyntaxKind.ForStatement,
+                @"
 class C {
     public void M ()
     {
         for(var i = 0; i < 8;$$)
     }
-}");
+}"
+            );
         }
 
         [Fact]
@@ -108,9 +132,25 @@ class C {
                 "}",
             };
 
-            await AssertTextChanges(string.Join("\r\n", source),
-                new LinePositionSpanTextChange { StartLine = 3, StartColumn = 20, EndLine = 3, EndColumn = 21, NewText = "" },
-                new LinePositionSpanTextChange { StartLine = 2, StartColumn = 30, EndLine = 3, EndColumn = 0, NewText = "\n " });
+            await AssertTextChanges(
+                string.Join("\r\n", source),
+                new LinePositionSpanTextChange
+                {
+                    StartLine = 3,
+                    StartColumn = 20,
+                    EndLine = 3,
+                    EndColumn = 21,
+                    NewText = "",
+                },
+                new LinePositionSpanTextChange
+                {
+                    StartLine = 2,
+                    StartColumn = 30,
+                    EndLine = 3,
+                    EndColumn = 0,
+                    NewText = "\n ",
+                }
+            );
         }
 
         [Fact]
@@ -126,16 +166,32 @@ class C {
                 "}",
             };
 
-            await AssertTextChanges(string.Join("\r\n", source),
-                new LinePositionSpanTextChange { StartLine = 3, StartColumn = 20, EndLine = 3, EndColumn = 21, NewText = "" },
-                new LinePositionSpanTextChange { StartLine = 2, StartColumn = 30, EndLine = 3, EndColumn = 0, NewText = "\n " });
+            await AssertTextChanges(
+                string.Join("\r\n", source),
+                new LinePositionSpanTextChange
+                {
+                    StartLine = 3,
+                    StartColumn = 20,
+                    EndLine = 3,
+                    EndColumn = 21,
+                    NewText = "",
+                },
+                new LinePositionSpanTextChange
+                {
+                    StartLine = 2,
+                    StartColumn = 30,
+                    EndLine = 3,
+                    EndColumn = 0,
+                    NewText = "\n ",
+                }
+            );
         }
 
         [Fact]
         public async Task TextChangesOnStaringSpanBeforeFirstCharacterInLine()
         {
             var source =
- @"class Program
+                @"class Program
 {
     public static void Main()
     {
@@ -144,7 +200,7 @@ class C {
 }";
 
             var expected =
-@"class Program
+                @"class Program
 {
     public static void Main()
     {
@@ -159,7 +215,7 @@ class C {
         public async Task TextChangesOnStartingSpanAtFirstCharacterInLine()
         {
             var source =
- @"class Program
+                @"class Program
 {
     public static void Main()
     {
@@ -167,7 +223,7 @@ class C {
     }
 }";
             var expected =
-@"class Program
+                @"class Program
 {
     public static void Main()
     {
@@ -182,7 +238,7 @@ class C {
         public async Task TextChangesOnStartingSpanAfterFirstCharacterInLine()
         {
             var source =
- @"class Program
+                @"class Program
 {
     public static void Main()
     {
@@ -191,7 +247,7 @@ class C {
 }";
 
             var expected =
-@"class Program
+                @"class Program
 {
     public static void Main()
     {
@@ -206,7 +262,7 @@ class C {
         public async Task TextChangesOnStartingSpanAfterFirstCharacterInLineWithMultipleLines()
         {
             var source =
-@"class Program
+                @"class Program
 {
     public static void Main()
     {
@@ -217,7 +273,7 @@ class C {
 }";
 
             var expected =
-@"class Program
+                @"class Program
 {
     public static void Main()
     {
@@ -235,13 +291,18 @@ class C {
         {
             var testFile = new TestFile("dummy.cs", "namespace Bar\n{\n    class Foo {}\n}");
 
-            using var host = CreateOmniSharpHost(new[] { testFile }, new Dictionary<string, string>
-            {
-                ["FormattingOptions:NewLine"] = "\n",
-                ["FormattingOptions:IndentationSize"] = "1"
-            });
+            using var host = CreateOmniSharpHost(
+                new[] { testFile },
+                new Dictionary<string, string>
+                {
+                    ["FormattingOptions:NewLine"] = "\n",
+                    ["FormattingOptions:IndentationSize"] = "1",
+                }
+            );
 
-            var requestHandler = host.GetRequestHandler<CodeFormatService>(OmniSharpEndpoints.CodeFormat);
+            var requestHandler = host.GetRequestHandler<CodeFormatService>(
+                OmniSharpEndpoints.CodeFormat
+            );
 
             var request = new CodeFormatRequest { FileName = testFile.FileName };
             var response = await requestHandler.Handle(request);
@@ -252,7 +313,9 @@ class C {
         [Fact]
         public async Task OrganizesImports()
         {
-            var testFile = new TestFile("dummy.cs", @"
+            var testFile = new TestFile(
+                "dummy.cs",
+                @"
 using System.IO;
 using Dummy;
 using System;
@@ -260,19 +323,28 @@ using System;
 namespace Bar
 {
     class Foo { }
-}");
+}"
+            );
 
-            using (var host = CreateOmniSharpHost(new[] { testFile }, configurationData: new Dictionary<string, string>
+            using (
+                var host = CreateOmniSharpHost(
+                    new[] { testFile },
+                    configurationData: new Dictionary<string, string>
+                    {
+                        ["FormattingOptions:OrganizeImports"] = "true",
+                    }
+                )
+            )
             {
-                ["FormattingOptions:OrganizeImports"] = "true"
-            }))
-            {
-                var requestHandler = host.GetRequestHandler<CodeFormatService>(OmniSharpEndpoints.CodeFormat);
+                var requestHandler = host.GetRequestHandler<CodeFormatService>(
+                    OmniSharpEndpoints.CodeFormat
+                );
 
                 var request = new CodeFormatRequest { FileName = testFile.FileName };
                 var response = await requestHandler.Handle(request);
 
-                Assert.Equal(@"
+                Assert.Equal(
+                    @"
 using System;
 using System.IO;
 using Dummy;
@@ -280,14 +352,18 @@ using Dummy;
 namespace Bar
 {
     class Foo { }
-}", response.Buffer);
+}",
+                    response.Buffer
+                );
             }
         }
 
         [Fact]
         public async Task DoesntOrganizeImportsWhenDisabled()
         {
-            var testFile = new TestFile("dummy.cs", @"
+            var testFile = new TestFile(
+                "dummy.cs",
+                @"
 using System.IO;
 using Dummy;
 using System;
@@ -295,19 +371,28 @@ using System;
 namespace Bar
 {
     class Foo { }
-}");
+}"
+            );
 
-            using (var host = CreateOmniSharpHost(new[] { testFile }, configurationData: new Dictionary<string, string>
+            using (
+                var host = CreateOmniSharpHost(
+                    new[] { testFile },
+                    configurationData: new Dictionary<string, string>
+                    {
+                        ["FormattingOptions:OrganizeImports"] = "false",
+                    }
+                )
+            )
             {
-                ["FormattingOptions:OrganizeImports"] = "false"
-            }))
-            {
-                var requestHandler = host.GetRequestHandler<CodeFormatService>(OmniSharpEndpoints.CodeFormat);
+                var requestHandler = host.GetRequestHandler<CodeFormatService>(
+                    OmniSharpEndpoints.CodeFormat
+                );
 
                 var request = new CodeFormatRequest { FileName = testFile.FileName };
                 var response = await requestHandler.Handle(request);
 
-                Assert.Equal(@"
+                Assert.Equal(
+                    @"
 using System.IO;
 using Dummy;
 using System;
@@ -315,7 +400,9 @@ using System;
 namespace Bar
 {
     class Foo { }
-}", response.Buffer);
+}",
+                    response.Buffer
+                );
             }
         }
 
@@ -330,7 +417,10 @@ namespace Bar
             Assert.Equal(kind, target.Kind());
         }
 
-        private async Task AssertTextChanges(string source, params LinePositionSpanTextChange[] expected)
+        private async Task AssertTextChanges(
+            string source,
+            params LinePositionSpanTextChange[] expected
+        )
         {
             var testFile = new TestFile("dummy.cs", source);
             SharedOmniSharpTestHost.AddFilesToWorkspace(testFile);
@@ -344,10 +434,12 @@ namespace Bar
                 Line = range.Start.Line,
                 Column = range.Start.Offset,
                 EndLine = range.End.Line,
-                EndColumn = range.End.Offset
+                EndColumn = range.End.Offset,
             };
 
-            var requestHandler = SharedOmniSharpTestHost.GetRequestHandler<FormatRangeService>(OmniSharpEndpoints.FormatRange);
+            var requestHandler = SharedOmniSharpTestHost.GetRequestHandler<FormatRangeService>(
+                OmniSharpEndpoints.FormatRange
+            );
 
             var response = await requestHandler.Handle(request);
             var actual = response.Changes.ToArray();
@@ -379,10 +471,12 @@ namespace Bar
                 Line = range.Start.Line,
                 Column = range.Start.Offset,
                 EndLine = range.End.Line,
-                EndColumn = range.End.Offset
+                EndColumn = range.End.Offset,
             };
 
-            var requestHandler = SharedOmniSharpTestHost.GetRequestHandler<FormatRangeService>(OmniSharpEndpoints.FormatRange);
+            var requestHandler = SharedOmniSharpTestHost.GetRequestHandler<FormatRangeService>(
+                OmniSharpEndpoints.FormatRange
+            );
 
             var response = await requestHandler.Handle(request);
             var actual = response.Changes.ToArray();
@@ -393,14 +487,19 @@ namespace Bar
             Assert.Equal(expected.Replace("\r\n", "\n"), actualText.Replace("\r\n", "\n"));
         }
 
-        public static IEnumerable<TextChange> GetTextChanges(SourceText oldText, IEnumerable<LinePositionSpanTextChange> changes)
+        public static IEnumerable<TextChange> GetTextChanges(
+            SourceText oldText,
+            IEnumerable<LinePositionSpanTextChange> changes
+        )
         {
             var textChanges = new List<TextChange>();
             foreach (var change in changes)
             {
                 var startPosition = new LinePosition(change.StartLine, change.StartColumn);
                 var endPosition = new LinePosition(change.EndLine, change.EndColumn);
-                var span = oldText.Lines.GetTextSpan(new LinePositionSpan(startPosition, endPosition));
+                var span = oldText.Lines.GetTextSpan(
+                    new LinePositionSpan(startPosition, endPosition)
+                );
                 var newText = change.NewText;
                 textChanges.Add(new TextChange(span, newText));
             }

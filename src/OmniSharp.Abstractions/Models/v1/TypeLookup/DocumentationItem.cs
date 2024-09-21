@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -10,6 +10,7 @@ namespace OmniSharp.Models.TypeLookup
     {
         public string Name { get; }
         public string Documentation { get; }
+
         public DocumentationItem(string name, string documentation)
         {
             Name = name;

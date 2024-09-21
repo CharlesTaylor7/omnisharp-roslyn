@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading.Tasks;
@@ -7,7 +7,11 @@ namespace OmniSharp.Utilities
 {
     public static class ProcessHelper
     {
-        public static string RunAndCaptureOutput(string fileName, string arguments, string workingDirectory = null)
+        public static string RunAndCaptureOutput(
+            string fileName,
+            string arguments,
+            string workingDirectory = null
+        )
         {
             var startInfo = new ProcessStartInfo(fileName, arguments)
             {
@@ -18,10 +22,7 @@ namespace OmniSharp.Utilities
                 WorkingDirectory = workingDirectory ?? string.Empty,
             };
 
-            var process = new Process
-            {
-                StartInfo = startInfo
-            };
+            var process = new Process { StartInfo = startInfo };
 
             try
             {
@@ -45,7 +46,8 @@ namespace OmniSharp.Utilities
             string workingDirectory = null,
             Action<string> outputDataReceived = null,
             Action<string> errorDataReceived = null,
-            Action<IDictionary<string, string>> updateEnvironment = null)
+            Action<IDictionary<string, string>> updateEnvironment = null
+        )
         {
             var startInfo = new ProcessStartInfo(fileName, arguments)
             {
@@ -58,10 +60,7 @@ namespace OmniSharp.Utilities
 
             updateEnvironment(startInfo.Environment);
 
-            var process = new Process
-            {
-                StartInfo = startInfo
-            };
+            var process = new Process { StartInfo = startInfo };
 
             try
             {

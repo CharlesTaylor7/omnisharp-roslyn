@@ -12,6 +12,9 @@ namespace OmniSharp.Abstractions.Models.V1.FixAll
 
         public IEnumerable<FileOperationResponse> Changes { get; set; }
 
-        public IAggregateResponse Merge(IAggregateResponse response) { return response; }
+        public IAggregateResponse Merge(IAggregateResponse response)
+        {
+            return response;
+        }
     }
 }

@@ -17,8 +17,6 @@ namespace TestUtility.Logging
             return new TestLogger(this._output, categoryName);
         }
 
-        public void Dispose()
-        {
-        }
+        public void Dispose() { }
     }
 }

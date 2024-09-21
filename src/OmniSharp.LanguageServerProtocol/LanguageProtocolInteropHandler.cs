@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -22,53 +22,89 @@ namespace OmniSharp.LanguageServerProtocol
             IPredicateHandler languagePredicateHandler,
             OmniSharpEndpointMetadata metadata,
             IEnumerable<Lazy<IRequestHandler, OmniSharpRequestHandlerMetadata>> handlers,
-            Lazy<LanguageProtocolInteropHandler<UpdateBufferRequest, object>> updateBufferHandler)
+            Lazy<LanguageProtocolInteropHandler<UpdateBufferRequest, object>> updateBufferHandler
+        )
         {
-            return new LanguageProtocolInteropHandler<TRequest, TResponse>(languagePredicateHandler, metadata, handlers.Where(x => x.Metadata.EndpointName == metadata.EndpointName), updateBufferHandler);
+            return new LanguageProtocolInteropHandler<TRequest, TResponse>(
+                languagePredicateHandler,
+                metadata,
+                handlers.Where(x => x.Metadata.EndpointName == metadata.EndpointName),
+                updateBufferHandler
+            );
         }
 
         public static LanguageProtocolInteropHandler Factory(
             IPredicateHandler languagePredicateHandler,
             OmniSharpEndpointMetadata metadata,
             IEnumerable<Lazy<IRequestHandler, OmniSharpRequestHandlerMetadata>> handlers,
-            Lazy<LanguageProtocolInteropHandler<UpdateBufferRequest, object>> updateBufferHandler)
+            Lazy<LanguageProtocolInteropHandler<UpdateBufferRequest, object>> updateBufferHandler
+        )
         {
-            var createMethod = typeof(LanguageProtocolInteropHandler).GetTypeInfo().DeclaredMethods.First(x => x.Name == nameof(LanguageProtocolInteropHandler.Create));
-            return (LanguageProtocolInteropHandler)createMethod.MakeGenericMethod(metadata.RequestType, metadata.ResponseType).Invoke(null, new object[] { languagePredicateHandler, metadata, handlers, updateBufferHandler });
+            var createMethod = typeof(LanguageProtocolInteropHandler)
+                .GetTypeInfo()
+                .DeclaredMethods.First(x =>
+                    x.Name == nameof(LanguageProtocolInteropHandler.Create)
+                );
+            return (LanguageProtocolInteropHandler)
+                createMethod
+                    .MakeGenericMethod(metadata.RequestType, metadata.ResponseType)
+                    .Invoke(
+                        null,
+                        new object[]
+                        {
+                            languagePredicateHandler,
+                            metadata,
+                            handlers,
+                            updateBufferHandler,
+                        }
+                    );
         }
     }
 
-    public class LanguageProtocolInteropHandler<TRequest, TResponse> : LanguageProtocolInteropHandler
+    public class LanguageProtocolInteropHandler<TRequest, TResponse>
+        : LanguageProtocolInteropHandler
     {
         private readonly IPredicateHandler _languagePredicateHandler;
         private readonly Lazy<Dictionary<string, IRequestHandler<TRequest, TResponse>[]>> _exports;
         private readonly bool _hasLanguageProperty;
         private readonly bool _hasFileNameProperty;
         private readonly bool _canBeAggregated;
-        private readonly Lazy<LanguageProtocolInteropHandler<UpdateBufferRequest, object>> _updateBufferHandler;
+        private readonly Lazy<
+            LanguageProtocolInteropHandler<UpdateBufferRequest, object>
+        > _updateBufferHandler;
 
-        public LanguageProtocolInteropHandler(IPredicateHandler languagePredicateHandler,
+        public LanguageProtocolInteropHandler(
+            IPredicateHandler languagePredicateHandler,
             OmniSharpEndpointMetadata metadata,
             IEnumerable<Lazy<IRequestHandler, OmniSharpRequestHandlerMetadata>> handlers,
-            Lazy<LanguageProtocolInteropHandler<UpdateBufferRequest, object>> updateBufferHandler)
+            Lazy<LanguageProtocolInteropHandler<UpdateBufferRequest, object>> updateBufferHandler
+        )
         {
             EndpointName = metadata.EndpointName;
             _languagePredicateHandler = languagePredicateHandler;
 
-            _hasLanguageProperty = metadata.RequestType.GetRuntimeProperty(nameof(LanguageModel.Language)) != null;
-            _hasFileNameProperty = metadata.RequestType.GetRuntimeProperty(nameof(Request.FileName)) != null;
+            _hasLanguageProperty =
+                metadata.RequestType.GetRuntimeProperty(nameof(LanguageModel.Language)) != null;
+            _hasFileNameProperty =
+                metadata.RequestType.GetRuntimeProperty(nameof(Request.FileName)) != null;
             _canBeAggregated = typeof(IAggregateResponse).IsAssignableFrom(metadata.ResponseType);
             _updateBufferHandler = updateBufferHandler;
 
-            _exports = new Lazy<Dictionary<string, IRequestHandler<TRequest, TResponse>[]>>(() =>LoadExportHandlers(handlers));
+            _exports = new Lazy<Dictionary<string, IRequestHandler<TRequest, TResponse>[]>>(
+                () => LoadExportHandlers(handlers)
+            );
         }
 
         private Dictionary<string, IRequestHandler<TRequest, TResponse>[]> LoadExportHandlers(
-            IEnumerable<Lazy<IRequestHandler, OmniSharpRequestHandlerMetadata>> handlers)
+            IEnumerable<Lazy<IRequestHandler, OmniSharpRequestHandlerMetadata>> handlers
+        )
         {
-            var interfaceHandlers = handlers
-                .Select(export => (Language: export.Metadata.Language,
-                    Handler: (IRequestHandler<TRequest, TResponse>) export.Value));
+            var interfaceHandlers = handlers.Select(export =>
+                (
+                    Language: export.Metadata.Language,
+                    Handler: (IRequestHandler<TRequest, TResponse>)export.Value
+                )
+            );
 
             // TODO: Support plugins? maybe never?
             // var plugins = _plugins.Where(x => x.Config.Endpoints.Contains(EndpointName))
@@ -80,7 +116,8 @@ namespace OmniSharp.LanguageServerProtocol
                 .GroupBy(export => export.Language, StringComparer.OrdinalIgnoreCase)
                 .ToDictionary(
                     group => group.Key,
-                    group => group.OrderBy(g => g.Handler).Select(z => z.Handler).ToArray());
+                    group => group.OrderBy(g => g.Handler).Select(z => z.Handler).ToArray()
+                );
         }
 
         public string EndpointName { get; }
@@ -92,8 +129,10 @@ namespace OmniSharp.LanguageServerProtocol
             if (request is Request && _updateBufferHandler.Value != null)
             {
                 var realRequest = request as Request;
-                if (!string.IsNullOrWhiteSpace(realRequest.FileName) &&
-                    (realRequest.Buffer != null || realRequest.Changes != null))
+                if (
+                    !string.IsNullOrWhiteSpace(realRequest.FileName)
+                    && (realRequest.Buffer != null || realRequest.Changes != null)
+                )
                 {
                     await _updateBufferHandler.Value.Handle(requestObject);
                 }
@@ -112,7 +151,9 @@ namespace OmniSharp.LanguageServerProtocol
             }
             else if (_hasFileNameProperty)
             {
-                var language = _languagePredicateHandler.GetLanguageForFilePath(model.FileName ?? string.Empty);
+                var language = _languagePredicateHandler.GetLanguageForFilePath(
+                    model.FileName ?? string.Empty
+                );
                 return await HandleLanguageRequest(language, request);
             }
             else
@@ -138,12 +179,15 @@ namespace OmniSharp.LanguageServerProtocol
         }
 
         private async Task<IAggregateResponse> AggregateResponsesFromLanguageHandlers(
-            IRequestHandler<TRequest, TResponse>[] handlers, TRequest request)
+            IRequestHandler<TRequest, TResponse>[] handlers,
+            TRequest request
+        )
         {
             if (!_canBeAggregated)
             {
                 throw new NotSupportedException(
-                    $"Must be able to aggregate responses from all handlers for {EndpointName}");
+                    $"Must be able to aggregate responses from all handlers for {EndpointName}"
+                );
             }
 
             IAggregateResponse aggregateResponse = null;
@@ -151,7 +195,7 @@ namespace OmniSharp.LanguageServerProtocol
             if (handlers.Length == 1)
             {
                 var response = handlers[0].Handle(request);
-                return (IAggregateResponse) await response;
+                return (IAggregateResponse)await response;
             }
             else
             {
@@ -177,8 +221,10 @@ namespace OmniSharp.LanguageServerProtocol
             return aggregateResponse;
         }
 
-        private async Task<object> GetFirstNotEmptyResponseFromHandlers(IRequestHandler<TRequest, TResponse>[] handlers,
-            TRequest request)
+        private async Task<object> GetFirstNotEmptyResponseFromHandlers(
+            IRequestHandler<TRequest, TResponse>[] handlers,
+            TRequest request
+        )
         {
             var responses = new List<Task<TResponse>>();
             foreach (var handler in handlers)
@@ -225,7 +271,8 @@ namespace OmniSharp.LanguageServerProtocol
             if (!_canBeAggregated)
             {
                 throw new NotSupportedException(
-                    $"Must be able to aggregate the response to spread them out across all plugins for {EndpointName}");
+                    $"Must be able to aggregate the response to spread them out across all plugins for {EndpointName}"
+                );
             }
 
             var exports = _exports.Value;
@@ -267,13 +314,24 @@ namespace OmniSharp.LanguageServerProtocol
                 return response;
             }
 
-            if (jobject.TryGetValue(nameof(LanguageModel.Language), StringComparison.OrdinalIgnoreCase, out var token))
+            if (
+                jobject.TryGetValue(
+                    nameof(LanguageModel.Language),
+                    StringComparison.OrdinalIgnoreCase,
+                    out var token
+                )
+            )
             {
                 response.Language = token.ToString();
             }
 
-
-            if (jobject.TryGetValue(nameof(LanguageModel.FileName), StringComparison.OrdinalIgnoreCase, out token))
+            if (
+                jobject.TryGetValue(
+                    nameof(LanguageModel.FileName),
+                    StringComparison.OrdinalIgnoreCase,
+                    out token
+                )
+            )
             {
                 response.FileName = token.ToString();
             }

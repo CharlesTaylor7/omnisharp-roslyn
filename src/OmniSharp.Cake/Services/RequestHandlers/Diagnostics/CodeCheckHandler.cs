@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Composition;
 using System.IO;
 using System.Linq;
@@ -15,16 +15,15 @@ namespace OmniSharp.Cake.Services.RequestHandlers.Diagnostics
     public class CodeCheckHandler : CakeRequestHandler<CodeCheckRequest, QuickFixResponse>
     {
         [ImportingConstructor]
-        public CodeCheckHandler(
-            OmniSharpWorkspace workspace)
-            : base(workspace)
-        {
-        }
+        public CodeCheckHandler(OmniSharpWorkspace workspace)
+            : base(workspace) { }
 
         protected override bool IsValid(CodeCheckRequest request) =>
             !string.IsNullOrEmpty(request.FileName);
 
-        protected override Task<QuickFixResponse> TranslateResponse(QuickFixResponse response, CodeCheckRequest request) =>
-            Task.FromResult(response.OnlyThisFile(request.FileName));
+        protected override Task<QuickFixResponse> TranslateResponse(
+            QuickFixResponse response,
+            CodeCheckRequest request
+        ) => Task.FromResult(response.OnlyThisFile(request.FileName));
     }
 }

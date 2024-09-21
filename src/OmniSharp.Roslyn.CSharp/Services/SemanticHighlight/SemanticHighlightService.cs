@@ -13,7 +13,8 @@ using OmniSharp.Models.SemanticHighlight;
 namespace OmniSharp.Roslyn.CSharp.Services.SemanticHighlight
 {
     [OmniSharpHandler(OmniSharpEndpoints.V2.Highlight, LanguageNames.CSharp)]
-    public class SemanticHighlightService : IRequestHandler<SemanticHighlightRequest, SemanticHighlightResponse>
+    public class SemanticHighlightService
+        : IRequestHandler<SemanticHighlightRequest, SemanticHighlightResponse>
     {
         private readonly OmniSharpWorkspace _workspace;
         private readonly ILogger<SemanticHighlightService> _logger;
@@ -31,16 +32,20 @@ namespace OmniSharp.Roslyn.CSharp.Services.SemanticHighlight
 
             if (document == null)
             {
-                return new SemanticHighlightResponse() { Spans = Array.Empty<SemanticHighlightSpan>() };
+                return new SemanticHighlightResponse()
+                {
+                    Spans = Array.Empty<SemanticHighlightSpan>(),
+                };
             }
 
             var results = new List<ClassifiedResult>();
 
             var project = document.Project.Name;
 
-            var highlightDocument = request.VersionedText != null
-                ? document.WithText(SourceText.From(request.VersionedText))
-                : document;
+            var highlightDocument =
+                request.VersionedText != null
+                    ? document.WithText(SourceText.From(request.VersionedText))
+                    : document;
 
             var text = await highlightDocument.GetTextAsync();
 
@@ -49,14 +54,23 @@ namespace OmniSharp.Roslyn.CSharp.Services.SemanticHighlight
             {
                 if (request.Range.IsValid())
                 {
-                    var start = text.Lines.GetPosition(new LinePosition(request.Range.Start.Line, request.Range.Start.Column));
-                    var end = text.Lines.GetPosition(new LinePosition(request.Range.End.Line, request.Range.End.Column));
+                    var start = text.Lines.GetPosition(
+                        new LinePosition(request.Range.Start.Line, request.Range.Start.Column)
+                    );
+                    var end = text.Lines.GetPosition(
+                        new LinePosition(request.Range.End.Line, request.Range.End.Column)
+                    );
                     textSpan = new TextSpan(start, end - start);
                 }
                 else
                 {
-                    _logger.LogWarning($"Supplied highlight range {request.Range} in document {document.FilePath} is not valid.");
-                    return new SemanticHighlightResponse() { Spans = Array.Empty<SemanticHighlightSpan>() };
+                    _logger.LogWarning(
+                        $"Supplied highlight range {request.Range} in document {document.FilePath} is not valid."
+                    );
+                    return new SemanticHighlightResponse()
+                    {
+                        Spans = Array.Empty<SemanticHighlightSpan>(),
+                    };
                 }
             }
             else
@@ -64,26 +78,32 @@ namespace OmniSharp.Roslyn.CSharp.Services.SemanticHighlight
                 textSpan = new TextSpan(0, text.Length);
             }
 
-            results.AddRange((await Classifier.GetClassifiedSpansAsync(highlightDocument, textSpan))
-                .Select(span => new ClassifiedResult()
-                {
-                    Span = span,
-                    Lines = text.Lines,
-                }));
+            results.AddRange(
+                (await Classifier.GetClassifiedSpansAsync(highlightDocument, textSpan)).Select(
+                    span => new ClassifiedResult() { Span = span, Lines = text.Lines }
+                )
+            );
 
             return new SemanticHighlightResponse()
             {
                 Spans = results
                     .GroupBy(result => result.Span.TextSpan.ToString())
                     .Select(grouping => CreateSemanticSpan(grouping, grouping.First().Lines))
-                    .ToArray()
+                    .ToArray(),
             };
         }
 
-        private static SemanticHighlightSpan CreateSemanticSpan(IEnumerable<ClassifiedResult> results, TextLineCollection lines)
+        private static SemanticHighlightSpan CreateSemanticSpan(
+            IEnumerable<ClassifiedResult> results,
+            TextLineCollection lines
+        )
         {
-            var additiveResults = results.Where(result => ClassificationTypeNames.AdditiveTypeNames.Contains(result.Span.ClassificationType));
-            var modifiers = additiveResults.Select(result => _modifierMap[result.Span.ClassificationType]).ToArray();
+            var additiveResults = results.Where(result =>
+                ClassificationTypeNames.AdditiveTypeNames.Contains(result.Span.ClassificationType)
+            );
+            var modifiers = additiveResults
+                .Select(result => _modifierMap[result.Span.ClassificationType])
+                .ToArray();
 
             var result = results.Except(additiveResults).Single();
             var span = result.Span;
@@ -100,7 +120,7 @@ namespace OmniSharp.Roslyn.CSharp.Services.SemanticHighlight
                 StartColumn = linePos.Start.Character,
                 EndColumn = linePos.End.Character,
                 Type = type,
-                Modifiers = modifiers
+                Modifiers = modifiers,
             };
         }
 
@@ -110,82 +130,131 @@ namespace OmniSharp.Roslyn.CSharp.Services.SemanticHighlight
             public TextLineCollection Lines { get; set; }
         }
 
-        public static readonly Dictionary<string, SemanticHighlightClassification> _classificationMap =
+        public static readonly Dictionary<
+            string,
+            SemanticHighlightClassification
+        > _classificationMap =
             new()
             {
                 [ClassificationTypeNames.Comment] = SemanticHighlightClassification.Comment,
-                [ClassificationTypeNames.ExcludedCode] = SemanticHighlightClassification.ExcludedCode,
+                [ClassificationTypeNames.ExcludedCode] =
+                    SemanticHighlightClassification.ExcludedCode,
                 [ClassificationTypeNames.Identifier] = SemanticHighlightClassification.Identifier,
                 [ClassificationTypeNames.Keyword] = SemanticHighlightClassification.Keyword,
-                [ClassificationTypeNames.ControlKeyword] = SemanticHighlightClassification.ControlKeyword,
-                [ClassificationTypeNames.NumericLiteral] = SemanticHighlightClassification.NumericLiteral,
+                [ClassificationTypeNames.ControlKeyword] =
+                    SemanticHighlightClassification.ControlKeyword,
+                [ClassificationTypeNames.NumericLiteral] =
+                    SemanticHighlightClassification.NumericLiteral,
                 [ClassificationTypeNames.Operator] = SemanticHighlightClassification.Operator,
-                [ClassificationTypeNames.OperatorOverloaded] = SemanticHighlightClassification.OperatorOverloaded,
-                [ClassificationTypeNames.PreprocessorKeyword] = SemanticHighlightClassification.PreprocessorKeyword,
-                [ClassificationTypeNames.StringLiteral] = SemanticHighlightClassification.StringLiteral,
+                [ClassificationTypeNames.OperatorOverloaded] =
+                    SemanticHighlightClassification.OperatorOverloaded,
+                [ClassificationTypeNames.PreprocessorKeyword] =
+                    SemanticHighlightClassification.PreprocessorKeyword,
+                [ClassificationTypeNames.StringLiteral] =
+                    SemanticHighlightClassification.StringLiteral,
                 [ClassificationTypeNames.WhiteSpace] = SemanticHighlightClassification.WhiteSpace,
                 [ClassificationTypeNames.Text] = SemanticHighlightClassification.Text,
-                [ClassificationTypeNames.StaticSymbol] = SemanticHighlightClassification.StaticSymbol,
-                [ClassificationTypeNames.PreprocessorText] = SemanticHighlightClassification.PreprocessorText,
+                [ClassificationTypeNames.StaticSymbol] =
+                    SemanticHighlightClassification.StaticSymbol,
+                [ClassificationTypeNames.PreprocessorText] =
+                    SemanticHighlightClassification.PreprocessorText,
                 [ClassificationTypeNames.Punctuation] = SemanticHighlightClassification.Punctuation,
-                [ClassificationTypeNames.VerbatimStringLiteral] = SemanticHighlightClassification.VerbatimStringLiteral,
-                [ClassificationTypeNames.StringEscapeCharacter] = SemanticHighlightClassification.StringEscapeCharacter,
+                [ClassificationTypeNames.VerbatimStringLiteral] =
+                    SemanticHighlightClassification.VerbatimStringLiteral,
+                [ClassificationTypeNames.StringEscapeCharacter] =
+                    SemanticHighlightClassification.StringEscapeCharacter,
                 [ClassificationTypeNames.ClassName] = SemanticHighlightClassification.ClassName,
-                [ClassificationTypeNames.RecordClassName] = SemanticHighlightClassification.ClassName,
-                [ClassificationTypeNames.DelegateName] = SemanticHighlightClassification.DelegateName,
+                [ClassificationTypeNames.RecordClassName] =
+                    SemanticHighlightClassification.ClassName,
+                [ClassificationTypeNames.DelegateName] =
+                    SemanticHighlightClassification.DelegateName,
                 [ClassificationTypeNames.EnumName] = SemanticHighlightClassification.EnumName,
-                [ClassificationTypeNames.InterfaceName] = SemanticHighlightClassification.InterfaceName,
+                [ClassificationTypeNames.InterfaceName] =
+                    SemanticHighlightClassification.InterfaceName,
                 [ClassificationTypeNames.ModuleName] = SemanticHighlightClassification.ModuleName,
                 [ClassificationTypeNames.StructName] = SemanticHighlightClassification.StructName,
-                [ClassificationTypeNames.RecordStructName] = SemanticHighlightClassification.StructName,
-                [ClassificationTypeNames.TypeParameterName] = SemanticHighlightClassification.TypeParameterName,
+                [ClassificationTypeNames.RecordStructName] =
+                    SemanticHighlightClassification.StructName,
+                [ClassificationTypeNames.TypeParameterName] =
+                    SemanticHighlightClassification.TypeParameterName,
                 [ClassificationTypeNames.FieldName] = SemanticHighlightClassification.FieldName,
-                [ClassificationTypeNames.EnumMemberName] = SemanticHighlightClassification.EnumMemberName,
-                [ClassificationTypeNames.ConstantName] = SemanticHighlightClassification.ConstantName,
+                [ClassificationTypeNames.EnumMemberName] =
+                    SemanticHighlightClassification.EnumMemberName,
+                [ClassificationTypeNames.ConstantName] =
+                    SemanticHighlightClassification.ConstantName,
                 [ClassificationTypeNames.LocalName] = SemanticHighlightClassification.LocalName,
-                [ClassificationTypeNames.ParameterName] = SemanticHighlightClassification.ParameterName,
+                [ClassificationTypeNames.ParameterName] =
+                    SemanticHighlightClassification.ParameterName,
                 [ClassificationTypeNames.MethodName] = SemanticHighlightClassification.MethodName,
-                [ClassificationTypeNames.ExtensionMethodName] = SemanticHighlightClassification.ExtensionMethodName,
-                [ClassificationTypeNames.PropertyName] = SemanticHighlightClassification.PropertyName,
+                [ClassificationTypeNames.ExtensionMethodName] =
+                    SemanticHighlightClassification.ExtensionMethodName,
+                [ClassificationTypeNames.PropertyName] =
+                    SemanticHighlightClassification.PropertyName,
                 [ClassificationTypeNames.EventName] = SemanticHighlightClassification.EventName,
-                [ClassificationTypeNames.NamespaceName] = SemanticHighlightClassification.NamespaceName,
+                [ClassificationTypeNames.NamespaceName] =
+                    SemanticHighlightClassification.NamespaceName,
                 [ClassificationTypeNames.LabelName] = SemanticHighlightClassification.LabelName,
-                [ClassificationTypeNames.XmlDocCommentAttributeName] = SemanticHighlightClassification.XmlDocCommentAttributeName,
-                [ClassificationTypeNames.XmlDocCommentAttributeQuotes] = SemanticHighlightClassification.XmlDocCommentAttributeQuotes,
-                [ClassificationTypeNames.XmlDocCommentAttributeValue] = SemanticHighlightClassification.XmlDocCommentAttributeValue,
-                [ClassificationTypeNames.XmlDocCommentCDataSection] = SemanticHighlightClassification.XmlDocCommentCDataSection,
-                [ClassificationTypeNames.XmlDocCommentComment] = SemanticHighlightClassification.XmlDocCommentComment,
-                [ClassificationTypeNames.XmlDocCommentDelimiter] = SemanticHighlightClassification.XmlDocCommentDelimiter,
-                [ClassificationTypeNames.XmlDocCommentEntityReference] = SemanticHighlightClassification.XmlDocCommentEntityReference,
-                [ClassificationTypeNames.XmlDocCommentName] = SemanticHighlightClassification.XmlDocCommentName,
-                [ClassificationTypeNames.XmlDocCommentProcessingInstruction] = SemanticHighlightClassification.XmlDocCommentProcessingInstruction,
-                [ClassificationTypeNames.XmlDocCommentText] = SemanticHighlightClassification.XmlDocCommentText,
-                [ClassificationTypeNames.XmlLiteralAttributeName] = SemanticHighlightClassification.XmlLiteralAttributeName,
-                [ClassificationTypeNames.XmlLiteralAttributeQuotes] = SemanticHighlightClassification.XmlLiteralAttributeQuotes,
-                [ClassificationTypeNames.XmlLiteralAttributeValue] = SemanticHighlightClassification.XmlLiteralAttributeValue,
-                [ClassificationTypeNames.XmlLiteralCDataSection] = SemanticHighlightClassification.XmlLiteralCDataSection,
-                [ClassificationTypeNames.XmlLiteralComment] = SemanticHighlightClassification.XmlLiteralComment,
-                [ClassificationTypeNames.XmlLiteralDelimiter] = SemanticHighlightClassification.XmlLiteralDelimiter,
-                [ClassificationTypeNames.XmlLiteralEmbeddedExpression] = SemanticHighlightClassification.XmlLiteralEmbeddedExpression,
-                [ClassificationTypeNames.XmlLiteralEntityReference] = SemanticHighlightClassification.XmlLiteralEntityReference,
-                [ClassificationTypeNames.XmlLiteralName] = SemanticHighlightClassification.XmlLiteralName,
-                [ClassificationTypeNames.XmlLiteralProcessingInstruction] = SemanticHighlightClassification.XmlLiteralProcessingInstruction,
-                [ClassificationTypeNames.XmlLiteralText] = SemanticHighlightClassification.XmlLiteralText,
-                [ClassificationTypeNames.RegexComment] = SemanticHighlightClassification.RegexComment,
-                [ClassificationTypeNames.RegexCharacterClass] = SemanticHighlightClassification.RegexCharacterClass,
+                [ClassificationTypeNames.XmlDocCommentAttributeName] =
+                    SemanticHighlightClassification.XmlDocCommentAttributeName,
+                [ClassificationTypeNames.XmlDocCommentAttributeQuotes] =
+                    SemanticHighlightClassification.XmlDocCommentAttributeQuotes,
+                [ClassificationTypeNames.XmlDocCommentAttributeValue] =
+                    SemanticHighlightClassification.XmlDocCommentAttributeValue,
+                [ClassificationTypeNames.XmlDocCommentCDataSection] =
+                    SemanticHighlightClassification.XmlDocCommentCDataSection,
+                [ClassificationTypeNames.XmlDocCommentComment] =
+                    SemanticHighlightClassification.XmlDocCommentComment,
+                [ClassificationTypeNames.XmlDocCommentDelimiter] =
+                    SemanticHighlightClassification.XmlDocCommentDelimiter,
+                [ClassificationTypeNames.XmlDocCommentEntityReference] =
+                    SemanticHighlightClassification.XmlDocCommentEntityReference,
+                [ClassificationTypeNames.XmlDocCommentName] =
+                    SemanticHighlightClassification.XmlDocCommentName,
+                [ClassificationTypeNames.XmlDocCommentProcessingInstruction] =
+                    SemanticHighlightClassification.XmlDocCommentProcessingInstruction,
+                [ClassificationTypeNames.XmlDocCommentText] =
+                    SemanticHighlightClassification.XmlDocCommentText,
+                [ClassificationTypeNames.XmlLiteralAttributeName] =
+                    SemanticHighlightClassification.XmlLiteralAttributeName,
+                [ClassificationTypeNames.XmlLiteralAttributeQuotes] =
+                    SemanticHighlightClassification.XmlLiteralAttributeQuotes,
+                [ClassificationTypeNames.XmlLiteralAttributeValue] =
+                    SemanticHighlightClassification.XmlLiteralAttributeValue,
+                [ClassificationTypeNames.XmlLiteralCDataSection] =
+                    SemanticHighlightClassification.XmlLiteralCDataSection,
+                [ClassificationTypeNames.XmlLiteralComment] =
+                    SemanticHighlightClassification.XmlLiteralComment,
+                [ClassificationTypeNames.XmlLiteralDelimiter] =
+                    SemanticHighlightClassification.XmlLiteralDelimiter,
+                [ClassificationTypeNames.XmlLiteralEmbeddedExpression] =
+                    SemanticHighlightClassification.XmlLiteralEmbeddedExpression,
+                [ClassificationTypeNames.XmlLiteralEntityReference] =
+                    SemanticHighlightClassification.XmlLiteralEntityReference,
+                [ClassificationTypeNames.XmlLiteralName] =
+                    SemanticHighlightClassification.XmlLiteralName,
+                [ClassificationTypeNames.XmlLiteralProcessingInstruction] =
+                    SemanticHighlightClassification.XmlLiteralProcessingInstruction,
+                [ClassificationTypeNames.XmlLiteralText] =
+                    SemanticHighlightClassification.XmlLiteralText,
+                [ClassificationTypeNames.RegexComment] =
+                    SemanticHighlightClassification.RegexComment,
+                [ClassificationTypeNames.RegexCharacterClass] =
+                    SemanticHighlightClassification.RegexCharacterClass,
                 [ClassificationTypeNames.RegexAnchor] = SemanticHighlightClassification.RegexAnchor,
-                [ClassificationTypeNames.RegexQuantifier] = SemanticHighlightClassification.RegexQuantifier,
-                [ClassificationTypeNames.RegexGrouping] = SemanticHighlightClassification.RegexGrouping,
-                [ClassificationTypeNames.RegexAlternation] = SemanticHighlightClassification.RegexAlternation,
+                [ClassificationTypeNames.RegexQuantifier] =
+                    SemanticHighlightClassification.RegexQuantifier,
+                [ClassificationTypeNames.RegexGrouping] =
+                    SemanticHighlightClassification.RegexGrouping,
+                [ClassificationTypeNames.RegexAlternation] =
+                    SemanticHighlightClassification.RegexAlternation,
                 [ClassificationTypeNames.RegexText] = SemanticHighlightClassification.RegexText,
-                [ClassificationTypeNames.RegexSelfEscapedCharacter] = SemanticHighlightClassification.RegexSelfEscapedCharacter,
-                [ClassificationTypeNames.RegexOtherEscape] = SemanticHighlightClassification.RegexOtherEscape,
+                [ClassificationTypeNames.RegexSelfEscapedCharacter] =
+                    SemanticHighlightClassification.RegexSelfEscapedCharacter,
+                [ClassificationTypeNames.RegexOtherEscape] =
+                    SemanticHighlightClassification.RegexOtherEscape,
             };
 
         public static readonly Dictionary<string, SemanticHighlightModifier> _modifierMap =
-            new()
-            {
-                [ClassificationTypeNames.StaticSymbol] = SemanticHighlightModifier.Static,
-            };
+            new() { [ClassificationTypeNames.StaticSymbol] = SemanticHighlightModifier.Static };
     }
 }

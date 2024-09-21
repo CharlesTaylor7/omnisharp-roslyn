@@ -33,11 +33,13 @@ namespace OmniSharp
         public CompositionHostBuilder(
             IServiceProvider serviceProvider,
             IEnumerable<Assembly> assemblies = null,
-            IEnumerable<ExportDescriptorProvider> exportDescriptorProviders = null)
+            IEnumerable<ExportDescriptorProvider> exportDescriptorProviders = null
+        )
         {
             _serviceProvider = serviceProvider;
             _assemblies = assemblies ?? Array.Empty<Assembly>();
-            _exportDescriptorProviders = exportDescriptorProviders ?? Array.Empty<ExportDescriptorProvider>();
+            _exportDescriptorProviders =
+                exportDescriptorProviders ?? Array.Empty<ExportDescriptorProvider>();
         }
 
         public CompositionHost Build(string workingDirectory)
@@ -46,7 +48,8 @@ namespace OmniSharp
             var memoryCache = _serviceProvider.GetRequiredService<IMemoryCache>();
             var loggerFactory = _serviceProvider.GetRequiredService<ILoggerFactory>();
             var assemblyLoader = _serviceProvider.GetRequiredService<IAssemblyLoader>();
-            var analyzerAssemblyLoader = _serviceProvider.GetRequiredService<IAnalyzerAssemblyLoader>();
+            var analyzerAssemblyLoader =
+                _serviceProvider.GetRequiredService<IAnalyzerAssemblyLoader>();
             var environment = _serviceProvider.GetRequiredService<IOmniSharpEnvironment>();
             var eventEmitter = _serviceProvider.GetRequiredService<IEventEmitter>();
             var dotNetCliService = _serviceProvider.GetRequiredService<IDotNetCliService>();
@@ -92,11 +95,14 @@ namespace OmniSharp
 
             var parts = _assemblies
                 .Where(a => a != null)
-                .Concat(new[]
-                {
-                    typeof(OmniSharpWorkspace).GetTypeInfo().Assembly, typeof(IRequest).GetTypeInfo().Assembly,
-                    typeof(FileSystemHelper).GetTypeInfo().Assembly
-                })
+                .Concat(
+                    new[]
+                    {
+                        typeof(OmniSharpWorkspace).GetTypeInfo().Assembly,
+                        typeof(IRequest).GetTypeInfo().Assembly,
+                        typeof(FileSystemHelper).GetTypeInfo().Assembly,
+                    }
+                )
                 .Distinct()
                 .SelectMany(a => SafeGetTypes(a))
                 .ToArray();
@@ -123,13 +129,18 @@ namespace OmniSharp
             IConfigurationRoot configuration,
             IEventEmitter eventEmitter,
             IServiceCollection services = null,
-            Action<ILoggingBuilder> configureLogging = null)
+            Action<ILoggingBuilder> configureLogging = null
+        )
         {
             services ??= new ServiceCollection();
 
             services.TryAddSingleton(_ => new ManualFileSystemWatcher());
-            services.TryAddSingleton<IFileSystemNotifier>(sp => sp.GetRequiredService<ManualFileSystemWatcher>());
-            services.TryAddSingleton<IFileSystemWatcher>(sp => sp.GetRequiredService<ManualFileSystemWatcher>());
+            services.TryAddSingleton<IFileSystemNotifier>(sp =>
+                sp.GetRequiredService<ManualFileSystemWatcher>()
+            );
+            services.TryAddSingleton<IFileSystemWatcher>(sp =>
+                sp.GetRequiredService<ManualFileSystemWatcher>()
+            );
 
             services.AddSingleton(environment);
             services.AddSingleton(eventEmitter);
@@ -141,7 +152,8 @@ namespace OmniSharp
             services.AddOptions();
 
             // Setup the options from configuration
-            services.Configure<OmniSharpOptions>(configuration)
+            services
+                .Configure<OmniSharpOptions>(configuration)
                 .PostConfigure<OmniSharpOptions>(OmniSharpOptions.PostConfigure);
             services.AddSingleton(configuration);
             services.AddSingleton<IConfiguration>(configuration);
@@ -153,7 +165,9 @@ namespace OmniSharp
                 MSBuildLocator.CreateDefault(
                     loggerFactory: sp.GetService<ILoggerFactory>(),
                     assemblyLoader: sp.GetService<IAssemblyLoader>(),
-                    configuration: configuration));
+                    configuration: configuration
+                )
+            );
 
             services.AddLogging(builder =>
             {
@@ -162,10 +176,17 @@ namespace OmniSharp
 
                 builder.AddFilter(
                     (category, logLevel) =>
-                        environment.LogLevel <= logLevel &&
-                        category.StartsWith("OmniSharp", StringComparison.OrdinalIgnoreCase) &&
-                        !category.Equals(workspaceInformationServiceName, StringComparison.OrdinalIgnoreCase) &&
-                        !category.Equals(projectEventForwarder, StringComparison.OrdinalIgnoreCase));
+                        environment.LogLevel <= logLevel
+                        && category.StartsWith("OmniSharp", StringComparison.OrdinalIgnoreCase)
+                        && !category.Equals(
+                            workspaceInformationServiceName,
+                            StringComparison.OrdinalIgnoreCase
+                        )
+                        && !category.Equals(
+                            projectEventForwarder,
+                            StringComparison.OrdinalIgnoreCase
+                        )
+                );
 
                 configureLogging?.Invoke(builder);
             });
@@ -228,9 +249,11 @@ namespace OmniSharp
         {
             foreach (var dependency in runtimeLibrary.Dependencies)
             {
-                if (dependency.Name == "OmniSharp.Abstractions" ||
-                    dependency.Name == "OmniSharp.Shared" ||
-                    dependency.Name == "OmniSharp.Roslyn")
+                if (
+                    dependency.Name == "OmniSharp.Abstractions"
+                    || dependency.Name == "OmniSharp.Shared"
+                    || dependency.Name == "OmniSharp.Roslyn"
+                )
                 {
                     return true;
                 }

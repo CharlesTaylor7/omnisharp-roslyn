@@ -15,7 +15,10 @@ namespace OmniSharp.Roslyn.CSharp.Services.Structure
         private readonly IEnumerable<ISyntaxFeaturesDiscover> _discovers;
 
         [ImportingConstructor]
-        public MembersAsTreeService(OmniSharpWorkspace workspace, [ImportMany] IEnumerable<ISyntaxFeaturesDiscover> featureDiscovers)
+        public MembersAsTreeService(
+            OmniSharpWorkspace workspace,
+            [ImportMany] IEnumerable<ISyntaxFeaturesDiscover> featureDiscovers
+        )
         {
             _workspace = workspace;
             _discovers = featureDiscovers;
@@ -26,7 +29,10 @@ namespace OmniSharp.Roslyn.CSharp.Services.Structure
             return new FileMemberTree()
             {
                 // To provide complete members tree for the document wait until all projects are loaded.
-                TopLevelTypeDefinitions = await StructureComputer.Compute(await _workspace.GetDocumentsFromFullProjectModelAsync(request.FileName), _discovers)
+                TopLevelTypeDefinitions = await StructureComputer.Compute(
+                    await _workspace.GetDocumentsFromFullProjectModelAsync(request.FileName),
+                    _discovers
+                ),
             };
         }
     }

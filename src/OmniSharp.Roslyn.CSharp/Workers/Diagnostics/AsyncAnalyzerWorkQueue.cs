@@ -16,7 +16,8 @@ namespace OmniSharp.Roslyn.CSharp.Workers.Diagnostics
         private readonly Queue _foreground = new();
         private readonly Queue _background = new();
         private readonly ILogger<AnalyzerWorkQueue> _logger;
-        private TaskCompletionSource<object?> _takeWorkWaiter = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        private TaskCompletionSource<object?> _takeWorkWaiter =
+            new(TaskCreationOptions.RunContinuationsAsynchronously);
 
         public AsyncAnalyzerWorkQueue(ILoggerFactory loggerFactory)
         {
@@ -65,8 +66,7 @@ namespace OmniSharp.Roslyn.CSharp.Workers.Diagnostics
                 {
                     if (_foreground.TryDequeue(out var documentId, out var cancellationTokenSource))
                     {
-                        return new QueueItem
-                        (
+                        return new QueueItem(
                             DocumentId: documentId,
                             CancellationToken: cancellationTokenSource.Token,
                             AnalyzerWorkType: AnalyzerWorkType.Foreground,
@@ -76,8 +76,7 @@ namespace OmniSharp.Roslyn.CSharp.Workers.Diagnostics
                     }
                     else if (_background.TryDequeue(out documentId, out cancellationTokenSource))
                     {
-                        return new QueueItem
-                        (
+                        return new QueueItem(
                             DocumentId: documentId,
                             CancellationToken: cancellationTokenSource.Token,
                             AnalyzerWorkType: AnalyzerWorkType.Background,
@@ -86,8 +85,14 @@ namespace OmniSharp.Roslyn.CSharp.Workers.Diagnostics
                         );
                     }
 
-                    if (_foreground.PendingCount == 0 && _background.PendingCount == 0 && _takeWorkWaiter.Task.IsCompleted)
-                        _takeWorkWaiter = new TaskCompletionSource<object?>(TaskCreationOptions.RunContinuationsAsynchronously);
+                    if (
+                        _foreground.PendingCount == 0
+                        && _background.PendingCount == 0
+                        && _takeWorkWaiter.Task.IsCompleted
+                    )
+                        _takeWorkWaiter = new TaskCompletionSource<object?>(
+                            TaskCreationOptions.RunContinuationsAsynchronously
+                        );
 
                     awaitTask = _takeWorkWaiter.Task;
                 }
@@ -101,7 +106,9 @@ namespace OmniSharp.Roslyn.CSharp.Workers.Diagnostics
                 }
                 else
                 {
-                    var tcs = new TaskCompletionSource<object?>(TaskCreationOptions.RunContinuationsAsynchronously);
+                    var tcs = new TaskCompletionSource<object?>(
+                        TaskCreationOptions.RunContinuationsAsynchronously
+                    );
 
                     using (cancellationToken.Register(() => tcs.SetResult(null)))
                     {
@@ -137,19 +144,23 @@ namespace OmniSharp.Roslyn.CSharp.Workers.Diagnostics
 
             if (cancellationToken == default)
             {
-                await waitForgroundTask.ConfigureAwait(false); 
+                await waitForgroundTask.ConfigureAwait(false);
 
                 return;
             }
 
-            var taskCompletion = new TaskCompletionSource<object?>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var taskCompletion = new TaskCompletionSource<object?>(
+                TaskCreationOptions.RunContinuationsAsynchronously
+            );
 
             using (cancellationToken.Register(() => taskCompletion.SetResult(null)))
             {
                 await Task.WhenAny(taskCompletion.Task, waitForgroundTask).ConfigureAwait(false);
 
                 if (!waitForgroundTask.IsCompleted)
-                    _logger.LogWarning($"Timeout before work got ready for foreground analysis queue. This is assertion to prevent complete api hang in case of error.");
+                    _logger.LogWarning(
+                        $"Timeout before work got ready for foreground analysis queue. This is assertion to prevent complete api hang in case of error."
+                    );
             }
         }
 
@@ -168,8 +179,7 @@ namespace OmniSharp.Roslyn.CSharp.Workers.Diagnostics
             return shouldEnqueue;
         }
 
-        public record QueueItem
-        (
+        public record QueueItem(
             DocumentId DocumentId,
             CancellationToken CancellationToken,
             AnalyzerWorkType AnalyzerWorkType,
@@ -182,7 +192,10 @@ namespace OmniSharp.Roslyn.CSharp.Workers.Diagnostics
             private readonly HashSet<DocumentId> _pendingHash = new();
             private readonly Queue<DocumentId> _pendingQueue = new();
             private readonly Dictionary<DocumentId, List<CancellationTokenSource>> _active = new();
-            private readonly List<(HashSet<DocumentId> DocumentIds, TaskCompletionSource<object?> TaskCompletionSource)> _waiters = new();
+            private readonly List<(
+                HashSet<DocumentId> DocumentIds,
+                TaskCompletionSource<object?> TaskCompletionSource
+            )> _waiters = new();
 
             public int PendingCount => _pendingQueue.Count;
 
@@ -210,11 +223,9 @@ namespace OmniSharp.Roslyn.CSharp.Workers.Diagnostics
                 }
             }
 
-            public bool IsEnqueued(DocumentId documentId) =>
-                _pendingHash.Contains(documentId);
+            public bool IsEnqueued(DocumentId documentId) => _pendingHash.Contains(documentId);
 
-            public bool IsActive(DocumentId documentId) =>
-                _active.ContainsKey(documentId);
+            public bool IsActive(DocumentId documentId) => _active.ContainsKey(documentId);
 
             public void Remove(DocumentId documentId)
             {
@@ -233,8 +244,11 @@ namespace OmniSharp.Roslyn.CSharp.Workers.Diagnostics
                     }
                 }
             }
-            
-            public bool TryDequeue([NotNullWhen(true)] out DocumentId? documentId, [NotNullWhen(true)] out CancellationTokenSource? cancellationTokenSource)
+
+            public bool TryDequeue(
+                [NotNullWhen(true)] out DocumentId? documentId,
+                [NotNullWhen(true)] out CancellationTokenSource? cancellationTokenSource
+            )
             {
                 if (_pendingQueue.Count > 0)
                 {
@@ -243,7 +257,8 @@ namespace OmniSharp.Roslyn.CSharp.Workers.Diagnostics
                     _pendingHash.Remove(documentId);
 
                     if (!_active.TryGetValue(documentId, out var cancellationTokenSources))
-                        _active[documentId] = cancellationTokenSources = new List<CancellationTokenSource>();
+                        _active[documentId] = cancellationTokenSources =
+                            new List<CancellationTokenSource>();
 
                     cancellationTokenSource = new CancellationTokenSource();
 
@@ -277,14 +292,18 @@ namespace OmniSharp.Roslyn.CSharp.Workers.Diagnostics
                     if (cancellationTokenSources.Count == 0)
                         _active.Remove(documentId);
 
-                    var isReenqueued = cancellationToken.IsCancellationRequested
+                    var isReenqueued =
+                        cancellationToken.IsCancellationRequested
                         && (_pendingHash.Contains(documentId) || _active.ContainsKey(documentId));
 
                     if (!isReenqueued)
                     {
                         foreach (var waiter in _waiters.ToList())
                         {
-                            if (waiter.DocumentIds.Remove(documentId) && waiter.DocumentIds.Count == 0)
+                            if (
+                                waiter.DocumentIds.Remove(documentId)
+                                && waiter.DocumentIds.Count == 0
+                            )
                             {
                                 waiter.TaskCompletionSource.SetResult(null);
 
@@ -306,7 +325,12 @@ namespace OmniSharp.Roslyn.CSharp.Workers.Diagnostics
 
                 if (waiter == default)
                 {
-                    waiter = (documentIds, new TaskCompletionSource<object?>(TaskCreationOptions.RunContinuationsAsynchronously));
+                    waiter = (
+                        documentIds,
+                        new TaskCompletionSource<object?>(
+                            TaskCreationOptions.RunContinuationsAsynchronously
+                        )
+                    );
 
                     _waiters.Add(waiter);
                 }

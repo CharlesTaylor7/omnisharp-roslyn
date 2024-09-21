@@ -12,18 +12,22 @@ namespace OmniSharp
     internal class ExtractInterfaceWorkspaceService : IOmniSharpExtractInterfaceOptionsService
     {
         [ImportingConstructor]
-        public ExtractInterfaceWorkspaceService()
-        {
-        }
+        public ExtractInterfaceWorkspaceService() { }
 
-        public Task<OmniSharpExtractInterfaceOptionsResult> GetExtractInterfaceOptionsAsync(List<ISymbol> extractableMembers, string defaultInterfaceName)
+        public Task<OmniSharpExtractInterfaceOptionsResult> GetExtractInterfaceOptionsAsync(
+            List<ISymbol> extractableMembers,
+            string defaultInterfaceName
+        )
         {
-            return Task.FromResult(new OmniSharpExtractInterfaceOptionsResult(
-                isCancelled: false,
-                extractableMembers.ToImmutableArray(),
-                defaultInterfaceName,
-                $"{defaultInterfaceName}.cs",
-                OmniSharpExtractInterfaceOptionsResult.OmniSharpExtractLocation.SameFile));
+            return Task.FromResult(
+                new OmniSharpExtractInterfaceOptionsResult(
+                    isCancelled: false,
+                    extractableMembers.ToImmutableArray(),
+                    defaultInterfaceName,
+                    $"{defaultInterfaceName}.cs",
+                    OmniSharpExtractInterfaceOptionsResult.OmniSharpExtractLocation.SameFile
+                )
+            );
         }
     }
 }

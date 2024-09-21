@@ -17,7 +17,12 @@ namespace TestUtility
             public string Directory { get; }
             public bool ShadowCopied { get; }
 
-            public TestProject(string name, string baseDirectory, string directory, bool shadowCopied)
+            public TestProject(
+                string name,
+                string baseDirectory,
+                string directory,
+                bool shadowCopied
+            )
             {
                 this.Name = name;
                 this.BaseDirectory = baseDirectory;
@@ -27,7 +32,9 @@ namespace TestUtility
 
             ~TestProject()
             {
-                throw new InvalidOperationException($"{nameof(ITestProject)}.{nameof(Dispose)}() not called for {this.Name}");
+                throw new InvalidOperationException(
+                    $"{nameof(ITestProject)}.{nameof(Dispose)}() not called for {this.Name}"
+                );
             }
 
             public string AddDisposableFile(string fileName, string contents = null)
@@ -43,15 +50,21 @@ namespace TestUtility
             {
                 if (_disposed)
                 {
-                    throw new InvalidOperationException($"{nameof(ITestProject)} for {this.Name} already disposed.");
+                    throw new InvalidOperationException(
+                        $"{nameof(ITestProject)} for {this.Name} already disposed."
+                    );
                 }
 
                 if (this.ShadowCopied)
                 {
-                    RunWithRetry(() => System.IO.Directory.Delete(this.BaseDirectory, recursive: true));
+                    RunWithRetry(
+                        () => System.IO.Directory.Delete(this.BaseDirectory, recursive: true)
+                    );
                     if (System.IO.Directory.Exists(this.BaseDirectory))
                     {
-                        throw new InvalidOperationException($"{nameof(ITestProject)} directory still exists: '{this.BaseDirectory}'");
+                        throw new InvalidOperationException(
+                            $"{nameof(ITestProject)} directory still exists: '{this.BaseDirectory}'"
+                        );
                     }
                 }
                 else
@@ -61,7 +74,9 @@ namespace TestUtility
                         RunWithRetry(() => File.Delete(filePath));
                         if (System.IO.File.Exists(filePath))
                         {
-                            throw new InvalidOperationException($"{nameof(ITestProject)} file still exists: '{filePath}'");
+                            throw new InvalidOperationException(
+                                $"{nameof(ITestProject)} file still exists: '{filePath}'"
+                            );
                         }
                     }
                 }

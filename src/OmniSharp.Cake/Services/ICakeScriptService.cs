@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using Cake.Scripting.Abstractions;
 using Microsoft.Extensions.Configuration;
@@ -33,7 +33,8 @@ namespace OmniSharp.Cake.Services
     {
         public ISet<string> References { get; }
 
-        public ReferencesChangedEventArgs(string scriptPath, ISet<string> references) : base(scriptPath)
+        public ReferencesChangedEventArgs(string scriptPath, ISet<string> references)
+            : base(scriptPath)
         {
             References = references ?? new HashSet<string>();
         }
@@ -43,7 +44,8 @@ namespace OmniSharp.Cake.Services
     {
         public IReadOnlyCollection<string> Usings { get; }
 
-        public UsingsChangedEventArgs(string scriptPath, IReadOnlyCollection<string> usings) : base(scriptPath)
+        public UsingsChangedEventArgs(string scriptPath, IReadOnlyCollection<string> usings)
+            : base(scriptPath)
         {
             Usings = usings ?? new List<string>();
         }

@@ -5,7 +5,5 @@
 
 namespace DotNetStdSigned
 {
-    public class Callee
-    {
-    }
+    public class Callee { }
 }

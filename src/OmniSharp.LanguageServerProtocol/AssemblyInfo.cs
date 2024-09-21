@@ -1,5 +1,5 @@
-﻿using OmniSharp;
 using System.Runtime.CompilerServices;
+using OmniSharp;
 
 [assembly: InternalsVisibleTo("TestUtility" + OmniSharpPublicKey.Key)]
 [assembly: InternalsVisibleTo("OmniSharp" + OmniSharpPublicKey.Key)]

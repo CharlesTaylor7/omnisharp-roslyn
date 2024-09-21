@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 
@@ -24,13 +24,20 @@ namespace OmniSharp.Services
             IsEmpty = true;
         }
 
-        private DotNetInfo(string version, string osName, string osVersion, string osPlatform, string rid, string basePath, string sdkVersion, string sdksPath)
+        private DotNetInfo(
+            string version,
+            string osName,
+            string osVersion,
+            string osPlatform,
+            string rid,
+            string basePath,
+            string sdkVersion,
+            string sdksPath
+        )
         {
             IsEmpty = false;
 
-            Version = SemanticVersion.TryParse(version, out var value)
-                ? value
-                : null;
+            Version = SemanticVersion.TryParse(version, out var value) ? value : null;
 
             OSName = osName;
             OSVersion = osVersion;
@@ -38,9 +45,7 @@ namespace OmniSharp.Services
             RID = rid;
             BasePath = basePath;
 
-            SdkVersion = SemanticVersion.TryParse(sdkVersion, out var sdkValue)
-                ? sdkValue
-                : null;
+            SdkVersion = SemanticVersion.TryParse(sdkVersion, out var sdkValue) ? sdkValue : null;
             SdksPath = sdksPath;
         }
 
@@ -68,34 +73,55 @@ namespace OmniSharp.Services
                     var name = line.Substring(0, colonIndex).Trim();
                     var value = line.Substring(colonIndex + 1).Trim();
 
-                    if (string.IsNullOrEmpty(version) && name.Equals("Version", StringComparison.OrdinalIgnoreCase))
+                    if (
+                        string.IsNullOrEmpty(version)
+                        && name.Equals("Version", StringComparison.OrdinalIgnoreCase)
+                    )
                     {
                         version = value;
                     }
-                    else if (string.IsNullOrEmpty(osName) && name.Equals("OS Name", StringComparison.OrdinalIgnoreCase))
+                    else if (
+                        string.IsNullOrEmpty(osName)
+                        && name.Equals("OS Name", StringComparison.OrdinalIgnoreCase)
+                    )
                     {
                         osName = value;
                     }
-                    else if (string.IsNullOrEmpty(osVersion) && name.Equals("OS Version", StringComparison.OrdinalIgnoreCase))
+                    else if (
+                        string.IsNullOrEmpty(osVersion)
+                        && name.Equals("OS Version", StringComparison.OrdinalIgnoreCase)
+                    )
                     {
                         osVersion = value;
                     }
-                    else if (string.IsNullOrEmpty(osPlatform) && name.Equals("OS Platform", StringComparison.OrdinalIgnoreCase))
+                    else if (
+                        string.IsNullOrEmpty(osPlatform)
+                        && name.Equals("OS Platform", StringComparison.OrdinalIgnoreCase)
+                    )
                     {
                         osPlatform = value;
                     }
-                    else if (string.IsNullOrEmpty(rid) && name.Equals("RID", StringComparison.OrdinalIgnoreCase))
+                    else if (
+                        string.IsNullOrEmpty(rid)
+                        && name.Equals("RID", StringComparison.OrdinalIgnoreCase)
+                    )
                     {
                         rid = value;
                     }
-                    else if (string.IsNullOrEmpty(basePath) && name.Equals("Base Path", StringComparison.OrdinalIgnoreCase))
+                    else if (
+                        string.IsNullOrEmpty(basePath)
+                        && name.Equals("Base Path", StringComparison.OrdinalIgnoreCase)
+                    )
                     {
                         basePath = value;
                     }
                 }
                 else if (string.IsNullOrEmpty(sdkVersion))
                 {
-                    var getSdkVersionAndPath = new Regex(@"^\s*(\d+\.\d+\.\d+)\s\[(.*)\]\s*$", RegexOptions.Multiline);
+                    var getSdkVersionAndPath = new Regex(
+                        @"^\s*(\d+\.\d+\.\d+)\s\[(.*)\]\s*$",
+                        RegexOptions.Multiline
+                    );
                     var match = getSdkVersionAndPath.Match(line);
 
                     if (match.Success)
@@ -106,19 +132,30 @@ namespace OmniSharp.Services
                 }
             }
 
-            if (string.IsNullOrWhiteSpace(version) &&
-                string.IsNullOrWhiteSpace(osName) &&
-                string.IsNullOrWhiteSpace(osVersion) &&
-                string.IsNullOrWhiteSpace(osPlatform) &&
-                string.IsNullOrWhiteSpace(rid) &&
-                string.IsNullOrWhiteSpace(basePath) &&
-                string.IsNullOrWhiteSpace(sdkVersion) &&
-                string.IsNullOrWhiteSpace(sdksPath))
+            if (
+                string.IsNullOrWhiteSpace(version)
+                && string.IsNullOrWhiteSpace(osName)
+                && string.IsNullOrWhiteSpace(osVersion)
+                && string.IsNullOrWhiteSpace(osPlatform)
+                && string.IsNullOrWhiteSpace(rid)
+                && string.IsNullOrWhiteSpace(basePath)
+                && string.IsNullOrWhiteSpace(sdkVersion)
+                && string.IsNullOrWhiteSpace(sdksPath)
+            )
             {
                 return Empty;
             }
 
-            return new DotNetInfo(version, osName, osVersion, osPlatform, rid, basePath, sdkVersion, sdksPath);
+            return new DotNetInfo(
+                version,
+                osName,
+                osVersion,
+                osPlatform,
+                rid,
+                basePath,
+                sdkVersion,
+                sdksPath
+            );
         }
     }
 }

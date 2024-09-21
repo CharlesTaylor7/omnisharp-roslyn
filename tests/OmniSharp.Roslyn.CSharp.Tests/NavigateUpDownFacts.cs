@@ -12,20 +12,22 @@ namespace OmniSharp.Roslyn.CSharp.Tests
     enum Direction
     {
         Up,
-        Down
+        Down,
     }
 
     public class NavigateUpDownFacts : AbstractTestFixture
     {
-        public NavigateUpDownFacts(ITestOutputHelper output, SharedOmniSharpHostFixture sharedOmniSharpHostFixture)
-            : base(output, sharedOmniSharpHostFixture)
-        {
-        }
+        public NavigateUpDownFacts(
+            ITestOutputHelper output,
+            SharedOmniSharpHostFixture sharedOmniSharpHostFixture
+        )
+            : base(output, sharedOmniSharpHostFixture) { }
 
         [Fact]
         public async Task NavigateUp_ReturnsCorrectPositionFromMethodBodyToMethodName()
         {
-            const string fileContent = @"using System;
+            const string fileContent =
+                @"using System;
                 using System.Collections.Generic;
                 using System.Threading.Tasks;
                 using Microsoft.AspNetCore.Mvc;
@@ -52,7 +54,8 @@ namespace OmniSharp.Roslyn.CSharp.Tests
         [Fact]
         public async Task NavigateUp_ReturnsCorrectPositionFromMethodNameToPreviousMethodName()
         {
-            const string fileContent = @"using System;
+            const string fileContent =
+                @"using System;
                 using System.Collections.Generic;
                 using System.Threading.Tasks;
                 using Microsoft.AspNetCore.Mvc;
@@ -86,7 +89,8 @@ namespace OmniSharp.Roslyn.CSharp.Tests
         [Fact]
         public async Task NavigateUp_ReturnsCorrectPositionFromMethodNameToPreviousField()
         {
-            const string fileContent = @"using System;
+            const string fileContent =
+                @"using System;
                 using System.Collections.Generic;
                 using System.Threading.Tasks;
                 using Microsoft.AspNetCore.Mvc;
@@ -122,7 +126,8 @@ namespace OmniSharp.Roslyn.CSharp.Tests
         [Fact]
         public async Task NavigateUp_ReturnsCorrectPositionFromPropertyBodyToPropertyName()
         {
-            const string fileContent = @"using System;
+            const string fileContent =
+                @"using System;
                 using System.Collections.Generic;
                 using System.Threading.Tasks;
                 using Microsoft.AspNetCore.Mvc;
@@ -170,7 +175,8 @@ namespace OmniSharp.Roslyn.CSharp.Tests
         [Fact]
         public async Task NavigateUp_ReturnsCorrectPositionFromFirstMemberToEnclosingClass()
         {
-            const string fileContent = @"using System;
+            const string fileContent =
+                @"using System;
                 using System.Collections.Generic;
                 using System.Threading.Tasks;
                 using Microsoft.AspNetCore.Mvc;
@@ -205,7 +211,8 @@ namespace OmniSharp.Roslyn.CSharp.Tests
         [Fact]
         public async Task NavigateUp_ReturnsCorrectPositionFromClassToPreviousClassLastMember()
         {
-            const string fileContent = @"using System;
+            const string fileContent =
+                @"using System;
                 using System.Collections.Generic;
                 using System.Threading.Tasks;
                 using Microsoft.AspNetCore.Mvc;
@@ -246,7 +253,8 @@ namespace OmniSharp.Roslyn.CSharp.Tests
         [Fact]
         public async Task NavigateUp_ReturnsCorrectPositionFromNestedClassConstructorToPreviousField()
         {
-            const string fileContent = @"using System;
+            const string fileContent =
+                @"using System;
                 using System.Collections.Generic;
                 using System.Threading.Tasks;
                 using Microsoft.AspNetCore.Mvc;
@@ -292,7 +300,8 @@ namespace OmniSharp.Roslyn.CSharp.Tests
         [Fact]
         public async Task NavigateUp_ReturnsCorrectPositionFromNestedClassNameToEnclosingClassPreviousMember()
         {
-            const string fileContent = @"using System;
+            const string fileContent =
+                @"using System;
                 using System.Collections.Generic;
                 using System.Threading.Tasks;
                 using Microsoft.AspNetCore.Mvc;
@@ -343,7 +352,8 @@ namespace OmniSharp.Roslyn.CSharp.Tests
         [Fact]
         public async Task NavigateUp_ReturnsCorrectPositionFromBeforeFirstClassToNoChange()
         {
-            const string fileContent = @"using System;
+            const string fileContent =
+                @"using System;
                 using System.Collections.Generic;
                 using System.Threading.Tasks;
                 using Microsoft.AspNetCore.Mvc;
@@ -373,7 +383,8 @@ namespace OmniSharp.Roslyn.CSharp.Tests
         [Fact]
         public async Task NavigateDown_ReturnsCorrectPositionFromMethodBodyToNextMethodName()
         {
-            const string fileContent = @"using System;
+            const string fileContent =
+                @"using System;
                 using System.Collections.Generic;
                 using System.Threading.Tasks;
                 using Microsoft.AspNetCore.Mvc;
@@ -402,7 +413,8 @@ namespace OmniSharp.Roslyn.CSharp.Tests
         [Fact]
         public async Task NavigateDown_ReturnsCorrectPositionFromMethodNameToNextMethodName()
         {
-            const string fileContent = @"using System;
+            const string fileContent =
+                @"using System;
                 using System.Collections.Generic;
                 using System.Threading.Tasks;
                 using Microsoft.AspNetCore.Mvc;
@@ -436,7 +448,8 @@ namespace OmniSharp.Roslyn.CSharp.Tests
         [Fact]
         public async Task NavigateDown_ReturnsCorrectPositionFromPropertyBodyToNextMemberName()
         {
-            const string fileContent = @"using System;
+            const string fileContent =
+                @"using System;
                 using System.Collections.Generic;
                 using System.Threading.Tasks;
                 using Microsoft.AspNetCore.Mvc;
@@ -481,11 +494,11 @@ namespace OmniSharp.Roslyn.CSharp.Tests
             await AssertEndPosition(fileContent, Direction.Down);
         }
 
-
         [Fact]
         public async Task NavigateDown_ReturnsCorrectPositionFromFieldToNextMethodName()
         {
-            const string fileContent = @"using System;
+            const string fileContent =
+                @"using System;
                 using System.Collections.Generic;
                 using System.Threading.Tasks;
                 using Microsoft.AspNetCore.Mvc;
@@ -521,7 +534,8 @@ namespace OmniSharp.Roslyn.CSharp.Tests
         [Fact]
         public async Task NavigateDown_ReturnsCorrectPositionFromClassNameToNextMember()
         {
-            const string fileContent = @"using System;
+            const string fileContent =
+                @"using System;
                 using System.Collections.Generic;
                 using System.Threading.Tasks;
                 using Microsoft.AspNetCore.Mvc;
@@ -554,7 +568,8 @@ namespace OmniSharp.Roslyn.CSharp.Tests
         [Fact]
         public async Task NavigateDown_ReturnsCorrectPositionFromClassLastMemberToNextClass()
         {
-            const string fileContent = @"using System;
+            const string fileContent =
+                @"using System;
                 using System.Collections.Generic;
                 using System.Threading.Tasks;
                 using Microsoft.AspNetCore.Mvc;
@@ -595,7 +610,8 @@ namespace OmniSharp.Roslyn.CSharp.Tests
         [Fact]
         public async Task NavigateDown_ReturnsCorrectPositionFromNestedClassConstructorToNextField()
         {
-            const string fileContent = @"using System;
+            const string fileContent =
+                @"using System;
                 using System.Collections.Generic;
                 using System.Threading.Tasks;
                 using Microsoft.AspNetCore.Mvc;
@@ -644,7 +660,8 @@ namespace OmniSharp.Roslyn.CSharp.Tests
         [Fact]
         public async Task NavigateDown_ReturnsCorrectPositionFromNestedClassNameToEnclosingClassNextMember()
         {
-            const string fileContent = @"using System;
+            const string fileContent =
+                @"using System;
                 using System.Collections.Generic;
                 using System.Threading.Tasks;
                 using Microsoft.AspNetCore.Mvc;
@@ -695,7 +712,8 @@ namespace OmniSharp.Roslyn.CSharp.Tests
         [Fact]
         public async Task NavigateDown_ReturnsCorrectPositionFromLastClassLastMemberToNoChange()
         {
-            const string fileContent = @"using System;
+            const string fileContent =
+                @"using System;
                 using System.Collections.Generic;
                 using System.Threading.Tasks;
                 using Microsoft.AspNetCore.Mvc;
@@ -733,7 +751,13 @@ namespace OmniSharp.Roslyn.CSharp.Tests
             var endPoint = testFile.Content.GetPointFromPosition(end);
 
             SharedOmniSharpTestHost.AddFilesToWorkspace(testFile);
-            var response = await SendRequest(SharedOmniSharpTestHost, testFile, startPoint.Line, startPoint.Offset, direction);
+            var response = await SendRequest(
+                SharedOmniSharpTestHost,
+                testFile,
+                startPoint.Line,
+                startPoint.Offset,
+                direction
+            );
 
             Assert.Equal(endPoint.Line, response.Line);
             Assert.Equal(endPoint.Offset, response.Column);
@@ -744,37 +768,42 @@ namespace OmniSharp.Roslyn.CSharp.Tests
             TestFile testFile,
             int startLine,
             int startColumn,
-            Direction direction)
+            Direction direction
+        )
         {
             switch (direction)
             {
                 case Direction.Up:
+                {
+                    var requestHandler = host.GetRequestHandler<NavigateUpService>(
+                        OmniSharpEndpoints.NavigateUp
+                    );
+                    var request = new NavigateUpRequest
                     {
-                        var requestHandler = host.GetRequestHandler<NavigateUpService>(OmniSharpEndpoints.NavigateUp);
-                        var request = new NavigateUpRequest
-                        {
-                            Line = startLine,
-                            Column = startColumn,
-                            FileName = testFile.FileName,
-                            Buffer = testFile.Content.Code
-                        };
+                        Line = startLine,
+                        Column = startColumn,
+                        FileName = testFile.FileName,
+                        Buffer = testFile.Content.Code,
+                    };
 
-                        return await requestHandler.Handle(request);
-                    }
+                    return await requestHandler.Handle(request);
+                }
 
                 case Direction.Down:
+                {
+                    var requestHandler = host.GetRequestHandler<NavigateDownService>(
+                        OmniSharpEndpoints.NavigateDown
+                    );
+                    var request = new NavigateDownRequest
                     {
-                        var requestHandler = host.GetRequestHandler<NavigateDownService>(OmniSharpEndpoints.NavigateDown);
-                        var request = new NavigateDownRequest
-                        {
-                            Line = startLine,
-                            Column = startColumn,
-                            FileName = testFile.FileName,
-                            Buffer = testFile.Content.Code
-                        };
+                        Line = startLine,
+                        Column = startColumn,
+                        FileName = testFile.FileName,
+                        Buffer = testFile.Content.Code,
+                    };
 
-                        return await requestHandler.Handle(request);
-                    }
+                    return await requestHandler.Handle(request);
+                }
             }
 
             return null;

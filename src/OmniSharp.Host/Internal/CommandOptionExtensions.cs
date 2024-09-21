@@ -18,7 +18,8 @@ namespace OmniSharp.Internal
 
         public static bool GetValueOrDefault(this CommandOption opt, bool defaultValue)
         {
-            return opt.Value()?.Equals("on", StringComparison.OrdinalIgnoreCase) == true || defaultValue;
+            return opt.Value()?.Equals("on", StringComparison.OrdinalIgnoreCase) == true
+                || defaultValue;
         }
     }
 }

@@ -10,12 +10,18 @@ namespace OmniSharp.LanguageServerProtocol
 {
     public class RequestHandlers : IEnumerable<RequestHandlerCollection>
     {
-        private readonly IEnumerable<Lazy<IRequestHandler, OmniSharpRequestHandlerMetadata>> _requestHandlers;
-        private readonly IEnumerable<(string language, TextDocumentSelector selector)> _documentSelectors;
+        private readonly IEnumerable<
+            Lazy<IRequestHandler, OmniSharpRequestHandlerMetadata>
+        > _requestHandlers;
+        private readonly IEnumerable<(
+            string language,
+            TextDocumentSelector selector
+        )> _documentSelectors;
 
         public RequestHandlers(
             IEnumerable<Lazy<IRequestHandler, OmniSharpRequestHandlerMetadata>> requestHandlers,
-            IEnumerable<(string language, TextDocumentSelector selector)> documentSelectors)
+            IEnumerable<(string language, TextDocumentSelector selector)> documentSelectors
+        )
         {
             _requestHandlers = requestHandlers;
             _documentSelectors = documentSelectors;
@@ -26,9 +32,11 @@ namespace OmniSharp.LanguageServerProtocol
             return _documentSelectors
                 .Select(documentSelector => new RequestHandlerCollection(
                     documentSelector.language,
-                    _requestHandlers.Where(z => z.Metadata.Language == documentSelector.language).Select(z => z.Value),
-                    documentSelector.selector)
-                )
+                    _requestHandlers
+                        .Where(z => z.Metadata.Language == documentSelector.language)
+                        .Select(z => z.Value),
+                    documentSelector.selector
+                ))
                 .GetEnumerator();
         }
 
@@ -37,10 +45,7 @@ namespace OmniSharp.LanguageServerProtocol
         {
             foreach (var group in this)
             {
-                yield return (
-                    group.DocumentSelector,
-                    SingleOrDefault(group.OfType<T>())
-                );
+                yield return (group.DocumentSelector, SingleOrDefault(group.OfType<T>()));
             }
         }
 
@@ -58,7 +63,12 @@ namespace OmniSharp.LanguageServerProtocol
             }
         }
 
-        public IEnumerable<(TextDocumentSelector selector, T handler, T2 handler2, T3 handler3)> OfType<T, T2, T3>()
+        public IEnumerable<(
+            TextDocumentSelector selector,
+            T handler,
+            T2 handler2,
+            T3 handler3
+        )> OfType<T, T2, T3>()
             where T : IRequestHandler
             where T2 : IRequestHandler
             where T3 : IRequestHandler
@@ -74,7 +84,13 @@ namespace OmniSharp.LanguageServerProtocol
             }
         }
 
-        public IEnumerable<(TextDocumentSelector selector, T handler, T2 handler2, T3 handler3, T4 handler4)> OfType<T, T2, T3, T4>()
+        public IEnumerable<(
+            TextDocumentSelector selector,
+            T handler,
+            T2 handler2,
+            T3 handler3,
+            T4 handler4
+        )> OfType<T, T2, T3, T4>()
             where T : IRequestHandler
             where T2 : IRequestHandler
             where T3 : IRequestHandler

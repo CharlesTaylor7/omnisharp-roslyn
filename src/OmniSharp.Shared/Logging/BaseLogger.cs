@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Microsoft.Extensions.Logging;
 using OmniSharp.Utilities;
 
@@ -14,7 +14,11 @@ namespace OmniSharp.Logging
         private static readonly string s_padding = new string(' ', 8);
         private static readonly string s_newLinePlusPadding = Environment.NewLine + s_padding;
 
-        protected BaseLogger(string categoryName, Func<string, LogLevel, bool> filter = null, bool addHeader = true)
+        protected BaseLogger(
+            string categoryName,
+            Func<string, LogLevel, bool> filter = null,
+            bool addHeader = true
+        )
         {
             this.CategoryName = categoryName;
             this._filter = filter;
@@ -40,7 +44,12 @@ namespace OmniSharp.Logging
                         builder.Append(s_padding);
                         var length = builder.Length;
                         builder.Append(messageText);
-                        builder.Replace(Environment.NewLine, s_newLinePlusPadding, length, messageText.Length);
+                        builder.Replace(
+                            Environment.NewLine,
+                            s_newLinePlusPadding,
+                            length,
+                            messageText.Length
+                        );
                     }
                     else
                     {
@@ -87,7 +96,13 @@ namespace OmniSharp.Logging
             }
         }
 
-        public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)
+        public void Log<TState>(
+            LogLevel logLevel,
+            EventId eventId,
+            TState state,
+            Exception exception,
+            Func<TState, Exception, string> formatter
+        )
         {
             var messageText = formatter(state, exception);
             if (!string.IsNullOrEmpty(messageText) || exception != null)

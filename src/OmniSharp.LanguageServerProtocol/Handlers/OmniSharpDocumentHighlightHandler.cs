@@ -16,22 +16,35 @@ namespace OmniSharp.LanguageServerProtocol.Handlers
     {
         public static IEnumerable<IJsonRpcHandler> Enumerate(RequestHandlers handlers)
         {
-            foreach (var (selector, handler) in handlers
-                .OfType<Mef.IRequestHandler<FindUsagesRequest, QuickFixResponse>>())
+            foreach (
+                var (selector, handler) in handlers.OfType<Mef.IRequestHandler<
+                    FindUsagesRequest,
+                    QuickFixResponse
+                >>()
+            )
                 if (handler != null)
                     yield return new OmniSharpDocumentHighlightHandler(handler, selector);
         }
 
-        private readonly Mef.IRequestHandler<FindUsagesRequest, QuickFixResponse> _findUsagesHandler;
+        private readonly Mef.IRequestHandler<
+            FindUsagesRequest,
+            QuickFixResponse
+        > _findUsagesHandler;
         private readonly TextDocumentSelector _documentSelector;
 
-        public OmniSharpDocumentHighlightHandler(Mef.IRequestHandler<FindUsagesRequest, QuickFixResponse> findUsagesHandler, TextDocumentSelector documentSelector)
+        public OmniSharpDocumentHighlightHandler(
+            Mef.IRequestHandler<FindUsagesRequest, QuickFixResponse> findUsagesHandler,
+            TextDocumentSelector documentSelector
+        )
         {
             _findUsagesHandler = findUsagesHandler;
             _documentSelector = documentSelector;
         }
 
-        public override async Task<DocumentHighlightContainer> Handle(DocumentHighlightParams request, CancellationToken token)
+        public override async Task<DocumentHighlightContainer> Handle(
+            DocumentHighlightParams request,
+            CancellationToken token
+        )
         {
             // TODO: Utilize Roslyn ExternalAccess to take advantage of HighlightingService.
 
@@ -41,7 +54,7 @@ namespace OmniSharp.LanguageServerProtocol.Handlers
                 Column = Convert.ToInt32(request.Position.Character),
                 Line = Convert.ToInt32(request.Position.Line),
                 OnlyThisFile = true,
-                ExcludeDefinition = false
+                ExcludeDefinition = false,
             };
 
             var omnisharpResponse = await _findUsagesHandler.Handle(omnisharpRequest);
@@ -51,14 +64,19 @@ namespace OmniSharp.LanguageServerProtocol.Handlers
                 return new DocumentHighlightContainer();
             }
 
-            return new DocumentHighlightContainer(omnisharpResponse.QuickFixes.Select(x => new DocumentHighlight
-            {
-                Kind = DocumentHighlightKind.Read,
-                Range = x.ToRange()
-            }));
+            return new DocumentHighlightContainer(
+                omnisharpResponse.QuickFixes.Select(x => new DocumentHighlight
+                {
+                    Kind = DocumentHighlightKind.Read,
+                    Range = x.ToRange(),
+                })
+            );
         }
 
-        protected override DocumentHighlightRegistrationOptions CreateRegistrationOptions(DocumentHighlightCapability capability, ClientCapabilities clientCapabilities)
+        protected override DocumentHighlightRegistrationOptions CreateRegistrationOptions(
+            DocumentHighlightCapability capability,
+            ClientCapabilities clientCapabilities
+        )
         {
             return new DocumentHighlightRegistrationOptions()
             {

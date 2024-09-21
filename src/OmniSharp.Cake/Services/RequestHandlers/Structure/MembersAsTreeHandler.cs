@@ -1,4 +1,4 @@
-﻿using System.Composition;
+using System.Composition;
 using System.Threading.Tasks;
 using OmniSharp.Cake.Extensions;
 using OmniSharp.Mef;
@@ -10,13 +10,13 @@ namespace OmniSharp.Cake.Services.RequestHandlers.Structure
     public class MembersAsTreeHandler : CakeRequestHandler<MembersTreeRequest, FileMemberTree>
     {
         [ImportingConstructor]
-        public MembersAsTreeHandler(
-            OmniSharpWorkspace workspace) 
-            : base(workspace)
-        {
-        }
+        public MembersAsTreeHandler(OmniSharpWorkspace workspace)
+            : base(workspace) { }
 
-        protected override Task<FileMemberTree> TranslateResponse(FileMemberTree response, MembersTreeRequest request)
+        protected override Task<FileMemberTree> TranslateResponse(
+            FileMemberTree response,
+            MembersTreeRequest request
+        )
         {
             return response.TranslateAsync(Workspace, request);
         }

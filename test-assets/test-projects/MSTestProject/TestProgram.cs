@@ -39,9 +39,10 @@ namespace Main.Test
         [TestMethod]
         public void CheckStandardOutput()
         {
-            int a = 1, b = 1;
+            int a = 1,
+                b = 1;
             Console.WriteLine($"a = {a}, b = {b}");
-            Assert.AreEqual(a,b);
+            Assert.AreEqual(a, b);
         }
 
         [TestMethod]
@@ -50,25 +51,16 @@ namespace Main.Test
             Assert.AreEqual(TestContext.Properties["TestRunSetting"].ToString(), "CorrectValue");
         }
 
-        private void UtilityFunction()
-        {
-
-        }
+        private void UtilityFunction() { }
 
         private class NestedClass
         {
-            public void M()
-            {
-
-            }
+            public void M() { }
         }
     }
 
     public class NoTests
     {
-        public void M()
-        {
-
-        }
+        public void M() { }
     }
 }

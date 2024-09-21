@@ -21,9 +21,17 @@ namespace OmniSharp.Roslyn.CSharp.Services.Navigation
 
         public Task<QuickFixResponse> Handle(GotoFileRequest request)
         {
-            var docs = _workspace.CurrentSolution.Projects.SelectMany(project => project.Documents).
-                GroupBy(x => x.FilePath). //group in case same file is added to multiple projects
-                Select(x => new QuickFix { FileName = x.Key, Text = x.First().Name, Line = 1, Column = 1 });
+            var docs = _workspace
+                .CurrentSolution.Projects.SelectMany(project => project.Documents)
+                .GroupBy(x => x.FilePath)
+                . //group in case same file is added to multiple projects
+                Select(x => new QuickFix
+                {
+                    FileName = x.Key,
+                    Text = x.First().Name,
+                    Line = 1,
+                    Column = 1,
+                });
 
             return Task.FromResult(new QuickFixResponse(docs));
         }

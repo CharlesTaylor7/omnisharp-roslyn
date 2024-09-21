@@ -17,7 +17,8 @@ namespace OmniSharp.Cake.Tests
     {
         private readonly ILogger _logger;
 
-        public AutoCompleteFacts(ITestOutputHelper testOutput) : base(testOutput)
+        public AutoCompleteFacts(ITestOutputHelper testOutput)
+            : base(testOutput)
         {
             _logger = LoggerFactory.CreateLogger<AutoCompleteFacts>();
         }
@@ -30,16 +31,29 @@ namespace OmniSharp.Cake.Tests
             const string input = @"Task$$";
 
             var completions = await FindCompletionsAsync(input, wantSnippet: true);
-            ContainsCompletions(completions.Select(c => c.DisplayText).Take(1), "Task(string name)");
+            ContainsCompletions(
+                completions.Select(c => c.DisplayText).Take(1),
+                "Task(string name)"
+            );
         }
 
-
-        private async Task<IEnumerable<AutoCompleteResponse>> FindCompletionsAsync(string source, bool wantSnippet = false)
+        private async Task<IEnumerable<AutoCompleteResponse>> FindCompletionsAsync(
+            string source,
+            bool wantSnippet = false
+        )
         {
-            using (var testProject = await TestAssets.Instance.GetTestProjectAsync("CakeProject", shadowCopy : false))
+            using (
+                var testProject = await TestAssets.Instance.GetTestProjectAsync(
+                    "CakeProject",
+                    shadowCopy: false
+                )
+            )
             using (var host = CreateOmniSharpHost(testProject.Directory))
             {
-                var testFile = new TestFile(Path.Combine(testProject.Directory, "build.cake"), source);
+                var testFile = new TestFile(
+                    Path.Combine(testProject.Directory, "build.cake"),
+                    source
+                );
                 var point = testFile.Content.GetPointFromPosition();
 
                 var request = new AutoCompleteRequest
@@ -51,7 +65,7 @@ namespace OmniSharp.Cake.Tests
                     WordToComplete = GetPartialWord(testFile.Content),
                     WantMethodHeader = true,
                     WantSnippet = wantSnippet,
-                    WantReturnType = true
+                    WantReturnType = true,
                 };
 
                 var updateBufferRequest = new UpdateBufferRequest
@@ -60,7 +74,7 @@ namespace OmniSharp.Cake.Tests
                     Column = request.Column,
                     FileName = request.FileName,
                     Line = request.Line,
-                    FromDisk = false
+                    FromDisk = false,
                 };
 
                 await GetUpdateBufferHandler(host).Handle(updateBufferRequest);

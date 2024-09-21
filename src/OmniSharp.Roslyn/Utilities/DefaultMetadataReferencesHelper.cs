@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -18,13 +18,10 @@ namespace OmniSharp.Roslyn.Utilities
                 typeof(Stack<>).GetTypeInfo().Assembly,
                 typeof(Lazy<,>).GetTypeInfo().Assembly,
                 FromName("System.Runtime"),
-                FromName("mscorlib")
+                FromName("mscorlib"),
             };
 
-           return assemblies
-                .Where(a => a != null)
-                .Select(a => a.Location)
-                .Distinct();
+            return assemblies.Where(a => a != null).Select(a => a.Location).Distinct();
 
             Assembly FromName(string assemblyName)
             {

@@ -21,9 +21,24 @@ namespace OmniSharp.Roslyn.CSharp.Workers.Formatting
 {
     public static class FormattingWorker
     {
-        public static async Task<IEnumerable<LinePositionSpanTextChange>> GetFormattingChangesAfterKeystroke(Document document, int position, char character, OmniSharpOptions omnisharpOptions)
+        public static async Task<
+            IEnumerable<LinePositionSpanTextChange>
+        > GetFormattingChangesAfterKeystroke(
+            Document document,
+            int position,
+            char character,
+            OmniSharpOptions omnisharpOptions
+        )
         {
-            if (await GetDocumentationCommentChanges(document, position, character, omnisharpOptions) is LinePositionSpanTextChange change)
+            if (
+                await GetDocumentationCommentChanges(
+                    document,
+                    position,
+                    character,
+                    omnisharpOptions
+                )
+                is LinePositionSpanTextChange change
+            )
             {
                 return new[] { change };
             }
@@ -36,7 +51,12 @@ namespace OmniSharp.Roslyn.CSharp.Workers.Formatting
                 var node = FindFormatTarget(root!, position);
                 if (node != null)
                 {
-                    return await GetFormattingChanges(document, node.FullSpan.Start, node.FullSpan.End, omnisharpOptions);
+                    return await GetFormattingChanges(
+                        document,
+                        node.FullSpan.Start,
+                        node.FullSpan.End,
+                        omnisharpOptions
+                    );
                 }
             }
 
@@ -63,13 +83,13 @@ namespace OmniSharp.Roslyn.CSharp.Workers.Formatting
                 // just the parent (XYZDeclaration etc)
                 case SyntaxKind.CloseBraceToken:
                     var parent = token.Parent;
-                    return parent.IsKind(SyntaxKind.Block)
-                        ? parent.Parent
-                        : parent;
+                    return parent.IsKind(SyntaxKind.Block) ? parent.Parent : parent;
 
                 case SyntaxKind.CloseParenToken:
-                    if (token.GetPreviousToken().IsKind(SyntaxKind.SemicolonToken) &&
-                        token.Parent.IsKind(SyntaxKind.ForStatement))
+                    if (
+                        token.GetPreviousToken().IsKind(SyntaxKind.SemicolonToken)
+                        && token.Parent.IsKind(SyntaxKind.ForStatement)
+                    )
                     {
                         return token.Parent;
                     }
@@ -80,73 +100,130 @@ namespace OmniSharp.Roslyn.CSharp.Workers.Formatting
             return null;
         }
 
-        public static async Task<IEnumerable<LinePositionSpanTextChange>> GetFormattingChanges(Document document, int start, int end, OmniSharpOptions omnisharpOptions)
+        public static async Task<IEnumerable<LinePositionSpanTextChange>> GetFormattingChanges(
+            Document document,
+            int start,
+            int end,
+            OmniSharpOptions omnisharpOptions
+        )
         {
-            var newDocument = await FormatDocument(document, omnisharpOptions, TextSpan.FromBounds(start, end));
+            var newDocument = await FormatDocument(
+                document,
+                omnisharpOptions,
+                TextSpan.FromBounds(start, end)
+            );
             return await TextChanges.GetAsync(newDocument, document);
         }
 
-        public static async Task<string> GetFormattedText(Document document, OmniSharpOptions omnisharpOptions)
+        public static async Task<string> GetFormattedText(
+            Document document,
+            OmniSharpOptions omnisharpOptions
+        )
         {
             var newDocument = await FormatDocument(document, omnisharpOptions);
             var text = await newDocument.GetTextAsync();
             return text.ToString();
         }
 
-        public static async Task<IEnumerable<LinePositionSpanTextChange>> GetFormattedTextChanges(Document document, OmniSharpOptions omnisharpOptions)
+        public static async Task<IEnumerable<LinePositionSpanTextChange>> GetFormattedTextChanges(
+            Document document,
+            OmniSharpOptions omnisharpOptions
+        )
         {
             var newDocument = await FormatDocument(document, omnisharpOptions);
             return await TextChanges.GetAsync(newDocument, document);
         }
 
-        private static async Task<Document> FormatDocument(Document document, OmniSharpOptions omnisharpOptions, TextSpan? textSpan = null)
+        private static async Task<Document> FormatDocument(
+            Document document,
+            OmniSharpOptions omnisharpOptions,
+            TextSpan? textSpan = null
+        )
         {
             var spans = (textSpan != null) ? new[] { textSpan.Value } : null;
             var formattingOtions = await GetFormattingOptionsAsync(document, omnisharpOptions);
-            var newDocument = await OmniSharpFormatter.FormatAsync(document, spans, formattingOtions, CancellationToken.None);
+            var newDocument = await OmniSharpFormatter.FormatAsync(
+                document,
+                spans,
+                formattingOtions,
+                CancellationToken.None
+            );
             if (omnisharpOptions.FormattingOptions.OrganizeImports)
             {
-                var organizeImportsOptions = await GetOrganizeImportsOptionsAsync(document, omnisharpOptions);
-                newDocument = await OmniSharpFormatter.OrganizeImportsAsync(newDocument, organizeImportsOptions, CancellationToken.None);
+                var organizeImportsOptions = await GetOrganizeImportsOptionsAsync(
+                    document,
+                    omnisharpOptions
+                );
+                newDocument = await OmniSharpFormatter.OrganizeImportsAsync(
+                    newDocument,
+                    organizeImportsOptions,
+                    CancellationToken.None
+                );
             }
 
             return newDocument;
         }
 
         // If we are not using .editorconfig for formatting options then we can avoid any overhead of calculating document options.
-        internal static async ValueTask<OmniSharpOrganizeImportsOptionsWrapper> GetOrganizeImportsOptionsAsync(Document document, OmniSharpOptions omnisharpOptions)
+        internal static async ValueTask<OmniSharpOrganizeImportsOptionsWrapper> GetOrganizeImportsOptionsAsync(
+            Document document,
+            OmniSharpOptions omnisharpOptions
+        )
         {
             var fallbackOptions = WrapOrganizeImportsOptions(omnisharpOptions.FormattingOptions);
             return omnisharpOptions.FormattingOptions.EnableEditorConfigSupport
-                        ? await OmniSharpOrganizeImportsOptionsWrapper.FromDocumentAsync(document, fallbackOptions, CancellationToken.None)
-                        : fallbackOptions;
+                ? await OmniSharpOrganizeImportsOptionsWrapper.FromDocumentAsync(
+                    document,
+                    fallbackOptions,
+                    CancellationToken.None
+                )
+                : fallbackOptions;
         }
 
         // If we are not using .editorconfig for formatting options then we can avoid any overhead of calculating document options.
-        internal static async ValueTask<OmniSharpSyntaxFormattingOptionsWrapper> GetFormattingOptionsAsync(Document document, OmniSharpOptions omnisharpOptions)
+        internal static async ValueTask<OmniSharpSyntaxFormattingOptionsWrapper> GetFormattingOptionsAsync(
+            Document document,
+            OmniSharpOptions omnisharpOptions
+        )
         {
             var fallbackOptions = CreateLineFormattingOptions(omnisharpOptions.FormattingOptions);
             return omnisharpOptions.FormattingOptions.EnableEditorConfigSupport
-                        ? await OmniSharpSyntaxFormattingOptionsWrapper.FromDocumentAsync(document, fallbackOptions, CancellationToken.None)
-                        : WrapFormattingOptions(omnisharpOptions.FormattingOptions);
+                ? await OmniSharpSyntaxFormattingOptionsWrapper.FromDocumentAsync(
+                    document,
+                    fallbackOptions,
+                    CancellationToken.None
+                )
+                : WrapFormattingOptions(omnisharpOptions.FormattingOptions);
         }
 
         // If we are not using .editorconfig for formatting options then we can avoid any overhead of calculating document options.
-        internal static async ValueTask<OmniSharpDocumentationCommentOptionsWrapper> GetDocumentationCommentOptionsAsync(Document document, OmniSharpOptions omnisharpOptions)
+        internal static async ValueTask<OmniSharpDocumentationCommentOptionsWrapper> GetDocumentationCommentOptionsAsync(
+            Document document,
+            OmniSharpOptions omnisharpOptions
+        )
         {
             return omnisharpOptions.FormattingOptions.EnableEditorConfigSupport
-                        ? await OmniSharpDocumentationCommentOptionsWrapper.FromDocumentAsync(document, autoXmlDocCommentGeneration: true, CancellationToken.None)
-                        : WrapDocumentationCommentOptions(omnisharpOptions.FormattingOptions);
+                ? await OmniSharpDocumentationCommentOptionsWrapper.FromDocumentAsync(
+                    document,
+                    autoXmlDocCommentGeneration: true,
+                    CancellationToken.None
+                )
+                : WrapDocumentationCommentOptions(omnisharpOptions.FormattingOptions);
         }
 
-        private static OmniSharpOrganizeImportsOptionsWrapper WrapOrganizeImportsOptions(OmniSharp.Options.FormattingOptions options)
-           => new(
-               placeSystemNamespaceFirst: true,
-               separateImportDirectiveGroups: false,
-               options.NewLine);
+        private static OmniSharpOrganizeImportsOptionsWrapper WrapOrganizeImportsOptions(
+            OmniSharp.Options.FormattingOptions options
+        ) =>
+            new(
+                placeSystemNamespaceFirst: true,
+                separateImportDirectiveGroups: false,
+                options.NewLine
+            );
 
-        private static OmniSharpSyntaxFormattingOptionsWrapper WrapFormattingOptions(OmniSharp.Options.FormattingOptions options)
-            => OmniSharpSyntaxFormattingOptionsFactory.Create(
+        private static OmniSharpSyntaxFormattingOptionsWrapper WrapFormattingOptions(
+            OmniSharp.Options.FormattingOptions options
+        ) =>
+            OmniSharpSyntaxFormattingOptionsFactory.Create(
                 useTabs: options.UseTabs,
                 tabSize: options.TabSize,
                 indentationSize: options.IndentationSize,
@@ -174,7 +251,9 @@ namespace OmniSharp.Roslyn.CSharp.Workers.Formatting
                 spaceBeforeComma: options.SpaceBeforeComma,
                 spaceBeforeDot: options.SpaceBeforeDot,
                 spaceBeforeSemicolonsInForStatement: options.SpaceBeforeSemicolonsInForStatement,
-                spacingAroundBinaryOperator: BinaryOperatorSpacingOptionForStringValue(options.SpacingAroundBinaryOperator),
+                spacingAroundBinaryOperator: BinaryOperatorSpacingOptionForStringValue(
+                    options.SpacingAroundBinaryOperator
+                ),
                 indentBraces: options.IndentBraces,
                 indentBlock: options.IndentBlock,
                 indentSwitchSection: options.IndentSwitchSection,
@@ -197,13 +276,17 @@ namespace OmniSharp.Roslyn.CSharp.Workers.Formatting
                 newLineForFinally: options.NewLineForFinally,
                 newLineForMembersInObjectInit: options.NewLineForMembersInObjectInit,
                 newLineForMembersInAnonymousTypes: options.NewLineForMembersInAnonymousTypes,
-                newLineForClausesInQuery: options.NewLineForClausesInQuery);
+                newLineForClausesInQuery: options.NewLineForClausesInQuery
+            );
 
-        private static OmniSharpDocumentationCommentOptionsWrapper WrapDocumentationCommentOptions(OmniSharp.Options.FormattingOptions options)
-          => new(autoXmlDocCommentGeneration: true, CreateLineFormattingOptions(options));
+        private static OmniSharpDocumentationCommentOptionsWrapper WrapDocumentationCommentOptions(
+            OmniSharp.Options.FormattingOptions options
+        ) => new(autoXmlDocCommentGeneration: true, CreateLineFormattingOptions(options));
 
-        private static OmniSharpLineFormattingOptions CreateLineFormattingOptions(OmniSharp.Options.FormattingOptions options)
-            => new()
+        private static OmniSharpLineFormattingOptions CreateLineFormattingOptions(
+            OmniSharp.Options.FormattingOptions options
+        ) =>
+            new()
             {
                 IndentationSize = options.IndentationSize,
                 TabSize = options.TabSize,
@@ -211,23 +294,32 @@ namespace OmniSharp.Roslyn.CSharp.Workers.Formatting
                 NewLine = options.NewLine,
             };
 
-        internal static OmniSharpLabelPositionOptions LabelPositionOptionForStringValue(string value)
-            => value.ToUpper() switch
+        internal static OmniSharpLabelPositionOptions LabelPositionOptionForStringValue(
+            string value
+        ) =>
+            value.ToUpper() switch
             {
                 "LEFTMOST" => OmniSharpLabelPositionOptions.LeftMost,
                 "NOINDENT" => OmniSharpLabelPositionOptions.NoIndent,
                 _ => OmniSharpLabelPositionOptions.OneLess,
             };
 
-        internal static OmniSharpBinaryOperatorSpacingOptions BinaryOperatorSpacingOptionForStringValue(string value)
-            => value.ToUpper() switch
+        internal static OmniSharpBinaryOperatorSpacingOptions BinaryOperatorSpacingOptionForStringValue(
+            string value
+        ) =>
+            value.ToUpper() switch
             {
                 "IGNORE" => OmniSharpBinaryOperatorSpacingOptions.Ignore,
                 "REMOVE" => OmniSharpBinaryOperatorSpacingOptions.Remove,
                 _ => OmniSharpBinaryOperatorSpacingOptions.Single,
             };
 
-        private static async Task<LinePositionSpanTextChange?> GetDocumentationCommentChanges(Document document, int position, char character, OmniSharpOptions omnisharpOptions)
+        private static async Task<LinePositionSpanTextChange?> GetDocumentationCommentChanges(
+            Document document,
+            int position,
+            char character,
+            OmniSharpOptions omnisharpOptions
+        )
         {
             if (character != '\n' && character != '/')
             {
@@ -237,11 +329,30 @@ namespace OmniSharp.Roslyn.CSharp.Workers.Formatting
             var text = await document.GetTextAsync();
             var syntaxTree = await document.GetSyntaxTreeAsync();
 
-            var docCommentOptions = await GetDocumentationCommentOptionsAsync(document, omnisharpOptions).ConfigureAwait(false);
+            var docCommentOptions = await GetDocumentationCommentOptionsAsync(
+                    document,
+                    omnisharpOptions
+                )
+                .ConfigureAwait(false);
 
-            var snippet = character == '\n' ?
-                OmniSharpDocumentationCommentsSnippetService.GetDocumentationCommentSnippetOnEnterTyped(document, syntaxTree!, text, position, docCommentOptions, CancellationToken.None) :
-                OmniSharpDocumentationCommentsSnippetService.GetDocumentationCommentSnippetOnCharacterTyped(document, syntaxTree!, text, position, docCommentOptions, CancellationToken.None);
+            var snippet =
+                character == '\n'
+                    ? OmniSharpDocumentationCommentsSnippetService.GetDocumentationCommentSnippetOnEnterTyped(
+                        document,
+                        syntaxTree!,
+                        text,
+                        position,
+                        docCommentOptions,
+                        CancellationToken.None
+                    )
+                    : OmniSharpDocumentationCommentsSnippetService.GetDocumentationCommentSnippetOnCharacterTyped(
+                        document,
+                        syntaxTree!,
+                        text,
+                        position,
+                        docCommentOptions,
+                        CancellationToken.None
+                    );
 
             if (snippet == null)
             {
@@ -256,7 +367,7 @@ namespace OmniSharp.Roslyn.CSharp.Workers.Formatting
                     StartLine = range.Start.Line,
                     StartColumn = range.Start.Column,
                     EndLine = range.End.Line,
-                    EndColumn = range.End.Column
+                    EndColumn = range.End.Column,
                 };
             }
         }

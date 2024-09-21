@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -63,7 +63,10 @@ namespace OmniSharp.Cake.Configuration.Parser
             return value;
         }
 
-        private static KeyValuePair<string, string> ParseKeyAndValue(ConfigurationTokenStream tokens, string section)
+        private static KeyValuePair<string, string> ParseKeyAndValue(
+            ConfigurationTokenStream tokens,
+            string section
+        )
         {
             // Get the key.
             var key = tokens.Current.Value;
@@ -71,7 +74,9 @@ namespace OmniSharp.Cake.Configuration.Parser
             if (ContainsWhiteSpace(key))
             {
                 const string message = "The key '{0}' contains whitespace.";
-                throw new InvalidOperationException(string.Format(CultureInfo.InvariantCulture, message, key));
+                throw new InvalidOperationException(
+                    string.Format(CultureInfo.InvariantCulture, message, key)
+                );
             }
 
             // Expect the equality sign.

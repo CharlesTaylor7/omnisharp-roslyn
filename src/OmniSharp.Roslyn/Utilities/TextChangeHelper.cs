@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
@@ -9,7 +9,10 @@ namespace OmniSharp.Roslyn.Utilities
 {
     internal static class TextChanges
     {
-        public static async Task<IEnumerable<LinePositionSpanTextChange>> GetAsync(Document document, Document oldDocument)
+        public static async Task<IEnumerable<LinePositionSpanTextChange>> GetAsync(
+            Document document,
+            Document oldDocument
+        )
         {
             var changes = await document.GetTextChangesAsync(oldDocument);
             var oldText = await oldDocument.GetTextAsync();
@@ -39,7 +42,11 @@ namespace OmniSharp.Roslyn.Utilities
                     prefix = "\r";
                 }
 
-                if (span.End < oldText.Length - 1 && newText[newText.Length - 1] == '\r' && oldText[span.End] == '\n')
+                if (
+                    span.End < oldText.Length - 1
+                    && newText[newText.Length - 1] == '\r'
+                    && oldText[span.End] == '\n'
+                )
                 {
                     // text: foo\r\nbar\r\nfoo
                     // edit:        [----)
@@ -56,11 +63,14 @@ namespace OmniSharp.Roslyn.Utilities
                 StartLine = linePositionSpan.Start.Line,
                 StartColumn = linePositionSpan.Start.Character,
                 EndLine = linePositionSpan.End.Line,
-                EndColumn = linePositionSpan.End.Character
+                EndColumn = linePositionSpan.End.Character,
             };
         }
 
-        public static IEnumerable<LinePositionSpanTextChange> Convert(SourceText oldText, IEnumerable<TextChange> changes)
+        public static IEnumerable<LinePositionSpanTextChange> Convert(
+            SourceText oldText,
+            IEnumerable<TextChange> changes
+        )
         {
             return changes
                 .OrderByDescending(change => change.Span)

@@ -12,23 +12,32 @@ using OmniSharp.Utilities;
 namespace OmniSharp.Cake.Services.RequestHandlers.Navigation
 {
     [OmniSharpHandler(OmniSharpEndpoints.GotoDefinition, Constants.LanguageNames.Cake), Shared]
-    public class GotoDefinitionHandler : CakeRequestHandler<GotoDefinitionRequest, GotoDefinitionResponse>
+    public class GotoDefinitionHandler
+        : CakeRequestHandler<GotoDefinitionRequest, GotoDefinitionResponse>
     {
         private readonly MetadataExternalSourceService _metadataExternalSourceService;
 
         [ImportingConstructor]
         public GotoDefinitionHandler(
             OmniSharpWorkspace workspace,
-            MetadataExternalSourceService metadataExternalSourceService)
+            MetadataExternalSourceService metadataExternalSourceService
+        )
             : base(workspace)
         {
-            _metadataExternalSourceService = metadataExternalSourceService ?? throw new ArgumentNullException(nameof(metadataExternalSourceService));
+            _metadataExternalSourceService =
+                metadataExternalSourceService
+                ?? throw new ArgumentNullException(nameof(metadataExternalSourceService));
         }
 
-        protected override async Task<GotoDefinitionResponse> TranslateResponse(GotoDefinitionResponse response, GotoDefinitionRequest request)
+        protected override async Task<GotoDefinitionResponse> TranslateResponse(
+            GotoDefinitionResponse response,
+            GotoDefinitionRequest request
+        )
         {
-            if (string.IsNullOrEmpty(response.FileName) ||
-                !response.FileName.Equals(Constants.Paths.Generated))
+            if (
+                string.IsNullOrEmpty(response.FileName)
+                || !response.FileName.Equals(Constants.Paths.Generated)
+            )
             {
                 if (PlatformHelper.IsWindows && !string.IsNullOrEmpty(response.FileName))
                 {
@@ -42,13 +51,15 @@ namespace OmniSharp.Cake.Services.RequestHandlers.Navigation
                 return new GotoDefinitionResponse();
             }
 
-            var alias = (await GotoDefinitionHandlerHelper.GetAliasFromMetadataAsync(
-                Workspace,
-                request.FileName,
-                response.Line,
-                request.Timeout,
-                _metadataExternalSourceService
-            )).FirstOrDefault();
+            var alias = (
+                await GotoDefinitionHandlerHelper.GetAliasFromMetadataAsync(
+                    Workspace,
+                    request.FileName,
+                    response.Line,
+                    request.Timeout,
+                    _metadataExternalSourceService
+                )
+            ).FirstOrDefault();
 
             if (alias == null)
             {
@@ -64,8 +75,8 @@ namespace OmniSharp.Cake.Services.RequestHandlers.Navigation
                 {
                     AssemblyName = alias.Symbol.ContainingAssembly.Name,
                     ProjectName = alias.Document.Project.Name,
-                    TypeName = alias.Symbol.GetSymbolName()
-                }
+                    TypeName = alias.Symbol.GetSymbolName(),
+                },
             };
         }
     }

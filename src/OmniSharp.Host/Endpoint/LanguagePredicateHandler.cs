@@ -19,7 +19,11 @@ namespace OmniSharp.Endpoint
         {
             foreach (var projectSystem in _projectSystems.Where(project => project.Initialized))
             {
-                if (projectSystem.Extensions.Any(extension => filePath.EndsWith(extension, StringComparison.OrdinalIgnoreCase)))
+                if (
+                    projectSystem.Extensions.Any(extension =>
+                        filePath.EndsWith(extension, StringComparison.OrdinalIgnoreCase)
+                    )
+                )
                 {
                     return projectSystem.Language;
                 }

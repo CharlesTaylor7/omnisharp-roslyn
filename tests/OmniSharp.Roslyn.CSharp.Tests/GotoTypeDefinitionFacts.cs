@@ -16,12 +16,15 @@ using Xunit.Abstractions;
 
 namespace OmniSharp.Roslyn.CSharp.Tests
 {
-    public class GotoTypeDefinitionFacts : AbstractSingleRequestHandlerTestFixture<GotoTypeDefinitionService>
+    public class GotoTypeDefinitionFacts
+        : AbstractSingleRequestHandlerTestFixture<GotoTypeDefinitionService>
     {
-        public GotoTypeDefinitionFacts(ITestOutputHelper output, SharedOmniSharpHostFixture sharedOmniSharpHostFixture)
-           : base(output, sharedOmniSharpHostFixture)
-        {
-        }
+        public GotoTypeDefinitionFacts(
+            ITestOutputHelper output,
+            SharedOmniSharpHostFixture sharedOmniSharpHostFixture
+        )
+            : base(output, sharedOmniSharpHostFixture) { }
+
         protected override string EndpointName => OmniSharpEndpoints.GotoTypeDefinition;
 
         [Theory]
@@ -29,10 +32,13 @@ namespace OmniSharp.Roslyn.CSharp.Tests
         [InlineData("foo.csx")]
         public async Task ReturnsDefinitionInSameFile(string filename)
         {
-            var testFile = new TestFile(filename, @"
+            var testFile = new TestFile(
+                filename,
+                @"
 class {|def:Foo|} {
     private Foo f$$oo;
-}");
+}"
+            );
 
             await TestGoToSourceAsync(testFile);
         }
@@ -42,10 +48,13 @@ class {|def:Foo|} {
         [InlineData("foo.csx")]
         public async Task DoesNotReturnOnPropertAccessorGet(string filename)
         {
-            var testFile = new TestFile(filename, @"
+            var testFile = new TestFile(
+                filename,
+                @"
 class Test {
     public string Foo{ g$$et; set; }
-}");
+}"
+            );
 
             await TestGoToSourceAsync(testFile);
         }
@@ -55,10 +64,13 @@ class Test {
         [InlineData("foo.csx")]
         public async Task DoesNotReturnOnPropertAccessorSet(string filename)
         {
-            var testFile = new TestFile(filename, @"
+            var testFile = new TestFile(
+                filename,
+                @"
 class Test {
     public int Foo{ get; s$$et; }
-}");
+}"
+            );
 
             await TestGoToSourceAsync(testFile);
         }
@@ -68,7 +80,9 @@ class Test {
         [InlineData("foo.csx")]
         public async Task ReturnsOnPropertyAccessor(string filename)
         {
-            var testFile = new TestFile(filename, @"
+            var testFile = new TestFile(
+                filename,
+                @"
 class Test {
     public Bar Foo{ get; set; }
     public class |def:Bar|
@@ -79,7 +93,8 @@ class Test {
     {
         F$$oo = 3;
     }
-}");
+}"
+            );
 
             await TestGoToSourceAsync(testFile);
         }
@@ -89,7 +104,9 @@ class Test {
         [InlineData("foo.csx")]
         public async Task ReturnsOnPrivateField(string filename)
         {
-            var testFile = new TestFile(filename, @"
+            var testFile = new TestFile(
+                filename,
+                @"
 class Test {
 
     public Bar foo;
@@ -102,7 +119,8 @@ class Test {
         get => f$$oo;
         set => foo = value;
     }
-}");
+}"
+            );
 
             await TestGoToSourceAsync(testFile);
         }
@@ -112,7 +130,9 @@ class Test {
         [InlineData("foo.csx")]
         public async Task ReturnsOnPropertyAccessorField2(string filename)
         {
-            var testFile = new TestFile(filename, @"
+            var testFile = new TestFile(
+                filename,
+                @"
 class Test {
 
     public Bar foo { get; set; };
@@ -125,7 +145,8 @@ class Test {
         get => foo;
         set => f$$oo = value;
     }
-}");
+}"
+            );
 
             await TestGoToSourceAsync(testFile);
         }
@@ -135,7 +156,9 @@ class Test {
         [InlineData("foo.csx")]
         public async Task ReturnsOnPropertySetterParam(string filename)
         {
-            var testFile = new TestFile(filename, @"
+            var testFile = new TestFile(
+                filename,
+                @"
 class Test {
 
     public Bar foo { get; set; }
@@ -148,7 +171,8 @@ class Test {
         get => foo;
         set => foo = va$$lue;
     }
-}");
+}"
+            );
 
             await TestGoToSourceAsync(testFile);
         }
@@ -158,7 +182,9 @@ class Test {
         [InlineData("foo.csx")]
         public async Task ReturnsOnPropertyAccessorPropertyGetting(string filename)
         {
-            var testFile = new TestFile(filename, @"
+            var testFile = new TestFile(
+                filename,
+                @"
 class Test {
     public Bar Foo { get; set; }
     public class |def:Bar|
@@ -170,7 +196,8 @@ class Test {
         Foo = 3;
         Console.WriteLine(F$$oo);
     }
-}");
+}"
+            );
 
             await TestGoToSourceAsync(testFile);
         }
@@ -180,7 +207,9 @@ class Test {
         [InlineData("foo.csx")]
         public async Task ReturnsOnImplicitLambdaParam(string filename)
         {
-            var testFile = new TestFile(filename, @"
+            var testFile = new TestFile(
+                filename,
+                @"
 using System.Collections.Generic;
 
 class Test {
@@ -195,7 +224,8 @@ class Test {
         list.Add(new Bar());
         list.ForEach(inp$$ut => _ = input.lorem);
     }
-}");
+}"
+            );
 
             await TestGoToSourceAsync(testFile);
         }
@@ -205,7 +235,9 @@ class Test {
         [InlineData("foo.csx")]
         public async Task ReturnsOnListFindResult(string filename)
         {
-            var testFile = new TestFile(filename, @"
+            var testFile = new TestFile(
+                filename,
+                @"
 using System.Collections.Generic;
 
 class Test {
@@ -220,7 +252,8 @@ class Test {
         list.Add(new Bar());
         var out$$put = list.Find(input => _ = input.lorem == 12);
     }
-}");
+}"
+            );
 
             await TestGoToSourceAsync(testFile);
         }
@@ -228,14 +261,20 @@ class Test {
         [Fact]
         public async Task ReturnsDefinitionInDifferentFile()
         {
-            var testFile1 = new TestFile("foo.cs", @"
+            var testFile1 = new TestFile(
+                "foo.cs",
+                @"
 using System;
 class {|def:Foo|} {
-}");
-            var testFile2 = new TestFile("bar.cs", @"
+}"
+            );
+            var testFile2 = new TestFile(
+                "bar.cs",
+                @"
 class Bar {
     private Foo f$$oo;
-}");
+}"
+            );
 
             await TestGoToSourceAsync(testFile1, testFile2);
         }
@@ -243,14 +282,20 @@ class Bar {
         [Fact]
         public async Task ReturnsEmptyResultWhenDefinitionIsNotFound()
         {
-            var testFile1 = new TestFile("foo.cs", @"
+            var testFile1 = new TestFile(
+                "foo.cs",
+                @"
         using System;
         class Foo {
-        }");
-            var testFile2 = new TestFile("bar.cs", @"
+        }"
+            );
+            var testFile2 = new TestFile(
+                "bar.cs",
+                @"
         class Bar {
             private Baz f$$oo;
-        }");
+        }"
+            );
 
             await TestGoToSourceAsync(testFile1, testFile2);
         }
@@ -260,17 +305,22 @@ class Bar {
         [InlineData("bar.csx")]
         public async Task ReturnsDefinitionInMetadata_WhenSymbolIsStaticMethod(string filename)
         {
-            var testFile = new TestFile(filename, @"
+            var testFile = new TestFile(
+                filename,
+                @"
 using System;
 class Bar {
     public void Baz() {
         var gu$$id = Guid.NewGuid();
     }
-}");
+}"
+            );
 
-            await TestGoToMetadataAsync(testFile,
+            await TestGoToMetadataAsync(
+                testFile,
                 expectedAssemblyName: AssemblyHelpers.CorLibName,
-                expectedTypeName: "System.Guid");
+                expectedTypeName: "System.Guid"
+            );
         }
 
         [Theory]
@@ -278,37 +328,46 @@ class Bar {
         [InlineData("bar.csx")]
         public async Task ReturnsDecompiledDefinition_WhenSymbolIsStaticMethod(string filename)
         {
-            var testFile = new TestFile(filename, @"
+            var testFile = new TestFile(
+                filename,
+                @"
 using System;
 class Bar {
     public void Baz() {
         var g$$ = Guid.NewGuid();
     }
-}");
+}"
+            );
 
-            await TestDecompilationAsync(testFile,
+            await TestDecompilationAsync(
+                testFile,
                 expectedAssemblyName: AssemblyHelpers.CorLibName,
-                expectedTypeName: "System.Guid");
+                expectedTypeName: "System.Guid"
+            );
         }
-
 
         [Theory]
         [InlineData("bar.cs")]
         [InlineData("bar.csx")]
         public async Task ReturnsDefinitionInMetadata_WhenSymbolIsParam(string filename)
         {
-            var testFile = new TestFile(filename, @"
+            var testFile = new TestFile(
+                filename,
+                @"
         using System.Collections.Generic;
         class Bar {
             public void Baz(List<string> par$$am1) {
                 var foo = new List<string>();
                 var f = param1;
             }
-        }");
+        }"
+            );
 
-            await TestGoToMetadataAsync(testFile,
+            await TestGoToMetadataAsync(
+                testFile,
                 expectedAssemblyName: AssemblyHelpers.CorLibName,
-                expectedTypeName: "System.Collections.Generic.List`1");
+                expectedTypeName: "System.Collections.Generic.List`1"
+            );
         }
 
         [Theory]
@@ -316,18 +375,23 @@ class Bar {
         [InlineData("bar.csx")]
         public async Task ReturnsDecompiledDefinition_WhenSymbolIsIndexedList(string filename)
         {
-            var testFile = new TestFile(filename, @"
+            var testFile = new TestFile(
+                filename,
+                @"
 using System.Collections.Generic;
 class Bar {
     public void Baz() {
         var foo = new List<string>();
         var lorem = fo$$o[0];
     }
-}");
+}"
+            );
 
-            await TestDecompilationAsync(testFile,
+            await TestDecompilationAsync(
+                testFile,
                 expectedAssemblyName: AssemblyHelpers.CorLibName,
-                expectedTypeName: "System.Collections.Generic.List`1");
+                expectedTypeName: "System.Collections.Generic.List`1"
+            );
         }
 
         [Theory]
@@ -335,17 +399,22 @@ class Bar {
         [InlineData("bar.csx")]
         public async Task ReturnsDefinitionInMetadata_WhenSymbolIsType(string filename)
         {
-            var testFile = new TestFile(filename, @"
+            var testFile = new TestFile(
+                filename,
+                @"
         using System;
         class Bar {
             public void Baz() {
                 var str = String.Em$$pty;
             }
-        }");
+        }"
+            );
 
-            await TestGoToMetadataAsync(testFile,
+            await TestGoToMetadataAsync(
+                testFile,
                 expectedAssemblyName: AssemblyHelpers.CorLibName,
-                expectedTypeName: "System.String");
+                expectedTypeName: "System.String"
+            );
         }
 
         [Theory]
@@ -353,25 +422,41 @@ class Bar {
         [InlineData("bar.csx")]
         public async Task ReturnsDefinitionInMetadata_FromMetadata_WhenSymbolIsType(string filename)
         {
-            var testFile = new TestFile(filename, @"
+            var testFile = new TestFile(
+                filename,
+                @"
 using System;
 class Bar {
     public void Baz() {
         var num$$ber = int.MaxValue;
     }
-}");
+}"
+            );
 
             using (var host = CreateOmniSharpHost(testFile))
             {
                 var point = testFile.Content.GetPointFromPosition();
 
                 // 1. start by asking for definition of "int"
-                var gotoDefinitionRequest = CreateRequest(testFile.FileName, point.Line, point.Offset, wantMetadata: true, timeout: 600000000);
+                var gotoDefinitionRequest = CreateRequest(
+                    testFile.FileName,
+                    point.Line,
+                    point.Offset,
+                    wantMetadata: true,
+                    timeout: 600000000
+                );
                 var gotoDefinitionRequestHandler = GetRequestHandler(host);
-                var gotoDefinitionResponse = await gotoDefinitionRequestHandler.Handle(gotoDefinitionRequest);
-                var gotoDefinitionResponseMetadataSource = GetMetadataSource(gotoDefinitionResponse);
+                var gotoDefinitionResponse = await gotoDefinitionRequestHandler.Handle(
+                    gotoDefinitionRequest
+                );
+                var gotoDefinitionResponseMetadataSource = GetMetadataSource(
+                    gotoDefinitionResponse
+                );
                 Assert.NotNull(gotoDefinitionResponseMetadataSource);
-                Assert.Equal(AssemblyHelpers.CorLibName, gotoDefinitionResponseMetadataSource.AssemblyName);
+                Assert.Equal(
+                    AssemblyHelpers.CorLibName,
+                    gotoDefinitionResponseMetadataSource.AssemblyName
+                );
                 Assert.Equal("System.Int32", gotoDefinitionResponseMetadataSource.TypeName);
                 var info = GetInfo(gotoDefinitionResponse);
                 Assert.NotEqual(0, info.Single().Line);
@@ -384,25 +469,39 @@ class Bar {
         [InlineData("bar.csx")]
         public async Task ReturnsDecompiledDefinition_FromMetadata_WhenSymbolIsType(string filename)
         {
-            var testFile = new TestFile(filename, @"
+            var testFile = new TestFile(
+                filename,
+                @"
 using System;
 class Bar {
     public void Baz() {
         var num$$ber = int.MaxValue;
     }
-}");
+}"
+            );
 
-            using var host = CreateOmniSharpHost(new[] { testFile }, new Dictionary<string, string>
-            {
-                ["RoslynExtensionsOptions:EnableDecompilationSupport"] = "true"
-            });
+            using var host = CreateOmniSharpHost(
+                new[] { testFile },
+                new Dictionary<string, string>
+                {
+                    ["RoslynExtensionsOptions:EnableDecompilationSupport"] = "true",
+                }
+            );
 
             var point = testFile.Content.GetPointFromPosition();
 
             // 1. start by asking for definition of "int"
-            var gotoDefinitionRequest = CreateRequest(testFile.FileName, point.Line, point.Offset, wantMetadata: true, timeout: 60000000);
+            var gotoDefinitionRequest = CreateRequest(
+                testFile.FileName,
+                point.Line,
+                point.Offset,
+                wantMetadata: true,
+                timeout: 60000000
+            );
             var gotoDefinitionRequestHandler = GetRequestHandler(host);
-            var gotoDefinitionResponse = await gotoDefinitionRequestHandler.Handle(gotoDefinitionRequest);
+            var gotoDefinitionResponse = await gotoDefinitionRequestHandler.Handle(
+                gotoDefinitionRequest
+            );
 
             // 2. now, based on the response information
             // go to the metadata endpoint, and ask for "int" specific decompiled source
@@ -413,9 +512,11 @@ class Bar {
                 TypeName = metadataSource.TypeName,
                 ProjectName = metadataSource.ProjectName,
                 Language = metadataSource.Language,
-                Timeout = 6000000
+                Timeout = 6000000,
             };
-            var metadataRequestHandler = host.GetRequestHandler<MetadataService>(OmniSharpEndpoints.Metadata);
+            var metadataRequestHandler = host.GetRequestHandler<MetadataService>(
+                OmniSharpEndpoints.Metadata
+            );
             var metadataResponse = await metadataRequestHandler.Handle(metadataRequest);
 
             // 3. the response contains SourceName ("file") and SourceText (syntax tree)
@@ -424,16 +525,22 @@ class Bar {
             var compilationUnit = decompiledTree.GetCompilationUnitRoot();
 
             // second comment should indicate we have decompiled
-            var comments = compilationUnit.DescendantTrivia().Where(t => t.IsKind(SyntaxKind.SingleLineCommentTrivia)).ToArray();
+            var comments = compilationUnit
+                .DescendantTrivia()
+                .Where(t => t.IsKind(SyntaxKind.SingleLineCommentTrivia))
+                .ToArray();
             Assert.NotNull(comments);
-            Assert.Equal("// Decompiled with ICSharpCode.Decompiler 8.2.0.7535", comments[1].ToString());
+            Assert.Equal(
+                "// Decompiled with ICSharpCode.Decompiler 8.2.0.7535",
+                comments[1].ToString()
+            );
 
             // contrary to regular metadata, we should have methods with full bodies
             // this condition would fail if decompilation wouldn't work
-            var methods = compilationUnit.
-                DescendantNodesAndSelf().
-                OfType<MethodDeclarationSyntax>().
-                Where(m => m.Body != null);
+            var methods = compilationUnit
+                .DescendantNodesAndSelf()
+                .OfType<MethodDeclarationSyntax>()
+                .Where(m => m.Body != null);
 
             Assert.NotEmpty(methods);
         }
@@ -449,7 +556,8 @@ class Bar {
         [Fact]
         public async Task ReturnsResultsForSourceGenerators()
         {
-            const string Source = @"
+            const string Source =
+                @"
 public class {|generatedClassName:Generated|}
 {
     public int {|propertyName:Property|} { get; set; }
@@ -457,7 +565,9 @@ public class {|generatedClassName:Generated|}
 ";
             const string FileName = "real.cs";
             TestFile generatedTestFile = new("GeneratedFile.cs", Source);
-            var testFile = new TestFile(FileName, @"
+            var testFile = new TestFile(
+                FileName,
+                @"
 class C
 {
     public void M(Generated gen)
@@ -465,18 +575,29 @@ class C
         _ = ge$$n.Property;
     }
 }
-");
+"
+            );
 
-            TestHelpers.AddProjectToWorkspace(SharedOmniSharpTestHost.Workspace,
+            TestHelpers.AddProjectToWorkspace(
+                SharedOmniSharpTestHost.Workspace,
                 "project.csproj",
                 new[] { "net6.0" },
                 new[] { testFile },
-                analyzerRefs: ImmutableArray.Create<AnalyzerReference>(new TestGeneratorReference(
-                    context => context.AddSource("GeneratedFile", generatedTestFile.Content.Code))));
+                analyzerRefs: ImmutableArray.Create<AnalyzerReference>(
+                    new TestGeneratorReference(context =>
+                        context.AddSource("GeneratedFile", generatedTestFile.Content.Code)
+                    )
+                )
+            );
 
             var point = testFile.Content.GetPointFromPosition();
 
-            var gotoDefRequest = CreateRequest(FileName, point.Line, point.Offset, wantMetadata: true);
+            var gotoDefRequest = CreateRequest(
+                FileName,
+                point.Line,
+                point.Offset,
+                wantMetadata: true
+            );
             var gotoDefHandler = GetRequestHandler(SharedOmniSharpTestHost);
             var response = await gotoDefHandler.Handle(gotoDefRequest);
             var info = GetInfo(response).Single();
@@ -489,17 +610,25 @@ class C
             Assert.Equal(expectedRange.Start.Line, info.Line);
             Assert.Equal(expectedRange.Start.Offset, info.Column);
 
-            var sourceGeneratedFileHandler = SharedOmniSharpTestHost.GetRequestHandler<SourceGeneratedFileService>(OmniSharpEndpoints.SourceGeneratedFile);
+            var sourceGeneratedFileHandler =
+                SharedOmniSharpTestHost.GetRequestHandler<SourceGeneratedFileService>(
+                    OmniSharpEndpoints.SourceGeneratedFile
+                );
             var sourceGeneratedRequest = new SourceGeneratedFileRequest
             {
                 DocumentGuid = info.SourceGeneratorInfo.DocumentGuid,
-                ProjectGuid = info.SourceGeneratorInfo.ProjectGuid
+                ProjectGuid = info.SourceGeneratorInfo.ProjectGuid,
             };
 
-            var sourceGeneratedFileResponse = await sourceGeneratedFileHandler.Handle(sourceGeneratedRequest);
+            var sourceGeneratedFileResponse = await sourceGeneratedFileHandler.Handle(
+                sourceGeneratedRequest
+            );
             Assert.NotNull(sourceGeneratedFileResponse);
             Assert.Equal(generatedTestFile.Content.Code, sourceGeneratedFileResponse.Source);
-            Assert.Equal(@"OmniSharp.Roslyn.CSharp.Tests\OmniSharp.Roslyn.CSharp.Tests.TestSourceGenerator\GeneratedFile.cs", sourceGeneratedFileResponse.SourceName.Replace("/", @"\"));
+            Assert.Equal(
+                @"OmniSharp.Roslyn.CSharp.Tests\OmniSharp.Roslyn.CSharp.Tests.TestSourceGenerator\GeneratedFile.cs",
+                sourceGeneratedFileResponse.SourceName.Replace("/", @"\")
+            );
         }
 
         protected async Task TestGoToSourceAsync(params TestFile[] testFiles)
@@ -519,10 +648,13 @@ class C
                 {
                     var definitionRange = file.Content.GetRangeFromSpan(definitionSpan);
 
-                    Assert.Contains(info,
-                        def => file.FileName == def.FileName
-                               && definitionRange.Start.Line == def.Line
-                               && definitionRange.Start.Offset == def.Column);
+                    Assert.Contains(
+                        info,
+                        def =>
+                            file.FileName == def.FileName
+                            && definitionRange.Start.Line == def.Line
+                            && definitionRange.Start.Offset == def.Column
+                    );
                 }
             }
             else
@@ -531,12 +663,19 @@ class C
             }
         }
 
-        protected async Task TestDecompilationAsync(TestFile testFile, string expectedAssemblyName, string expectedTypeName)
+        protected async Task TestDecompilationAsync(
+            TestFile testFile,
+            string expectedAssemblyName,
+            string expectedTypeName
+        )
         {
-            using var host = CreateOmniSharpHost(new[] { testFile }, new Dictionary<string, string>
-            {
-                ["RoslynExtensionsOptions:EnableDecompilationSupport"] = "true"
-            });
+            using var host = CreateOmniSharpHost(
+                new[] { testFile },
+                new Dictionary<string, string>
+                {
+                    ["RoslynExtensionsOptions:EnableDecompilationSupport"] = "true",
+                }
+            );
 
             var response = await GetResponseAsync(new[] { testFile }, wantMetadata: true);
             var metadataSource = GetMetadataSource(response);
@@ -547,7 +686,11 @@ class C
             Assert.Equal(expectedTypeName, metadataSource.TypeName);
         }
 
-        protected async Task TestGoToMetadataAsync(TestFile testFile, string expectedAssemblyName, string expectedTypeName)
+        protected async Task TestGoToMetadataAsync(
+            TestFile testFile,
+            string expectedAssemblyName,
+            string expectedTypeName
+        )
         {
             var response = await GetResponseAsync(new[] { testFile }, wantMetadata: true);
             var metadataSource = GetMetadataSource(response);
@@ -563,36 +706,61 @@ class C
             Assert.NotEqual(0, responseInfo.Single().Column);
         }
 
-        protected async Task<GotoTypeDefinitionResponse> GetResponseAsync(TestFile[] testFiles, bool wantMetadata)
+        protected async Task<GotoTypeDefinitionResponse> GetResponseAsync(
+            TestFile[] testFiles,
+            bool wantMetadata
+        )
         {
             SharedOmniSharpTestHost.AddFilesToWorkspace(testFiles);
             var source = testFiles.Single(tf => tf.Content.HasPosition);
             var point = source.Content.GetPointFromPosition();
 
-            var request = CreateRequest(source.FileName, point.Line, point.Offset, timeout: 60000, wantMetadata: wantMetadata);
+            var request = CreateRequest(
+                source.FileName,
+                point.Line,
+                point.Offset,
+                timeout: 60000,
+                wantMetadata: wantMetadata
+            );
 
             var requestHandler = GetRequestHandler(SharedOmniSharpTestHost);
             return await requestHandler.Handle(request);
         }
 
-        protected GotoTypeDefinitionRequest CreateRequest(string fileName, int line, int column, bool wantMetadata, int timeout = 60000)
-           => new GotoTypeDefinitionRequest
-           {
-               FileName = fileName,
-               Line = line,
-               Column = column,
-               WantMetadata = wantMetadata,
-               Timeout = timeout
-           };
+        protected GotoTypeDefinitionRequest CreateRequest(
+            string fileName,
+            int line,
+            int column,
+            bool wantMetadata,
+            int timeout = 60000
+        ) =>
+            new GotoTypeDefinitionRequest
+            {
+                FileName = fileName,
+                Line = line,
+                Column = column,
+                WantMetadata = wantMetadata,
+                Timeout = timeout,
+            };
 
-        protected IEnumerable<(int Line, int Column, string FileName, SourceGeneratedFileInfo SourceGeneratorInfo)> GetInfo(GotoTypeDefinitionResponse response)
+        protected IEnumerable<(
+            int Line,
+            int Column,
+            string FileName,
+            SourceGeneratedFileInfo SourceGeneratorInfo
+        )> GetInfo(GotoTypeDefinitionResponse response)
         {
             if (response.Definitions is null)
                 yield break;
 
             foreach (var definition in response.Definitions)
             {
-                yield return (definition.Location.Range.Start.Line, definition.Location.Range.Start.Column, definition.Location.FileName, definition.SourceGeneratedFileInfo);
+                yield return (
+                    definition.Location.Range.Start.Line,
+                    definition.Location.Range.Start.Column,
+                    definition.Location.FileName,
+                    definition.SourceGeneratedFileInfo
+                );
             }
         }
 

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -14,10 +14,16 @@ namespace OmniSharp.LanguageServerProtocol.Handlers
 {
     internal class OmniSharpSignatureHelpHandler : SignatureHelpHandlerBase
     {
-        private readonly Mef.IRequestHandler<SignatureHelpRequest, SignatureHelpResponse> _signatureHandler;
+        private readonly Mef.IRequestHandler<
+            SignatureHelpRequest,
+            SignatureHelpResponse
+        > _signatureHandler;
         private readonly TextDocumentSelector _documentSelector;
 
-        public OmniSharpSignatureHelpHandler(Mef.IRequestHandler<SignatureHelpRequest, SignatureHelpResponse> signatureHandler, TextDocumentSelector documentSelector)
+        public OmniSharpSignatureHelpHandler(
+            Mef.IRequestHandler<SignatureHelpRequest, SignatureHelpResponse> signatureHandler,
+            TextDocumentSelector documentSelector
+        )
         {
             _signatureHandler = signatureHandler;
             _documentSelector = documentSelector;
@@ -25,19 +31,26 @@ namespace OmniSharp.LanguageServerProtocol.Handlers
 
         public static IEnumerable<IJsonRpcHandler> Enumerate(RequestHandlers handlers)
         {
-            foreach (var (selector, handler) in handlers
-                .OfType<Mef.IRequestHandler<SignatureHelpRequest, SignatureHelpResponse>>())
+            foreach (
+                var (selector, handler) in handlers.OfType<Mef.IRequestHandler<
+                    SignatureHelpRequest,
+                    SignatureHelpResponse
+                >>()
+            )
                 if (handler != null)
                     yield return new OmniSharpSignatureHelpHandler(handler, selector);
         }
 
-        public override async Task<SignatureHelp> Handle(SignatureHelpParams request, CancellationToken token)
+        public override async Task<SignatureHelp> Handle(
+            SignatureHelpParams request,
+            CancellationToken token
+        )
         {
             var omnisharpRequest = new SignatureHelpRequest
             {
                 FileName = Helpers.FromUri(request.TextDocument.Uri),
                 Column = Convert.ToInt32(request.Position.Character),
-                Line = Convert.ToInt32(request.Position.Line)
+                Line = Convert.ToInt32(request.Position.Line),
             };
 
             var omnisharpResponse = await _signatureHandler.Handle(omnisharpRequest);
@@ -47,16 +60,20 @@ namespace OmniSharp.LanguageServerProtocol.Handlers
                 return null;
             }
 
-            var containerSignatures = omnisharpResponse.Signatures.Select(x => new SignatureInformation
-            {
-                Documentation = x.StructuredDocumentation.SummaryText,
-                Label = x.Label,
-                Parameters = new Container<ParameterInformation>(x.Parameters.Select(param => new ParameterInformation
+            var containerSignatures = omnisharpResponse.Signatures.Select(
+                x => new SignatureInformation
                 {
-                    Documentation = param.Documentation,
-                    Label = param.Label
-                }))
-            });
+                    Documentation = x.StructuredDocumentation.SummaryText,
+                    Label = x.Label,
+                    Parameters = new Container<ParameterInformation>(
+                        x.Parameters.Select(param => new ParameterInformation
+                        {
+                            Documentation = param.Documentation,
+                            Label = param.Label,
+                        })
+                    ),
+                }
+            );
 
             var signatures = new Container<SignatureInformation>(containerSignatures);
 
@@ -64,16 +81,19 @@ namespace OmniSharp.LanguageServerProtocol.Handlers
             {
                 ActiveParameter = omnisharpResponse.ActiveParameter,
                 ActiveSignature = omnisharpResponse.ActiveSignature,
-                Signatures = signatures
+                Signatures = signatures,
             };
         }
 
-        protected override SignatureHelpRegistrationOptions CreateRegistrationOptions(SignatureHelpCapability capability, ClientCapabilities clientCapabilities)
+        protected override SignatureHelpRegistrationOptions CreateRegistrationOptions(
+            SignatureHelpCapability capability,
+            ClientCapabilities clientCapabilities
+        )
         {
             return new SignatureHelpRegistrationOptions()
             {
                 DocumentSelector = _documentSelector,
-                TriggerCharacters = new[] { "(", ",", "<", "{", "[" }
+                TriggerCharacters = new[] { "(", ",", "<", "{", "[" },
             };
         }
     }

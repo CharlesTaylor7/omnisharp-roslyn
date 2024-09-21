@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using Microsoft.Extensions.Logging;
 
@@ -11,7 +11,8 @@ namespace OmniSharp.MSBuild
             string propertyName,
             string userOverrideValue,
             ImmutableDictionary<string, string> propertyOverrides,
-            ILogger logger)
+            ILogger logger
+        )
         {
             var overrideValue = propertyOverrides.GetValueOrDefault(propertyName);
 

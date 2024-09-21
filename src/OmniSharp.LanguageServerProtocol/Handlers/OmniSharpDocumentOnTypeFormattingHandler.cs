@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -13,26 +13,43 @@ using Range = OmniSharp.Extensions.LanguageServer.Protocol.Models.Range;
 
 namespace OmniSharp.LanguageServerProtocol.Handlers
 {
-    internal sealed class OmniSharpDocumentOnTypeFormattingHandler : DocumentOnTypeFormattingHandlerBase
+    internal sealed class OmniSharpDocumentOnTypeFormattingHandler
+        : DocumentOnTypeFormattingHandlerBase
     {
         public static IEnumerable<IJsonRpcHandler> Enumerate(RequestHandlers handlers)
         {
-            foreach (var (selector, handler) in handlers
-                .OfType<Mef.IRequestHandler<FormatAfterKeystrokeRequest, FormatRangeResponse>>())
+            foreach (
+                var (selector, handler) in handlers.OfType<Mef.IRequestHandler<
+                    FormatAfterKeystrokeRequest,
+                    FormatRangeResponse
+                >>()
+            )
                 if (handler != null)
                     yield return new OmniSharpDocumentOnTypeFormattingHandler(handler, selector);
         }
 
-        private readonly Mef.IRequestHandler<FormatAfterKeystrokeRequest, FormatRangeResponse> _formatAfterKeystrokeHandler;
+        private readonly Mef.IRequestHandler<
+            FormatAfterKeystrokeRequest,
+            FormatRangeResponse
+        > _formatAfterKeystrokeHandler;
         private readonly TextDocumentSelector _documentSelector;
 
-        public OmniSharpDocumentOnTypeFormattingHandler(Mef.IRequestHandler<FormatAfterKeystrokeRequest, FormatRangeResponse> formatAfterKeystrokeHandler, TextDocumentSelector documentSelector)
+        public OmniSharpDocumentOnTypeFormattingHandler(
+            Mef.IRequestHandler<
+                FormatAfterKeystrokeRequest,
+                FormatRangeResponse
+            > formatAfterKeystrokeHandler,
+            TextDocumentSelector documentSelector
+        )
         {
             _formatAfterKeystrokeHandler = formatAfterKeystrokeHandler;
             _documentSelector = documentSelector;
         }
 
-        public override async Task<TextEditContainer> Handle(DocumentOnTypeFormattingParams request, CancellationToken cancellationToken)
+        public override async Task<TextEditContainer> Handle(
+            DocumentOnTypeFormattingParams request,
+            CancellationToken cancellationToken
+        )
         {
             // TODO: request.options
             var omnisharpRequest = new FormatAfterKeystrokeRequest()
@@ -44,21 +61,29 @@ namespace OmniSharp.LanguageServerProtocol.Handlers
             };
 
             var omnisharpResponse = await _formatAfterKeystrokeHandler.Handle(omnisharpRequest);
-            return omnisharpResponse.Changes.Select(change => new TextEdit()
-            {
-                NewText = change.NewText,
-                Range = new Range(new Position(change.StartLine, change.StartColumn), new Position(change.EndLine, change.EndColumn))
-            }).ToArray();
+            return omnisharpResponse
+                .Changes.Select(change => new TextEdit()
+                {
+                    NewText = change.NewText,
+                    Range = new Range(
+                        new Position(change.StartLine, change.StartColumn),
+                        new Position(change.EndLine, change.EndColumn)
+                    ),
+                })
+                .ToArray();
         }
 
-        protected override DocumentOnTypeFormattingRegistrationOptions CreateRegistrationOptions(DocumentOnTypeFormattingCapability capability, ClientCapabilities clientCapabilities)
+        protected override DocumentOnTypeFormattingRegistrationOptions CreateRegistrationOptions(
+            DocumentOnTypeFormattingCapability capability,
+            ClientCapabilities clientCapabilities
+        )
         {
             return new DocumentOnTypeFormattingRegistrationOptions()
             {
                 DocumentSelector = _documentSelector,
                 // Chose these triggers based on Roslyn's implementation https://github.com/dotnet/roslyn/blob/9e06c76c5ce94dc49821c5bd211c8292b3a984f0/src/Features/LanguageServer/Protocol/DefaultCapabilitiesProvider.cs#L71
                 FirstTriggerCharacter = "}",
-                MoreTriggerCharacter = new[] { ";", "\n" }
+                MoreTriggerCharacter = new[] { ";", "\n" },
             };
         }
     }

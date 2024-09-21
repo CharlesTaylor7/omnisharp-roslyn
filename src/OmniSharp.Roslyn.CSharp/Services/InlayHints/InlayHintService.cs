@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Composition;
 using System.Diagnostics.CodeAnalysis;
@@ -25,9 +25,9 @@ namespace OmniSharp.Roslyn.CSharp.Services.InlayHints;
 [Shared]
 [OmniSharpHandler(OmniSharpEndpoints.InlayHint, LanguageNames.CSharp)]
 [OmniSharpHandler(OmniSharpEndpoints.InlayHintResolve, LanguageNames.CSharp)]
-internal class InlayHintService :
-    IRequestHandler<InlayHintRequest, InlayHintResponse>,
-    IRequestHandler<InlayHintResolveRequest, InlayHint>
+internal class InlayHintService
+    : IRequestHandler<InlayHintRequest, InlayHintResponse>,
+        IRequestHandler<InlayHintResolveRequest, InlayHint>
 {
     private readonly OmniSharpWorkspace _workspace;
     private readonly IOptionsMonitor<OmniSharpOptions> _omniSharpOptions;
@@ -38,7 +38,12 @@ internal class InlayHintService :
     private const double ParameterRanking = 0.0;
 
     [ImportingConstructor]
-    public InlayHintService(OmniSharpWorkspace workspace, FormattingOptions formattingOptions, ILoggerFactory loggerFactory, IOptionsMonitor<OmniSharpOptions> omniSharpOptions)
+    public InlayHintService(
+        OmniSharpWorkspace workspace,
+        FormattingOptions formattingOptions,
+        ILoggerFactory loggerFactory,
+        IOptionsMonitor<OmniSharpOptions> omniSharpOptions
+    )
     {
         _workspace = workspace;
         _formattingOptions = formattingOptions;
@@ -52,14 +57,20 @@ internal class InlayHintService :
         var document = _workspace.GetDocument(request.Location.FileName);
         if (document == null)
         {
-            _logger.Log(LogLevel.Warning, $"Inlay hints requested for document not in workspace {request.Location}");
+            _logger.Log(
+                LogLevel.Warning,
+                $"Inlay hints requested for document not in workspace {request.Location}"
+            );
             return InlayHintResponse.None;
         }
 
         var sourceText = await document.GetTextAsync();
         var mappedSpan = sourceText.GetSpanFromRange(request.Location.Range);
 
-        var inlayHintsOptions = _omniSharpOptions.CurrentValue.RoslynExtensionsOptions.InlayHintsOptions;
+        var inlayHintsOptions = _omniSharpOptions
+            .CurrentValue
+            .RoslynExtensionsOptions
+            .InlayHintsOptions;
         var options = new OmniSharpInlineHintsOptions
         {
             ParameterOptions = new()
@@ -69,9 +80,12 @@ internal class InlayHintService :
                 ForLiteralParameters = inlayHintsOptions.ForLiteralParameters,
                 ForObjectCreationParameters = inlayHintsOptions.ForObjectCreationParameters,
                 ForOtherParameters = inlayHintsOptions.ForOtherParameters,
-                SuppressForParametersThatDifferOnlyBySuffix = inlayHintsOptions.SuppressForParametersThatDifferOnlyBySuffix,
-                SuppressForParametersThatMatchArgumentName = inlayHintsOptions.SuppressForParametersThatMatchArgumentName,
-                SuppressForParametersThatMatchMethodIntent = inlayHintsOptions.SuppressForParametersThatMatchMethodIntent,
+                SuppressForParametersThatDifferOnlyBySuffix =
+                    inlayHintsOptions.SuppressForParametersThatDifferOnlyBySuffix,
+                SuppressForParametersThatMatchArgumentName =
+                    inlayHintsOptions.SuppressForParametersThatMatchArgumentName,
+                SuppressForParametersThatMatchMethodIntent =
+                    inlayHintsOptions.SuppressForParametersThatMatchMethodIntent,
             },
             TypeOptions = new()
             {
@@ -79,16 +93,21 @@ internal class InlayHintService :
                 ForImplicitObjectCreation = inlayHintsOptions.ForImplicitObjectCreation,
                 ForImplicitVariableTypes = inlayHintsOptions.ForImplicitVariableTypes,
                 ForLambdaParameterTypes = inlayHintsOptions.ForLambdaParameterTypes,
-            }
+            },
         };
 
-        var hints = await OmniSharpInlineHintsService.GetInlineHintsAsync(document, mappedSpan, options, CancellationToken.None);
+        var hints = await OmniSharpInlineHintsService.GetInlineHintsAsync(
+            document,
+            mappedSpan,
+            options,
+            CancellationToken.None
+        );
 
         var solutionVersion = _workspace.CurrentSolution.Version;
 
         return new()
         {
-            InlayHints = _cache.MapAndCacheHints(hints, document, solutionVersion, sourceText)
+            InlayHints = _cache.MapAndCacheHints(hints, document, solutionVersion, sourceText),
         };
     }
 
@@ -99,14 +118,18 @@ internal class InlayHintService :
             return request.Hint;
         }
 
-        var descriptionTags = await roslynHint.GetDescriptionAsync(document, CancellationToken.None);
+        var descriptionTags = await roslynHint.GetDescriptionAsync(
+            document,
+            CancellationToken.None
+        );
         StringBuilder stringBuilder = new StringBuilder();
         MarkdownHelpers.TaggedTextToMarkdown(
             descriptionTags,
             stringBuilder,
             _formattingOptions,
             MarkdownFormat.FirstLineAsCSharp,
-            out _);
+            out _
+        );
 
         return request.Hint with
         {
@@ -126,29 +149,35 @@ internal class InlayHintService :
             _logger = logger;
         }
 
-        public List<InlayHint> MapAndCacheHints(ImmutableArray<OmniSharpInlineHint> roslynHints, Document document, VersionStamp solutionVersion, SourceText text)
+        public List<InlayHint> MapAndCacheHints(
+            ImmutableArray<OmniSharpInlineHint> roslynHints,
+            Document document,
+            VersionStamp solutionVersion,
+            SourceText text
+        )
         {
             var resultList = new List<InlayHint>();
             var solutionVersionString = solutionVersion.ToString();
             lock (_lock)
             {
-                var hintsList = _currentVersionString == solutionVersionString
-                    ? _hints
-                    : new();
+                var hintsList = _currentVersionString == solutionVersionString ? _hints : new();
 
                 foreach (var hint in roslynHints)
                 {
                     var position = hintsList!.Count;
-                    resultList.Add(new InlayHint()
-                    {
-                        Label = string.Concat(hint.DisplayParts),
-                        Kind = hint.Ranking == ParameterRanking
-                            ? InlayHintKind.Parameter
-                            : InlayHintKind.Type,
-                        Position = text.GetPointFromPosition(hint.Span.End),
-                        TextEdits = ConvertToTextChanges(hint.ReplacementTextChange, text),
-                        Data = (solutionVersionString, position)
-                    });
+                    resultList.Add(
+                        new InlayHint()
+                        {
+                            Label = string.Concat(hint.DisplayParts),
+                            Kind =
+                                hint.Ranking == ParameterRanking
+                                    ? InlayHintKind.Parameter
+                                    : InlayHintKind.Type,
+                            Position = text.GetPointFromPosition(hint.Span.End),
+                            TextEdits = ConvertToTextChanges(hint.ReplacementTextChange, text),
+                            Data = (solutionVersionString, position),
+                        }
+                    );
 
                     hintsList.Add((hint, document));
                 }
@@ -160,14 +189,21 @@ internal class InlayHintService :
             return resultList;
         }
 
-        internal static LinePositionSpanTextChange[]? ConvertToTextChanges(TextChange? textChange, SourceText sourceText)
+        internal static LinePositionSpanTextChange[]? ConvertToTextChanges(
+            TextChange? textChange,
+            SourceText sourceText
+        )
         {
             return textChange.HasValue
                 ? new[] { TextChanges.Convert(sourceText, textChange.Value) }
                 : null;
         }
 
-        public bool TryGetFromCache(InlayHint hint, out OmniSharpInlineHint roslynHint, [NotNullWhen(true)] out Document? document)
+        public bool TryGetFromCache(
+            InlayHint hint,
+            out OmniSharpInlineHint roslynHint,
+            [NotNullWhen(true)] out Document? document
+        )
         {
             (roslynHint, document) = (default, null);
             lock (_lock)

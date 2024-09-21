@@ -1,29 +1,39 @@
-﻿#nullable enable
+#nullable enable
 
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.FindSymbols;
 using OmniSharp.Extensions;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace OmniSharp.Roslyn.CSharp.Services.Navigation
 {
     internal static class GoToDefinitionHelpers
     {
-        internal static async Task<ISymbol?> GetDefinitionSymbol(Document document, int line, int column, CancellationToken cancellationToken)
+        internal static async Task<ISymbol?> GetDefinitionSymbol(
+            Document document,
+            int line,
+            int column,
+            CancellationToken cancellationToken
+        )
         {
             var sourceText = await document.GetTextAsync(cancellationToken);
             var position = sourceText.GetPositionFromLineAndOffset(line, column);
-            var symbol = await SymbolFinder.FindSymbolAtPositionAsync(document, position, cancellationToken);
+            var symbol = await SymbolFinder.FindSymbolAtPositionAsync(
+                document,
+                position,
+                cancellationToken
+            );
 
             return symbol switch
             {
                 INamespaceSymbol => null,
                 // Always prefer the partial implementation over the definition
-                IMethodSymbol { IsPartialDefinition: true, PartialImplementationPart: var impl } => impl,
+                IMethodSymbol { IsPartialDefinition: true, PartialImplementationPart: var impl } =>
+                    impl,
                 // Don't return property getters/settings/initers
                 IMethodSymbol { AssociatedSymbol: IPropertySymbol } => null,
-                _ => symbol
+                _ => symbol,
             };
         }
 
@@ -31,12 +41,21 @@ namespace OmniSharp.Roslyn.CSharp.Services.Navigation
             Document document,
             ISymbol symbol,
             IExternalSourceService externalSourceService,
-            CancellationToken cancellationToken)
+            CancellationToken cancellationToken
+        )
         {
-            var (metadataDocument, _) = await externalSourceService.GetAndAddExternalSymbolDocument(document.Project, symbol, cancellationToken);
+            var (metadataDocument, _) = await externalSourceService.GetAndAddExternalSymbolDocument(
+                document.Project,
+                symbol,
+                cancellationToken
+            );
             if (metadataDocument != null)
             {
-                var metadataLocation = await externalSourceService.GetExternalSymbolLocation(symbol, metadataDocument, cancellationToken);
+                var metadataLocation = await externalSourceService.GetExternalSymbolLocation(
+                    symbol,
+                    metadataDocument,
+                    cancellationToken
+                );
                 return metadataLocation.GetMappedLineSpan();
             }
 

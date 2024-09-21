@@ -1,4 +1,4 @@
-﻿using System.Collections.Immutable;
+using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -11,7 +11,10 @@ namespace OmniSharp.Roslyn.CSharp.Helpers
 {
     public static class MarkdownHelpers
     {
-        private static Regex EscapeRegex = new Regex(@"([\\`\*_\{\}\[\]\(\)#+\-\.!])", RegexOptions.Compiled);
+        private static Regex EscapeRegex = new Regex(
+            @"([\\`\*_\{\}\[\]\(\)#+\-\.!])",
+            RegexOptions.Compiled
+        );
 
         public static string Escape(string markdown)
         {
@@ -28,6 +31,7 @@ namespace OmniSharp.Roslyn.CSharp.Helpers
         /// list.
         /// </summary>
         private const string ContainerStart = nameof(ContainerStart);
+
         /// <summary>
         /// Indicates the end of a text container. See <see cref="ContainerStart"/>.
         /// </summary>
@@ -36,7 +40,12 @@ namespace OmniSharp.Roslyn.CSharp.Helpers
         public static bool StartsWithNewline(this ImmutableArray<TaggedText> taggedParts)
         {
             return !taggedParts.IsDefaultOrEmpty
-                   && taggedParts[0].Tag switch { TextTags.LineBreak => true, ContainerStart => true, _ => false };
+                && taggedParts[0].Tag switch
+                {
+                    TextTags.LineBreak => true,
+                    ContainerStart => true,
+                    _ => false,
+                };
         }
 
         public static void TaggedTextToMarkdown(
@@ -44,7 +53,8 @@ namespace OmniSharp.Roslyn.CSharp.Helpers
             StringBuilder stringBuilder,
             FormattingOptions formattingOptions,
             MarkdownFormat markdownFormat,
-            out bool endedWithLineBreak)
+            out bool endedWithLineBreak
+        )
         {
             bool isInCodeBlock = false;
             bool brokeLine = true;
@@ -68,7 +78,7 @@ namespace OmniSharp.Roslyn.CSharp.Helpers
                         (false, MarkdownFormat.FirstLineAsCSharp) => true,
                         (true, MarkdownFormat.FirstLineDefaultRestCSharp) => true,
                         (_, MarkdownFormat.AllTextAsCSharp) => true,
-                        _ => false
+                        _ => false,
                     };
 
                     if (!canFormatAsBlock)
@@ -103,10 +113,15 @@ namespace OmniSharp.Roslyn.CSharp.Helpers
                     {
                         // If it's just a newline, we're going to default to standard handling which will
                         // skip the newline.
-                        canFormatAsBlock = !indexIsTag(i, ContainerStart, ContainerEnd, TextTags.LineBreak);
+                        canFormatAsBlock = !indexIsTag(
+                            i,
+                            ContainerStart,
+                            ContainerEnd,
+                            TextTags.LineBreak
+                        );
                     }
 
-                endOfLineOrTextFound:
+                    endOfLineOrTextFound:
                     if (canFormatAsBlock)
                     {
                         afterFirstLine = true;
@@ -115,14 +130,18 @@ namespace OmniSharp.Roslyn.CSharp.Helpers
                         for (; i < taggedParts.Length; i++)
                         {
                             current = taggedParts[i];
-                            if (current.Tag == ContainerStart
+                            if (
+                                current.Tag == ContainerStart
                                 || current.Tag == ContainerEnd
-                                || current.Tag == TextTags.LineBreak)
+                                || current.Tag == TextTags.LineBreak
+                            )
                             {
                                 stringBuilder.Append(formattingOptions.NewLine);
 
-                                if (markdownFormat != MarkdownFormat.AllTextAsCSharp
-                                    && markdownFormat != MarkdownFormat.FirstLineDefaultRestCSharp)
+                                if (
+                                    markdownFormat != MarkdownFormat.AllTextAsCSharp
+                                    && markdownFormat != MarkdownFormat.FirstLineDefaultRestCSharp
+                                )
                                 {
                                     // End the codeblock
                                     stringBuilder.Append("```");
@@ -148,7 +167,7 @@ namespace OmniSharp.Roslyn.CSharp.Helpers
                     }
                 }
 
-            standardHandling:
+                standardHandling:
                 switch (current.Tag)
                 {
                     case TextTags.Text when !isInCodeBlock:
@@ -184,7 +203,11 @@ namespace OmniSharp.Roslyn.CSharp.Helpers
                         break;
 
                     case TextTags.LineBreak:
-                        if (stringBuilder.Length != 0 && !indexIsTag(i + 1, ContainerStart, ContainerEnd) && i + 1 != taggedParts.Length)
+                        if (
+                            stringBuilder.Length != 0
+                            && !indexIsTag(i + 1, ContainerStart, ContainerEnd)
+                            && i + 1 != taggedParts.Length
+                        )
                         {
                             addNewline();
                         }
@@ -255,8 +278,8 @@ namespace OmniSharp.Roslyn.CSharp.Helpers
                 isInCodeBlock = false;
             }
 
-            bool indexIsTag(int i, params string[] tags)
-                => i < taggedParts.Length && tags.Contains(taggedParts[i].Tag);
+            bool indexIsTag(int i, params string[] tags) =>
+                i < taggedParts.Length && tags.Contains(taggedParts[i].Tag);
         }
     }
 
@@ -266,21 +289,25 @@ namespace OmniSharp.Roslyn.CSharp.Helpers
         /// Only format entire lines as C# code if there is no standard text on the line
         /// </summary>
         Default,
+
         /// <summary>
         /// Italicize the section
         /// </summary>
         Italicize,
+
         /// <summary>
         /// Format the first line as C#, unconditionally
         /// </summary>
         FirstLineAsCSharp,
+
         /// <summary>
         /// Format the first line as default text, and format the rest of the lines as C#, unconditionally
         /// </summary>
         FirstLineDefaultRestCSharp,
+
         /// <summary>
         /// Format the entire set of text as C#, unconditionally
         /// </summary>
-        AllTextAsCSharp
+        AllTextAsCSharp,
     }
 }

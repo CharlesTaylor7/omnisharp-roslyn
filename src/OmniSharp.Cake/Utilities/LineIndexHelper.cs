@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -13,7 +13,11 @@ namespace OmniSharp.Cake.Utilities
 {
     internal static class LineIndexHelper
     {
-        public static async Task<int> TranslateToGenerated(string fileName, int index, OmniSharpWorkspace workspace)
+        public static async Task<int> TranslateToGenerated(
+            string fileName,
+            int index,
+            OmniSharpWorkspace workspace
+        )
         {
             if (string.IsNullOrEmpty(fileName))
             {
@@ -38,9 +42,11 @@ namespace OmniSharp.Cake.Utilities
                     continue;
                 }
 
-                if (!(root.FindNode(line.Span, true) is LineDirectiveTriviaSyntax lineDirective) ||
-                    lineDirective.Line.IsMissing ||
-                    !PathsAreEqual((string)lineDirective.File.Value, fileName))
+                if (
+                    !(root.FindNode(line.Span, true) is LineDirectiveTriviaSyntax lineDirective)
+                    || lineDirective.Line.IsMissing
+                    || !PathsAreEqual((string)lineDirective.File.Value, fileName)
+                )
                 {
                     continue;
                 }
@@ -58,7 +64,12 @@ namespace OmniSharp.Cake.Utilities
             return index;
         }
 
-        public static async Task<(int, string)> TranslateFromGenerated(string fileName, int index, OmniSharpWorkspace workspace, bool sameFile)
+        public static async Task<(int, string)> TranslateFromGenerated(
+            string fileName,
+            int index,
+            OmniSharpWorkspace workspace,
+            bool sameFile
+        )
         {
             if (string.IsNullOrEmpty(fileName))
             {
@@ -84,11 +95,7 @@ namespace OmniSharp.Cake.Utilities
             }
 
             var point = new Point { Column = 0, Line = index };
-            var textSpan = sourceText.GetSpanFromRange(new Range
-            {
-                Start = point,
-                End = point
-            });
+            var textSpan = sourceText.GetSpanFromRange(new Range { Start = point, End = point });
 
             var lineMapping = syntaxTree.GetMappedLineSpan(textSpan);
 
@@ -97,7 +104,10 @@ namespace OmniSharp.Cake.Utilities
                 return (-1, fileName);
             }
 
-            return (lineMapping.StartLinePosition.Line, PlatformHelper.IsWindows ? lineMapping.Path.Replace('/', '\\') : lineMapping.Path);
+            return (
+                lineMapping.StartLinePosition.Line,
+                PlatformHelper.IsWindows ? lineMapping.Path.Replace('/', '\\') : lineMapping.Path
+            );
         }
 
         private static bool PathsAreEqual(string x, string y)
@@ -112,7 +122,9 @@ namespace OmniSharp.Cake.Utilities
                 return false;
             }
 
-            var comparer = PlatformHelper.IsWindows ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
+            var comparer = PlatformHelper.IsWindows
+                ? StringComparison.OrdinalIgnoreCase
+                : StringComparison.Ordinal;
 
             return Path.GetFullPath(x).Equals(Path.GetFullPath(y), comparer);
         }

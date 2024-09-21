@@ -23,30 +23,33 @@ namespace OmniSharp.Roslyn.CSharp.Tests
 
             public bool IsEnabled(LogLevel logLevel) => true;
 
-            public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)
+            public void Log<TState>(
+                LogLevel logLevel,
+                EventId eventId,
+                TState state,
+                Exception exception,
+                Func<TState, Exception, string> formatter
+            )
             {
                 RecordedMessages = RecordedMessages.Add(state.ToString());
             }
 
-            public ImmutableArray<string> RecordedMessages { get; set; } = ImmutableArray.Create<string>();
+            public ImmutableArray<string> RecordedMessages { get; set; } =
+                ImmutableArray.Create<string>();
         }
 
         private class LoggerFactory : ILoggerFactory
         {
             public Logger Logger { get; } = new Logger();
 
-            public void AddProvider(ILoggerProvider provider)
-            {
-            }
+            public void AddProvider(ILoggerProvider provider) { }
 
             public ILogger CreateLogger(string categoryName)
             {
                 return Logger;
             }
 
-            public void Dispose()
-            {
-            }
+            public void Dispose() { }
         }
 
         [Theory]
@@ -112,24 +115,25 @@ namespace OmniSharp.Roslyn.CSharp.Tests
 
             var queue = new AsyncAnalyzerWorkQueue(new LoggerFactory());
 
-            var parallelQueues =
-                Enumerable.Range(0, 10)
-                    .Select(_ =>
-                        Task.Run(async () =>
-                        {
-                            var document = CreateTestDocumentId();
+            var parallelQueues = Enumerable
+                .Range(0, 10)
+                .Select(_ =>
+                    Task.Run(async () =>
+                    {
+                        var document = CreateTestDocumentId();
 
-                            queue.PutWork(new[] { document }, AnalyzerWorkType.Foreground);
+                        queue.PutWork(new[] { document }, AnalyzerWorkType.Foreground);
 
-                            var work = await queue.TakeWorkAsync();
+                        var work = await queue.TakeWorkAsync();
 
-                            var pendingTask = queue.WaitForegroundWorkCompleteWithTimeout(1000);
+                        var pendingTask = queue.WaitForegroundWorkCompleteWithTimeout(1000);
 
-                            var pendingTask2 = queue.WaitForegroundWorkCompleteWithTimeout(1000);
+                        var pendingTask2 = queue.WaitForegroundWorkCompleteWithTimeout(1000);
 
-                            pendingTask.Wait(TimeSpan.FromMilliseconds(300));
-                        }))
-                    .ToArray();
+                        pendingTask.Wait(TimeSpan.FromMilliseconds(300));
+                    })
+                )
+                .ToArray();
 
             await Task.WhenAll(parallelQueues);
 
@@ -146,7 +150,9 @@ namespace OmniSharp.Roslyn.CSharp.Tests
             queue.PutWork(new[] { document1 }, AnalyzerWorkType.Foreground);
 
             var work = await queue.TakeWorkAsync();
-            var waitingCall = Task.Run(async () => await queue.WaitForegroundWorkCompleteWithTimeout(10 * 1000));
+            var waitingCall = Task.Run(
+                async () => await queue.WaitForegroundWorkCompleteWithTimeout(10 * 1000)
+            );
             await Task.Delay(50);
 
             // User updates code -> document is queued again during period when theres already api call waiting
@@ -172,7 +178,9 @@ namespace OmniSharp.Roslyn.CSharp.Tests
             queue.PutWork(new[] { document }, AnalyzerWorkType.Foreground);
 
             var work = await queue.TakeWorkAsync();
-            var waitingCall = Task.Run(async () => await queue.WaitForegroundWorkCompleteWithTimeout(10 * 1000));
+            var waitingCall = Task.Run(
+                async () => await queue.WaitForegroundWorkCompleteWithTimeout(10 * 1000)
+            );
             await Task.Delay(50);
 
             // User updates code -> document is queued again during period when theres already api call waiting
@@ -251,8 +259,9 @@ namespace OmniSharp.Roslyn.CSharp.Tests
 
             await queue.TakeWorkAsyncWithTimeout();
 
-            await Assert.ThrowsAsync<OperationCanceledException>(() =>
-                queue.TakeWorkAsyncWithTimeout());
+            await Assert.ThrowsAsync<OperationCanceledException>(
+                () => queue.TakeWorkAsyncWithTimeout()
+            );
         }
 
         [Fact]
@@ -278,8 +287,9 @@ namespace OmniSharp.Roslyn.CSharp.Tests
             var queue = new AsyncAnalyzerWorkQueue(new LoggerFactory());
             var document = CreateTestDocumentId();
 
-            await Assert.ThrowsAsync<OperationCanceledException>(() =>
-                queue.TakeWorkAsyncWithTimeout());
+            await Assert.ThrowsAsync<OperationCanceledException>(
+                () => queue.TakeWorkAsyncWithTimeout()
+            );
         }
 
         [Fact]
@@ -336,7 +346,8 @@ namespace OmniSharp.Roslyn.CSharp.Tests
                 version: VersionStamp.Create(),
                 name: "testProject",
                 assemblyName: "AssemblyName",
-                language: LanguageNames.CSharp);
+                language: LanguageNames.CSharp
+            );
 
             return DocumentId.CreateNewId(projectInfo.Id);
         }
@@ -344,14 +355,19 @@ namespace OmniSharp.Roslyn.CSharp.Tests
 
     public static class AsyncAnalyzerWorkerQueueFactsExtensions
     {
-        public static async Task<AsyncAnalyzerWorkQueue.QueueItem> TakeWorkAsyncWithTimeout(this AsyncAnalyzerWorkQueue queue)
+        public static async Task<AsyncAnalyzerWorkQueue.QueueItem> TakeWorkAsyncWithTimeout(
+            this AsyncAnalyzerWorkQueue queue
+        )
         {
             using var cts = new CancellationTokenSource(50);
 
             return await queue.TakeWorkAsync(cts.Token);
         }
 
-        public static async Task<bool> WaitForegroundWorkCompleteWithTimeout(this AsyncAnalyzerWorkQueue queue, int timeout)
+        public static async Task<bool> WaitForegroundWorkCompleteWithTimeout(
+            this AsyncAnalyzerWorkQueue queue,
+            int timeout
+        )
         {
             using var cts = new CancellationTokenSource(timeout);
 

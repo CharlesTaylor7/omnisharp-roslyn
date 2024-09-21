@@ -8,10 +8,19 @@ namespace OmniSharp.Stdio
         private readonly CommandOption _lsp;
         private readonly CommandOption _encoding;
 
-        public StdioCommandLineApplication() : base()
+        public StdioCommandLineApplication()
+            : base()
         {
-            _lsp = Application.Option("-lsp | --languageserver", "Use Language Server Protocol.", CommandOptionType.NoValue);
-            _encoding = Application.Option("-e | --encoding", "Input / output encoding for STDIO protocol.", CommandOptionType.SingleValue);
+            _lsp = Application.Option(
+                "-lsp | --languageserver",
+                "Use Language Server Protocol.",
+                CommandOptionType.NoValue
+            );
+            _encoding = Application.Option(
+                "-e | --encoding",
+                "Input / output encoding for STDIO protocol.",
+                CommandOptionType.SingleValue
+            );
         }
 
         public bool Lsp => _lsp.HasValue();

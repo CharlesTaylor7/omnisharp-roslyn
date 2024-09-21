@@ -11,13 +11,19 @@ namespace OmniSharp.DotNetTest.Tests
     public class RunTestFacts : AbstractTestFixture
     {
         public RunTestFacts(ITestOutputHelper testOutput)
-            : base(testOutput)
-        {
-        }
+            : base(testOutput) { }
 
         public override DotNetCliVersion DotNetCliVersion { get; } = DotNetCliVersion.Current;
 
-        protected async Task<RunTestResponse> RunDotNetTestAsync(string projectName, string methodName, string testFramework, bool shouldPass, string targetFrameworkVersion = null, bool expectResults = true, bool useRunSettings = false)
+        protected async Task<RunTestResponse> RunDotNetTestAsync(
+            string projectName,
+            string methodName,
+            string testFramework,
+            bool shouldPass,
+            string targetFrameworkVersion = null,
+            bool expectResults = true,
+            bool useRunSettings = false
+        )
         {
             using (var testProject = await TestAssets.Instance.GetTestProjectAsync(projectName))
             using (var host = CreateOmniSharpHost(testProject.Directory, null, DotNetCliVersion))
@@ -29,12 +35,15 @@ namespace OmniSharp.DotNetTest.Tests
                     FileName = Path.Combine(testProject.Directory, "TestProgram.cs"),
                     MethodName = methodName,
                     TestFrameworkName = testFramework,
-                    TargetFrameworkVersion = targetFrameworkVersion
+                    TargetFrameworkVersion = targetFrameworkVersion,
                 };
 
                 if (useRunSettings)
                 {
-                    request.RunSettings = Path.Combine(testProject.Directory, "TestRunSettings.runsettings");
+                    request.RunSettings = Path.Combine(
+                        testProject.Directory,
+                        "TestRunSettings.runsettings"
+                    );
                 }
 
                 var response = await service.Handle(request);
@@ -65,7 +74,8 @@ namespace OmniSharp.DotNetTest.Tests
                 methodName: "Main.Test.MainTest.Test",
                 testFramework: "xunit",
                 shouldPass: true,
-                targetFrameworkVersion: ".NETCoreApp,Version=v6.0");
+                targetFrameworkVersion: ".NETCoreApp,Version=v6.0"
+            );
         }
 
         [Fact]
@@ -76,7 +86,8 @@ namespace OmniSharp.DotNetTest.Tests
                 methodName: "Main.Test.MainTest.DataDrivenTest1",
                 testFramework: "xunit",
                 shouldPass: false,
-                targetFrameworkVersion: ".NETCoreApp,Version=v6.0");
+                targetFrameworkVersion: ".NETCoreApp,Version=v6.0"
+            );
         }
 
         [Fact]
@@ -87,7 +98,8 @@ namespace OmniSharp.DotNetTest.Tests
                 methodName: "Main.Test.MainTest.DataDrivenTest2",
                 testFramework: "xunit",
                 shouldPass: true,
-                targetFrameworkVersion: ".NETCoreApp,Version=v6.0");
+                targetFrameworkVersion: ".NETCoreApp,Version=v6.0"
+            );
         }
 
         [Fact]
@@ -98,7 +110,8 @@ namespace OmniSharp.DotNetTest.Tests
                 methodName: "Main.Test.MainTest.UsesDisplayName",
                 testFramework: "xunit",
                 shouldPass: true,
-                targetFrameworkVersion: ".NETCoreApp,Version=v6.0");
+                targetFrameworkVersion: ".NETCoreApp,Version=v6.0"
+            );
         }
 
         [Fact]
@@ -109,7 +122,8 @@ namespace OmniSharp.DotNetTest.Tests
                 methodName: "Main.Test.MainTest.TestWithSimilarName",
                 testFramework: "xunit",
                 shouldPass: true,
-                targetFrameworkVersion: ".NETCoreApp,Version=v6.0");
+                targetFrameworkVersion: ".NETCoreApp,Version=v6.0"
+            );
 
             Assert.Single(response.Results);
         }
@@ -122,7 +136,8 @@ namespace OmniSharp.DotNetTest.Tests
                 methodName: "Main.Test.MainTest.FailingTest",
                 testFramework: "xunit",
                 shouldPass: false,
-                targetFrameworkVersion: ".NETCoreApp,Version=v6.0");
+                targetFrameworkVersion: ".NETCoreApp,Version=v6.0"
+            );
 
             Assert.Single(response.Results);
             Assert.NotEmpty(response.Results[0].ErrorMessage);
@@ -137,7 +152,8 @@ namespace OmniSharp.DotNetTest.Tests
                 methodName: "Main.Test.MainTest.CheckStandardOutput",
                 testFramework: "xunit",
                 shouldPass: true,
-                targetFrameworkVersion: ".NETCoreApp,Version=v6.0");
+                targetFrameworkVersion: ".NETCoreApp,Version=v6.0"
+            );
 
             Assert.Single(response.Results);
             Assert.NotEmpty(response.Results[0].StandardOutput);
@@ -150,7 +166,8 @@ namespace OmniSharp.DotNetTest.Tests
                 NUnitTestProject,
                 methodName: "Main.Test.MainTest.Test",
                 testFramework: "nunit",
-                shouldPass: true);
+                shouldPass: true
+            );
         }
 
         [Fact]
@@ -160,7 +177,8 @@ namespace OmniSharp.DotNetTest.Tests
                 NUnitTestProject,
                 methodName: "Main.Test.MainTest.DataDrivenTest1",
                 testFramework: "nunit",
-                shouldPass: false);
+                shouldPass: false
+            );
         }
 
         [Fact]
@@ -170,7 +188,8 @@ namespace OmniSharp.DotNetTest.Tests
                 NUnitTestProject,
                 methodName: "Main.Test.MainTest.DataDrivenTest2",
                 testFramework: "nunit",
-                shouldPass: true);
+                shouldPass: true
+            );
         }
 
         [Fact]
@@ -180,7 +199,8 @@ namespace OmniSharp.DotNetTest.Tests
                 NUnitTestProject,
                 methodName: "Main.Test.MainTest.SourceDataDrivenTest",
                 testFramework: "nunit",
-                shouldPass: true);
+                shouldPass: true
+            );
         }
 
         [Fact]
@@ -190,7 +210,8 @@ namespace OmniSharp.DotNetTest.Tests
                 NUnitTestProject,
                 methodName: "Main.Test.MainTest.FailingTest",
                 testFramework: "nunit",
-                shouldPass: false);
+                shouldPass: false
+            );
 
             Assert.Single(response.Results);
             Assert.NotEmpty(response.Results[0].ErrorMessage);
@@ -204,7 +225,8 @@ namespace OmniSharp.DotNetTest.Tests
                 NUnitTestProject,
                 methodName: "Main.Test.MainTest.CheckStandardOutput",
                 testFramework: "nunit",
-                shouldPass: true);
+                shouldPass: true
+            );
 
             Assert.Single(response.Results);
             Assert.NotEmpty(response.Results[0].StandardOutput);
@@ -217,7 +239,8 @@ namespace OmniSharp.DotNetTest.Tests
                 NUnitTestProject,
                 methodName: "Main.Test.GenericTest`1.TypedTest",
                 testFramework: "nunit",
-                shouldPass: true);
+                shouldPass: true
+            );
 
             Assert.Equal(2, response.Results.Length);
         }
@@ -229,7 +252,8 @@ namespace OmniSharp.DotNetTest.Tests
                 NUnitTestProject,
                 methodName: "Main.Test.TheorySampleTestsGeneric`1.TestGenericForArbitraryArray",
                 testFramework: "nunit",
-                shouldPass: true);
+                shouldPass: true
+            );
 
             Assert.Single(response.Results);
         }
@@ -241,7 +265,8 @@ namespace OmniSharp.DotNetTest.Tests
                 MSTestProject,
                 methodName: "Main.Test.MainTest.Test",
                 testFramework: "mstest",
-                shouldPass: true);
+                shouldPass: true
+            );
         }
 
         [Fact]
@@ -251,7 +276,8 @@ namespace OmniSharp.DotNetTest.Tests
                 MSTestProject,
                 methodName: "Main.Test.MainTest.DataDrivenTest1",
                 testFramework: "mstest",
-                shouldPass: false);
+                shouldPass: false
+            );
         }
 
         [Fact]
@@ -261,7 +287,8 @@ namespace OmniSharp.DotNetTest.Tests
                 MSTestProject,
                 methodName: "Main.Test.MainTest.DataDrivenTest2",
                 testFramework: "mstest",
-                shouldPass: true);
+                shouldPass: true
+            );
         }
 
         [Fact]
@@ -271,7 +298,8 @@ namespace OmniSharp.DotNetTest.Tests
                 MSTestProject,
                 methodName: "Main.Test.MainTest.FailingTest",
                 testFramework: "mstest",
-                shouldPass: false);
+                shouldPass: false
+            );
 
             Assert.Single(response.Results);
             Assert.NotEmpty(response.Results[0].ErrorMessage);
@@ -285,7 +313,8 @@ namespace OmniSharp.DotNetTest.Tests
                 MSTestProject,
                 methodName: "Main.Test.MainTest.CheckStandardOutput",
                 testFramework: "mstest",
-                shouldPass: true);
+                shouldPass: true
+            );
 
             Assert.Single(response.Results);
             Assert.NotEmpty(response.Results[0].StandardOutput);
@@ -299,7 +328,8 @@ namespace OmniSharp.DotNetTest.Tests
                 methodName: "Main.Test.MainTest.CheckRunSettings",
                 testFramework: "mstest",
                 shouldPass: true,
-                useRunSettings: true);
+                useRunSettings: true
+            );
         }
 
         [Fact]
@@ -310,7 +340,8 @@ namespace OmniSharp.DotNetTest.Tests
                 methodName: "Main.Test.MainTest.CheckRunSettings",
                 testFramework: "mstest",
                 shouldPass: false,
-                useRunSettings: false);
+                useRunSettings: false
+            );
 
             Assert.Single(response.Results);
             Assert.NotEmpty(response.Results[0].ErrorMessage);

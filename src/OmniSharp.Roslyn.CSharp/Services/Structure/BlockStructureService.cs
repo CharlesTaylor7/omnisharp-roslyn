@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Composition;
 using System.Threading;
@@ -12,7 +12,8 @@ using OmniSharp.Models.V2;
 namespace OmniSharp.Roslyn.CSharp.Services.Structure
 {
     [OmniSharpHandler(OmniSharpEndpoints.V2.BlockStructure, LanguageNames.CSharp)]
-    public class BlockStructureService : IRequestHandler<BlockStructureRequest, BlockStructureResponse>
+    public class BlockStructureService
+        : IRequestHandler<BlockStructureRequest, BlockStructureResponse>
     {
         private readonly OmniSharpWorkspace _workspace;
 
@@ -35,18 +36,26 @@ namespace OmniSharp.Roslyn.CSharp.Services.Structure
 
             var options = new OmniSharpBlockStructureOptions(
                 ShowBlockStructureGuidesForCommentsAndPreprocessorRegions: true,
-                ShowOutliningForCommentsAndPreprocessorRegions: true);
+                ShowOutliningForCommentsAndPreprocessorRegions: true
+            );
 
-            var structure = await OmniSharpBlockStructureService.GetBlockStructureAsync(document, options, CancellationToken.None);
+            var structure = await OmniSharpBlockStructureService.GetBlockStructureAsync(
+                document,
+                options,
+                CancellationToken.None
+            );
 
             var outliningSpans = new List<CodeFoldingBlock>();
             foreach (var span in structure.Spans)
             {
                 if (span.IsCollapsible)
                 {
-                    outliningSpans.Add(new CodeFoldingBlock(
-                        text.GetRangeFromSpan(span.TextSpan),
-                        type: ConvertToWellKnownBlockType(span.Type)));
+                    outliningSpans.Add(
+                        new CodeFoldingBlock(
+                            text.GetRangeFromSpan(span.TextSpan),
+                            type: ConvertToWellKnownBlockType(span.Type)
+                        )
+                    );
                 }
             }
 
@@ -56,10 +65,9 @@ namespace OmniSharp.Roslyn.CSharp.Services.Structure
         private string ConvertToWellKnownBlockType(string kind)
         {
             return kind == CodeFoldingBlockKinds.Comment || kind == CodeFoldingBlockKinds.Imports
-                ? kind
-                : kind == OmniSharpBlockTypes.PreprocessorRegion
-                    ? CodeFoldingBlockKinds.Region
-                    : null;
+                    ? kind
+                : kind == OmniSharpBlockTypes.PreprocessorRegion ? CodeFoldingBlockKinds.Region
+                : null;
         }
     }
 }

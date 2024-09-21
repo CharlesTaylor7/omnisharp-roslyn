@@ -8,9 +8,7 @@ using System.Reactive;
 using System.Reactive.Threading.Tasks;
 using System.Threading;
 using System.Threading.Tasks;
-
 using MediatR;
-
 using Microsoft.CodeAnalysis;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -56,7 +54,8 @@ namespace OmniSharp.LanguageServerProtocol
             Stream output,
             CommandLineApplication application,
             CancellationTokenSource cancellationTokenSource,
-            Action<ILoggingBuilder> configureLogging = null)
+            Action<ILoggingBuilder> configureLogging = null
+        )
         {
             _options = new LanguageServerOptions()
                 .WithInput(input)
@@ -83,7 +82,8 @@ namespace OmniSharp.LanguageServerProtocol
             Stream input,
             Stream output,
             Action<LanguageServerOptions> configureServer,
-            CancellationTokenSource cancellationTokenSource)
+            CancellationTokenSource cancellationTokenSource
+        )
         {
             _options = new LanguageServerOptions()
                 .WithInput(input)
@@ -98,18 +98,14 @@ namespace OmniSharp.LanguageServerProtocol
         private void ConfigureServices(IServiceCollection services)
         {
             _services = services;
-            services.AddSingleton(new ConfigurationItem()
-            {
-                Section = "csharp"
-            });
-            services.AddSingleton(new ConfigurationItem()
-            {
-                Section = "omnisharp"
-            });
+            services.AddSingleton(new ConfigurationItem() { Section = "csharp" });
+            services.AddSingleton(new ConfigurationItem() { Section = "omnisharp" });
             services.AddSingleton(new DocumentVersions());
             // This allows us to log normal messages over std error
             // which then ensures that all communication over std out are LSP messages
-            services.Configure<ConsoleLoggerOptions>(z => z.LogToStandardErrorThreshold = LogLevel.Trace);
+            services.Configure<ConsoleLoggerOptions>(z =>
+                z.LogToStandardErrorThreshold = LogLevel.Trace
+            );
         }
 
         public void Dispose()
@@ -133,9 +129,13 @@ namespace OmniSharp.LanguageServerProtocol
             server.Exit.Subscribe(Observer.Create<int>(i => Cancel()));
 
             var environment = _compositionHost.GetExport<IOmniSharpEnvironment>();
-            var logger = _compositionHost.GetExport<ILoggerFactory>().CreateLogger<LanguageServerHost>();
+            var logger = _compositionHost
+                .GetExport<ILoggerFactory>()
+                .CreateLogger<LanguageServerHost>();
 
-            logger.LogInformation($"Omnisharp server running using Lsp at location '{environment.TargetDirectory}' on host {environment.HostProcessId}.");
+            logger.LogInformation(
+                $"Omnisharp server running using Lsp at location '{environment.TargetDirectory}' on host {environment.HostProcessId}."
+            );
 
             Console.CancelKeyPress += (sender, e) =>
             {
@@ -178,47 +178,66 @@ namespace OmniSharp.LanguageServerProtocol
             }
         }
 
-        private static Action<ILoggingBuilder> AddLanguageProtocolLogging(LogLevel loglevel)
-            => builder => builder.AddLanguageProtocolLogging().SetMinimumLevel(loglevel);
+        private static Action<ILoggingBuilder> AddLanguageProtocolLogging(LogLevel loglevel) =>
+            builder => builder.AddLanguageProtocolLogging().SetMinimumLevel(loglevel);
 
-        private static Action<ILoggingBuilder> ConfigureLogging(Action<ILoggingBuilder> configureLogging, LogLevel loglevel) => builder =>
-        {
-            configureLogging?.Invoke(builder);
-            builder.SetMinimumLevel(loglevel);
-        };
+        private static Action<ILoggingBuilder> ConfigureLogging(
+            Action<ILoggingBuilder> configureLogging,
+            LogLevel loglevel
+        ) =>
+            builder =>
+            {
+                configureLogging?.Invoke(builder);
+                builder.SetMinimumLevel(loglevel);
+            };
 
-        private static (IServiceProvider serviceProvider, CompositionHost compositionHost) CreateCompositionHost(
+        private static (
+            IServiceProvider serviceProvider,
+            CompositionHost compositionHost
+        ) CreateCompositionHost(
             ILanguageServer server,
             InitializeParams initializeParams,
             CommandLineApplication application,
             IServiceCollection services,
-            Action<ILoggingBuilder> configureLogging)
+            Action<ILoggingBuilder> configureLogging
+        )
         {
             var logLevel = GetLogLevel(initializeParams.Trace);
             var environment = new OmniSharpEnvironment(
                 // TODO: Support solution selection from the server side in the future
                 // For now selection can be done by passing -s to the server
-                !string.IsNullOrEmpty(application.ApplicationRoot) ? application.ApplicationRoot : Helpers.FromUri(initializeParams.RootUri),
+                !string.IsNullOrEmpty(application.ApplicationRoot)
+                    ? application.ApplicationRoot
+                    : Helpers.FromUri(initializeParams.RootUri),
                 Convert.ToInt32(initializeParams.ProcessId ?? application.HostPid),
                 application.LogLevel < logLevel ? application.LogLevel : logLevel,
-                application.OtherArgs.ToArray());
+                application.OtherArgs.ToArray()
+            );
 
             var configurationResult = new ConfigurationBuilder(environment).Build(b =>
-                b.AddConfiguration(server.Configuration.GetSection("csharp")).AddConfiguration(server.Configuration.GetSection("omnisharp")));
+                b.AddConfiguration(server.Configuration.GetSection("csharp"))
+                    .AddConfiguration(server.Configuration.GetSection("omnisharp"))
+            );
             var eventEmitter = new LanguageServerEventEmitter(server);
 
-            services.AddSingleton(server)
-                .AddSingleton<ILanguageServerFacade>(server);
+            services.AddSingleton(server).AddSingleton<ILanguageServerFacade>(server);
 
-            var serviceProvider =
-                CompositionHostBuilder.CreateDefaultServiceProvider(environment, configurationResult.Configuration, eventEmitter,
-                    services, ConfigureLogging(configureLogging, environment.LogLevel));
+            var serviceProvider = CompositionHostBuilder.CreateDefaultServiceProvider(
+                environment,
+                configurationResult.Configuration,
+                eventEmitter,
+                services,
+                ConfigureLogging(configureLogging, environment.LogLevel)
+            );
 
             var loggerFactory = serviceProvider.GetService<ILoggerFactory>();
             var logger = loggerFactory.CreateLogger<LanguageServerHost>();
             if (configurationResult.HasError())
             {
-                logger.LogError(configurationResult.Exception, "There was an error when reading the OmniSharp configuration, starting with the default options.");
+                logger.LogError(
+                    configurationResult.Exception,
+                    "There was an error when reading the OmniSharp configuration, starting with the default options."
+                );
             }
 
             var options = serviceProvider.GetRequiredService<IOptionsMonitor<OmniSharpOptions>>();
@@ -228,52 +247,61 @@ namespace OmniSharp.LanguageServerProtocol
             var compositionHostBuilder = new CompositionHostBuilder(serviceProvider)
                 .WithOmniSharpAssemblies()
                 .WithAssemblies(typeof(LanguageServerHost).Assembly)
-                .WithAssemblies(assemblyLoader.LoadByAssemblyNameOrPath(logger, plugins.AssemblyNames).ToArray());
+                .WithAssemblies(
+                    assemblyLoader.LoadByAssemblyNameOrPath(logger, plugins.AssemblyNames).ToArray()
+                );
 
             return (serviceProvider, compositionHostBuilder.Build(environment.TargetDirectory));
         }
 
-        internal static RequestHandlers ConfigureCompositionHost(ILanguageServer server,
-            CompositionHost compositionHost)
+        internal static RequestHandlers ConfigureCompositionHost(
+            ILanguageServer server,
+            CompositionHost compositionHost
+        )
         {
             var projectSystems = compositionHost.GetExports<IProjectSystem>();
 
             var documentSelectors = projectSystems
                 .GroupBy(x => x.Language)
-                .Select(x => (
-                    language: x.Key,
-                    selector: new TextDocumentSelector(x
-                        .SelectMany(z => z.Extensions)
-                        .Distinct()
-                        .SelectMany(z =>
-                        {
-                            if (x.Key == LanguageNames.CSharp && z == ".cs")
-                            {
-                                return new[]
+                .Select(x =>
+                    (
+                        language: x.Key,
+                        selector: new TextDocumentSelector(
+                            x.SelectMany(z => z.Extensions)
+                                .Distinct()
+                                .SelectMany(z =>
                                 {
-                                    new TextDocumentFilter() {Pattern = $"**/*{z}"},
-                                    new TextDocumentFilter() {Scheme = "csharp"}
-                                };
-                            }
+                                    if (x.Key == LanguageNames.CSharp && z == ".cs")
+                                    {
+                                        return new[]
+                                        {
+                                            new TextDocumentFilter() { Pattern = $"**/*{z}" },
+                                            new TextDocumentFilter() { Scheme = "csharp" },
+                                        };
+                                    }
 
-                            return new[]
-                            {
-                                new TextDocumentFilter() {Pattern = $"**/*{z}"},
-                            };
-                        })
+                                    return new[]
+                                    {
+                                        new TextDocumentFilter() { Pattern = $"**/*{z}" },
+                                    };
+                                })
+                        )
                     )
-                ))
+                )
                 .ToArray();
 
-            var logger = compositionHost.GetExport<ILoggerFactory>().CreateLogger<LanguageServerHost>();
+            var logger = compositionHost
+                .GetExport<ILoggerFactory>()
+                .CreateLogger<LanguageServerHost>();
 
             logger.LogTrace(
                 "Configured Document Selectors {@DocumentSelectors}",
                 documentSelectors.Select(x => new { x.language, x.selector })
             );
 
-            var omnisharpRequestHandlers =
-                compositionHost.GetExports<Lazy<IRequestHandler, OmniSharpRequestHandlerMetadata>>();
+            var omnisharpRequestHandlers = compositionHost.GetExports<
+                Lazy<IRequestHandler, OmniSharpRequestHandlerMetadata>
+            >();
             // TODO: Get these with metadata so we can attach languages
             // This will then let us build up a better document filter, and add handles foreach type of handler
             // This will mean that we will have a strategy to create handlers from the interface type
@@ -298,7 +326,10 @@ namespace OmniSharp.LanguageServerProtocol
             // and not loose any functionality.
             server.Register(r =>
             {
-                var defaultOptions = new JsonRpcHandlerOptions() { RequestProcessType = RequestProcessType.Parallel };
+                var defaultOptions = new JsonRpcHandlerOptions()
+                {
+                    RequestProcessType = RequestProcessType.Parallel,
+                };
                 var interop = InitializeInterop(compositionHost);
                 foreach (var osHandler in interop)
                 {
@@ -308,30 +339,52 @@ namespace OmniSharp.LanguageServerProtocol
                 }
 
                 static Func<JToken, CancellationToken, Task<JToken>> CreateInteropHandler(
-                    Lazy<LanguageProtocolInteropHandler> handler) => async (request, cancellationToken) =>
-                {
-                    var response = await handler.Value.Handle(request);
-                    return response == null ? JValue.CreateNull() : JToken.FromObject(response);
-                };
+                    Lazy<LanguageProtocolInteropHandler> handler
+                ) =>
+                    async (request, cancellationToken) =>
+                    {
+                        var response = await handler.Value.Handle(request);
+                        return response == null ? JValue.CreateNull() : JToken.FromObject(response);
+                    };
 
-                r.OnRequest<JToken, object>($"o#/{OmniSharpEndpoints.CheckAliveStatus.Trim('/').ToLowerInvariant()}",
-                    (request, cancellationToken) => Task.FromResult<object>(true), defaultOptions);
-                r.OnRequest<JToken, object>($"o#/{OmniSharpEndpoints.CheckReadyStatus.Trim('/').ToLowerInvariant()}",
+                r.OnRequest<JToken, object>(
+                    $"o#/{OmniSharpEndpoints.CheckAliveStatus.Trim('/').ToLowerInvariant()}",
+                    (request, cancellationToken) => Task.FromResult<object>(true),
+                    defaultOptions
+                );
+                r.OnRequest<JToken, object>(
+                    $"o#/{OmniSharpEndpoints.CheckReadyStatus.Trim('/').ToLowerInvariant()}",
                     (request, cancellationToken) =>
-                        Task.FromResult<object>(compositionHost.GetExport<OmniSharpWorkspace>().Initialized), defaultOptions);
-                r.OnRequest<JToken, object>($"o#/{OmniSharpEndpoints.StopServer.Trim('/').ToLowerInvariant()}",
-                    async (request, cancellationToken) => await server.Shutdown.ToTask(cancellationToken), defaultOptions);
+                        Task.FromResult<object>(
+                            compositionHost.GetExport<OmniSharpWorkspace>().Initialized
+                        ),
+                    defaultOptions
+                );
+                r.OnRequest<JToken, object>(
+                    $"o#/{OmniSharpEndpoints.StopServer.Trim('/').ToLowerInvariant()}",
+                    async (request, cancellationToken) =>
+                        await server.Shutdown.ToTask(cancellationToken),
+                    defaultOptions
+                );
             });
             logger.LogTrace("--- Handler Definitions ---");
 
             return handlers;
         }
 
-        private Task Initialize(ILanguageServer server, InitializeParams initializeParams,
-            CancellationToken cancellationToken)
+        private Task Initialize(
+            ILanguageServer server,
+            InitializeParams initializeParams,
+            CancellationToken cancellationToken
+        )
         {
-            (_serviceProvider, _compositionHost) =
-                CreateCompositionHost(server, initializeParams, _application, _services, _configureLogging);
+            (_serviceProvider, _compositionHost) = CreateCompositionHost(
+                server,
+                initializeParams,
+                _application,
+                _services,
+                _configureLogging
+            );
             var handlers = ConfigureCompositionHost(server, _compositionHost);
             RegisterHandlers(server, _compositionHost, handlers);
 
@@ -339,13 +392,20 @@ namespace OmniSharp.LanguageServerProtocol
             {
                 s.AddHandler(
                     new OmnisharpOnDidChangeWatchedFilesHandler(
-                        _serviceProvider.GetRequiredService<IFileSystemNotifier>()));
+                        _serviceProvider.GetRequiredService<IFileSystemNotifier>()
+                    )
+                );
             });
 
             return Task.CompletedTask;
         }
 
-        public async Task Initialized(ILanguageServer server, InitializeParams request, InitializeResult response, CancellationToken cancellationToken)
+        public async Task Initialized(
+            ILanguageServer server,
+            InitializeParams request,
+            InitializeResult response,
+            CancellationToken cancellationToken
+        )
         {
             WorkspaceInitializer.Initialize(_serviceProvider, _compositionHost);
 
@@ -353,7 +413,8 @@ namespace OmniSharp.LanguageServerProtocol
                 _compositionHost
                     .GetExports<IProjectSystem>()
                     .Select(ps => ps.WaitForIdleAsync())
-                    .ToArray());
+                    .ToArray()
+            );
         }
 
         internal void UnderTest(IServiceProvider serviceProvider, CompositionHost compositionHost)
@@ -362,7 +423,11 @@ namespace OmniSharp.LanguageServerProtocol
             _compositionHost = compositionHost;
         }
 
-        internal static void RegisterHandlers(ILanguageServer server, CompositionHost compositionHost, RequestHandlers handlers)
+        internal static void RegisterHandlers(
+            ILanguageServer server,
+            CompositionHost compositionHost,
+            RequestHandlers handlers
+        )
         {
             // TODO: Make it easier to resolve handlers from MEF (without having to add more attributes to the services if we can help it)
             var workspace = compositionHost.GetExport<OmniSharpWorkspace>();
@@ -371,26 +436,35 @@ namespace OmniSharp.LanguageServerProtocol
             var serializer = server.Services.GetRequiredService<ISerializer>();
             server.Register(s =>
             {
-                foreach (var handler in OmniSharpCodeActionHandler.Enumerate(handlers, server, documentVersions)
-                    .Concat(OmniSharpCodeLensHandler.Enumerate(handlers))
-                    .Concat(OmniSharpCompletionHandler.Enumerate(handlers))
-                    .Concat(OmniSharpDefinitionHandler.Enumerate(handlers))
-                    .Concat(OmniSharpDocumentFormattingHandler.Enumerate(handlers))
-                    .Concat(OmniSharpDocumentFormatRangeHandler.Enumerate(handlers))
-                    .Concat(OmniSharpDocumentOnTypeFormattingHandler.Enumerate(handlers))
-                    .Concat(OmniSharpDocumentHighlightHandler.Enumerate(handlers))
-                    .Concat(OmniSharpDocumentSymbolHandler.Enumerate(handlers))
-                    .Concat(OmniSharpFoldingRangenHandler.Enumerate(handlers))
-                    .Concat(OmniSharpHoverHandler.Enumerate(handlers))
-                    .Concat(OmniSharpImplementationHandler.Enumerate(handlers))
-                    .Concat(OmniSharpInlayHintHandler.Enumerate(handlers))
-                    .Concat(OmniSharpReferencesHandler.Enumerate(handlers))
-                    .Concat(OmniSharpRenameHandler.Enumerate(handlers))
-                    .Concat(OmniSharpSemanticTokensHandler.Enumerate(handlers))
-                    .Concat(OmniSharpSignatureHelpHandler.Enumerate(handlers))
-                    .Concat(OmniSharpTextDocumentSyncHandler.Enumerate(handlers, workspace, documentVersions))
-                    .Concat(OmniSharpTypeDefinitionHandler.Enumerate(handlers))
-                    .Concat(OmniSharpWorkspaceSymbolsHandler.Enumerate(handlers)))
+                foreach (
+                    var handler in OmniSharpCodeActionHandler
+                        .Enumerate(handlers, server, documentVersions)
+                        .Concat(OmniSharpCodeLensHandler.Enumerate(handlers))
+                        .Concat(OmniSharpCompletionHandler.Enumerate(handlers))
+                        .Concat(OmniSharpDefinitionHandler.Enumerate(handlers))
+                        .Concat(OmniSharpDocumentFormattingHandler.Enumerate(handlers))
+                        .Concat(OmniSharpDocumentFormatRangeHandler.Enumerate(handlers))
+                        .Concat(OmniSharpDocumentOnTypeFormattingHandler.Enumerate(handlers))
+                        .Concat(OmniSharpDocumentHighlightHandler.Enumerate(handlers))
+                        .Concat(OmniSharpDocumentSymbolHandler.Enumerate(handlers))
+                        .Concat(OmniSharpFoldingRangenHandler.Enumerate(handlers))
+                        .Concat(OmniSharpHoverHandler.Enumerate(handlers))
+                        .Concat(OmniSharpImplementationHandler.Enumerate(handlers))
+                        .Concat(OmniSharpInlayHintHandler.Enumerate(handlers))
+                        .Concat(OmniSharpReferencesHandler.Enumerate(handlers))
+                        .Concat(OmniSharpRenameHandler.Enumerate(handlers))
+                        .Concat(OmniSharpSemanticTokensHandler.Enumerate(handlers))
+                        .Concat(OmniSharpSignatureHelpHandler.Enumerate(handlers))
+                        .Concat(
+                            OmniSharpTextDocumentSyncHandler.Enumerate(
+                                handlers,
+                                workspace,
+                                documentVersions
+                            )
+                        )
+                        .Concat(OmniSharpTypeDefinitionHandler.Enumerate(handlers))
+                        .Concat(OmniSharpWorkspaceSymbolsHandler.Enumerate(handlers))
+                )
                 {
                     s.AddHandlers(handler);
                 }
@@ -398,20 +472,28 @@ namespace OmniSharp.LanguageServerProtocol
         }
 
         private static IDictionary<string, Lazy<LanguageProtocolInteropHandler>> InitializeInterop(
-            CompositionHost compositionHost)
+            CompositionHost compositionHost
+        )
         {
             var workspace = compositionHost.GetExport<OmniSharpWorkspace>();
             var projectSystems = compositionHost.GetExports<IProjectSystem>();
-            var endpointMetadatas = compositionHost.GetExports<Lazy<IRequest, OmniSharpEndpointMetadata>>()
+            var endpointMetadatas = compositionHost
+                .GetExports<Lazy<IRequest, OmniSharpEndpointMetadata>>()
                 .Select(x => x.Metadata)
                 .ToArray();
 
-            var handlers = compositionHost.GetExports<Lazy<IRequestHandler, OmniSharpRequestHandlerMetadata>>();
+            var handlers = compositionHost.GetExports<
+                Lazy<IRequestHandler, OmniSharpRequestHandlerMetadata>
+            >();
 
             IDictionary<string, Lazy<LanguageProtocolInteropHandler>> endpointHandlers = null;
-            var updateBufferEndpointHandler = new Lazy<LanguageProtocolInteropHandler<UpdateBufferRequest, object>>(
-                () => (LanguageProtocolInteropHandler<UpdateBufferRequest, object>)endpointHandlers[
-                    OmniSharpEndpoints.UpdateBuffer].Value);
+            var updateBufferEndpointHandler = new Lazy<
+                LanguageProtocolInteropHandler<UpdateBufferRequest, object>
+            >(
+                () =>
+                    (LanguageProtocolInteropHandler<UpdateBufferRequest, object>)
+                        endpointHandlers[OmniSharpEndpoints.UpdateBuffer].Value
+            );
             var languagePredicateHandler = new LanguagePredicateHandler(projectSystems);
             var projectSystemPredicateHandler = new StaticLanguagePredicateHandler("Projects");
             var nugetPredicateHandler = new StaticLanguagePredicateHandler("NuGet");
@@ -422,12 +504,16 @@ namespace OmniSharp.LanguageServerProtocol
                     IPredicateHandler handler;
 
                     // Projects are a special case, this allows us to select the correct "Projects" language for them
-                    if (endpoint.EndpointName == OmniSharpEndpoints.ProjectInformation ||
-                        endpoint.EndpointName == OmniSharpEndpoints.WorkspaceInformation)
+                    if (
+                        endpoint.EndpointName == OmniSharpEndpoints.ProjectInformation
+                        || endpoint.EndpointName == OmniSharpEndpoints.WorkspaceInformation
+                    )
                         handler = projectSystemPredicateHandler;
-                    else if (endpoint.EndpointName == OmniSharpEndpoints.PackageSearch ||
-                             endpoint.EndpointName == OmniSharpEndpoints.PackageSource ||
-                             endpoint.EndpointName == OmniSharpEndpoints.PackageVersion)
+                    else if (
+                        endpoint.EndpointName == OmniSharpEndpoints.PackageSearch
+                        || endpoint.EndpointName == OmniSharpEndpoints.PackageSource
+                        || endpoint.EndpointName == OmniSharpEndpoints.PackageVersion
+                    )
                         handler = nugetPredicateHandler;
                     else
                         handler = languagePredicateHandler;
@@ -439,11 +525,17 @@ namespace OmniSharp.LanguageServerProtocol
                     if (endpoint.EndpointName == OmniSharpEndpoints.UpdateBuffer)
                     {
                         // We don't want to call update buffer on update buffer.
-                        updateEndpointHandler =
-                            new Lazy<LanguageProtocolInteropHandler<UpdateBufferRequest, object>>(() => null);
+                        updateEndpointHandler = new Lazy<
+                            LanguageProtocolInteropHandler<UpdateBufferRequest, object>
+                        >(() => null);
                     }
 
-                    return LanguageProtocolInteropHandler.Factory(handler, endpoint, handlers, updateEndpointHandler);
+                    return LanguageProtocolInteropHandler.Factory(
+                        handler,
+                        endpoint,
+                        handlers,
+                        updateEndpointHandler
+                    );
                 }),
                 StringComparer.OrdinalIgnoreCase
             );

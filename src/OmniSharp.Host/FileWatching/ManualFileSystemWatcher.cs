@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -20,7 +20,7 @@ namespace OmniSharp.FileWatching
         {
             lock (_gate)
             {
-                if(changeType == FileChangeType.DirectoryDelete)
+                if (changeType == FileChangeType.DirectoryDelete)
                 {
                     _folderCallbacks.Invoke(filePath, FileChangeType.DirectoryDelete);
                 }
@@ -37,8 +37,10 @@ namespace OmniSharp.FileWatching
                 }
 
                 var extension = Path.GetExtension(filePath);
-                if (!string.IsNullOrEmpty(extension) &&
-                    _callbacksMap.TryGetValue(extension, out var extensionCallbacks))
+                if (
+                    !string.IsNullOrEmpty(extension)
+                    && _callbacksMap.TryGetValue(extension, out var extensionCallbacks)
+                )
                 {
                     extensionCallbacks.Invoke(filePath, changeType);
                 }

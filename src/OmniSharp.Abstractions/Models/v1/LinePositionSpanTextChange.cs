@@ -8,10 +8,13 @@ namespace OmniSharp.Models
 
         [JsonConverter(typeof(ZeroBasedIndexConverter))]
         public int StartLine { get; set; }
+
         [JsonConverter(typeof(ZeroBasedIndexConverter))]
         public int StartColumn { get; set; }
+
         [JsonConverter(typeof(ZeroBasedIndexConverter))]
         public int EndLine { get; set; }
+
         [JsonConverter(typeof(ZeroBasedIndexConverter))]
         public int EndColumn { get; set; }
 
@@ -41,9 +44,10 @@ namespace OmniSharp.Models
 
         public override string ToString()
         {
-            var displayText = NewText != null
-                ? NewText.Replace("\r", @"\r").Replace("\n", @"\n").Replace("\t", @"\t")
-                : "null";
+            var displayText =
+                NewText != null
+                    ? NewText.Replace("\r", @"\r").Replace("\n", @"\n").Replace("\t", @"\t")
+                    : "null";
 
             return $"LinePositionSpanTextChange {{ StartLine={StartLine}, StartColumn={StartColumn}, EndLine={EndLine}, EndColumn={EndColumn}, NewText={displayText} }}";
         }

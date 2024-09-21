@@ -1,8 +1,8 @@
 // adapted from https://github.com/dotnet/format/blob/d8a66bbcc6b6b9e769eb168cb384b44328786f7b/src/Utilities/EditorConfigFinder.cs
 // Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
-using System.IO;
 using System.Collections.Immutable;
+using System.IO;
 using System.Linq;
 
 namespace OmniSharp.Roslyn.EditorConfig
@@ -12,8 +12,7 @@ namespace OmniSharp.Roslyn.EditorConfig
         public static ImmutableArray<string> GetEditorConfigPaths(string path)
         {
             // If we are passed a filename then try to parse out the path
-            if (!Directory.Exists(path) &&
-                !TryGetDirectoryPath(path, out path))
+            if (!Directory.Exists(path) && !TryGetDirectoryPath(path, out path))
             {
                 return ImmutableArray<string>.Empty;
             }
@@ -25,7 +24,8 @@ namespace OmniSharp.Roslyn.EditorConfig
 
             var directory = new DirectoryInfo(path);
 
-            var editorConfigPaths = directory.GetFiles(".editorconfig", SearchOption.AllDirectories)
+            var editorConfigPaths = directory
+                .GetFiles(".editorconfig", SearchOption.AllDirectories)
                 .Select(file => file.FullName)
                 .ToList();
 
@@ -35,8 +35,10 @@ namespace OmniSharp.Roslyn.EditorConfig
                 {
                     directory = directory.Parent;
                     editorConfigPaths.AddRange(
-                        directory.GetFiles(".editorconfig", SearchOption.TopDirectoryOnly)
-                            .Select(file => file.FullName));
+                        directory
+                            .GetFiles(".editorconfig", SearchOption.TopDirectoryOnly)
+                            .Select(file => file.FullName)
+                    );
                 }
             }
             catch { }

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Composition;
 using System.Threading;
 using System.Threading.Tasks;
@@ -15,15 +15,22 @@ namespace OmniSharp.DotNetTest.Services
     [OmniSharpHandler(OmniSharpEndpoints.V2.DebugTestGetStartInfo, LanguageNames.CSharp)]
     [OmniSharpHandler(OmniSharpEndpoints.V2.DebugTestLaunch, LanguageNames.CSharp)]
     [OmniSharpHandler(OmniSharpEndpoints.V2.DebugTestStop, LanguageNames.CSharp)]
-    internal class DebugTestService : BaseTestService,
-        IRequestHandler<DebugTestGetStartInfoRequest, DebugTestGetStartInfoResponse>,
-        IRequestHandler<DebugTestLaunchRequest, DebugTestLaunchResponse>,
-        IRequestHandler<DebugTestStopRequest, DebugTestStopResponse>
+    internal class DebugTestService
+        : BaseTestService,
+            IRequestHandler<DebugTestGetStartInfoRequest, DebugTestGetStartInfoResponse>,
+            IRequestHandler<DebugTestLaunchRequest, DebugTestLaunchResponse>,
+            IRequestHandler<DebugTestStopRequest, DebugTestStopResponse>
     {
         private readonly DebugSessionManager _debugSessionManager;
 
         [ImportingConstructor]
-        public DebugTestService(DebugSessionManager debugSessionManager, OmniSharpWorkspace workspace, IDotNetCliService dotNetCli, IEventEmitter eventEmitter, ILoggerFactory loggerFactory)
+        public DebugTestService(
+            DebugSessionManager debugSessionManager,
+            OmniSharpWorkspace workspace,
+            IDotNetCliService dotNetCli,
+            IEventEmitter eventEmitter,
+            ILoggerFactory loggerFactory
+        )
             : base(workspace, dotNetCli, eventEmitter, loggerFactory)
         {
             _debugSessionManager = debugSessionManager;
@@ -36,7 +43,13 @@ namespace OmniSharp.DotNetTest.Services
             {
                 //only if the test manager connected successfully, shall we proceed with the request
                 _debugSessionManager.StartSession(testManager);
-                return _debugSessionManager.DebugGetStartInfoAsync(request.MethodName, request.RunSettings, request.TestFrameworkName, request.TargetFrameworkVersion, CancellationToken.None);
+                return _debugSessionManager.DebugGetStartInfoAsync(
+                    request.MethodName,
+                    request.RunSettings,
+                    request.TestFrameworkName,
+                    request.TargetFrameworkVersion,
+                    CancellationToken.None
+                );
             }
 
             throw new InvalidOperationException("The debugger could not be started");

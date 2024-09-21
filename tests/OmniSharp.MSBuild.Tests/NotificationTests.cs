@@ -13,9 +13,7 @@ namespace OmniSharp.MSBuild.Tests
     public class NotificationTests : AbstractMSBuildTestFixture
     {
         public NotificationTests(ITestOutputHelper output)
-            : base(output)
-        {
-        }
+            : base(output) { }
 
         private class FakeMSBuildEventSink : IMSBuildEventSink
         {
@@ -44,16 +42,21 @@ namespace OmniSharp.MSBuild.Tests
 
             var exports = new ExportDescriptorProvider[]
             {
-                MefValueProvider.From<IMSBuildEventSink>(eventSink)
+                MefValueProvider.From<IMSBuildEventSink>(eventSink),
             };
 
-            using (var testProject = await TestAssets.Instance.GetTestProjectAsync("ProjectAndSolution"))
+            using (
+                var testProject = await TestAssets.Instance.GetTestProjectAsync(
+                    "ProjectAndSolution"
+                )
+            )
             using (var host = CreateMSBuildTestHost(testProject.Directory, exports))
             {
                 var eventArgs = Assert.Single(allEventArgs);
                 Assert.Equal(
                     $"{testProject.Directory}/{testProject.Name}.csproj".EnsureForwardSlashes(),
-                    eventArgs.ProjectInstance.FullPath.EnsureForwardSlashes());
+                    eventArgs.ProjectInstance.FullPath.EnsureForwardSlashes()
+                );
             }
         }
     }

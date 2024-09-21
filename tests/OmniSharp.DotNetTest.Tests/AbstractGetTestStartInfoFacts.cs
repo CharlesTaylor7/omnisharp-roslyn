@@ -14,16 +14,22 @@ namespace OmniSharp.DotNetTest.Tests
     public abstract class AbstractGetTestStartInfoFacts : AbstractTestFixture
     {
         protected AbstractGetTestStartInfoFacts(ITestOutputHelper output)
-            : base(output)
-        {
-        }
+            : base(output) { }
 
         internal GetTestStartInfoService GetRequestHandler(OmniSharpTestHost host)
         {
-            return host.GetRequestHandler<GetTestStartInfoService>(OmniSharpEndpoints.V2.GetTestStartInfo);
+            return host.GetRequestHandler<GetTestStartInfoService>(
+                OmniSharpEndpoints.V2.GetTestStartInfo
+            );
         }
 
-        protected async Task GetDotNetTestStartInfoAsync(string projectName, string methodName, string testFramework, string targetFrameworkVersion = null, Action<GetTestStartInfoResponse, OmniSharpTestHost> assert = null)
+        protected async Task GetDotNetTestStartInfoAsync(
+            string projectName,
+            string methodName,
+            string testFramework,
+            string targetFrameworkVersion = null,
+            Action<GetTestStartInfoResponse, OmniSharpTestHost> assert = null
+        )
         {
             using (var testProject = await TestAssets.Instance.GetTestProjectAsync(projectName))
             using (var host = CreateOmniSharpHost(testProject.Directory, null, DotNetCliVersion))
@@ -35,7 +41,7 @@ namespace OmniSharp.DotNetTest.Tests
                     FileName = Path.Combine(testProject.Directory, "TestProgram.cs"),
                     MethodName = methodName,
                     TestFrameworkName = testFramework,
-                    TargetFrameworkVersion = targetFrameworkVersion
+                    TargetFrameworkVersion = targetFrameworkVersion,
                 };
 
                 var response = await service.Handle(request);

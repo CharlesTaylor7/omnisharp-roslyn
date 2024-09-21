@@ -27,7 +27,7 @@ namespace OmniSharp.DotNetTest
                         yield return new SyntaxFeature
                         {
                             Name = framework.FeatureName,
-                            Data = methodName
+                            Data = methodName,
                         };
                     }
                 }

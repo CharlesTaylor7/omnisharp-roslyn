@@ -22,25 +22,56 @@ namespace OmniSharp.Endpoint
     {
         public abstract Task<object> Handle(RequestPacket packet);
 
-        public static EndpointHandler Create<TRequest, TResponse>(IPredicateHandler languagePredicateHandler, CompositionHost host,
+        public static EndpointHandler Create<TRequest, TResponse>(
+            IPredicateHandler languagePredicateHandler,
+            CompositionHost host,
             ILogger logger,
             OmniSharpEndpointMetadata metadata,
             IEnumerable<Lazy<IRequestHandler, OmniSharpRequestHandlerMetadata>> handlers,
             Lazy<EndpointHandler<UpdateBufferRequest, object>> updateBufferHandler,
-            IEnumerable<Plugin> plugins)
+            IEnumerable<Plugin> plugins
+        )
         {
-            return new EndpointHandler<TRequest, TResponse>(languagePredicateHandler, host, logger, metadata, handlers.Where(x => x.Metadata.EndpointName == metadata.EndpointName), updateBufferHandler, plugins);
+            return new EndpointHandler<TRequest, TResponse>(
+                languagePredicateHandler,
+                host,
+                logger,
+                metadata,
+                handlers.Where(x => x.Metadata.EndpointName == metadata.EndpointName),
+                updateBufferHandler,
+                plugins
+            );
         }
 
-        public static EndpointHandler Factory(IPredicateHandler languagePredicateHandler, CompositionHost host,
+        public static EndpointHandler Factory(
+            IPredicateHandler languagePredicateHandler,
+            CompositionHost host,
             ILogger logger,
             OmniSharpEndpointMetadata metadata,
             IEnumerable<Lazy<IRequestHandler, OmniSharpRequestHandlerMetadata>> handlers,
             Lazy<EndpointHandler<UpdateBufferRequest, object>> updateBufferHandler,
-            IEnumerable<Plugin> plugins)
+            IEnumerable<Plugin> plugins
+        )
         {
-            var createMethod = typeof(EndpointHandler).GetTypeInfo().DeclaredMethods.First(x => x.Name == nameof(EndpointHandler.Create));
-            return (EndpointHandler)createMethod.MakeGenericMethod(metadata.RequestType, metadata.ResponseType).Invoke(null, new object[] { languagePredicateHandler, host, logger, metadata, handlers, updateBufferHandler, plugins });
+            var createMethod = typeof(EndpointHandler)
+                .GetTypeInfo()
+                .DeclaredMethods.First(x => x.Name == nameof(EndpointHandler.Create));
+            return (EndpointHandler)
+                createMethod
+                    .MakeGenericMethod(metadata.RequestType, metadata.ResponseType)
+                    .Invoke(
+                        null,
+                        new object[]
+                        {
+                            languagePredicateHandler,
+                            host,
+                            logger,
+                            metadata,
+                            handlers,
+                            updateBufferHandler,
+                            plugins,
+                        }
+                    );
         }
     }
 
@@ -48,7 +79,9 @@ namespace OmniSharp.Endpoint
     {
         private readonly CompositionHost _host;
         private readonly IPredicateHandler _languagePredicateHandler;
-        private readonly Lazy<Task<Dictionary<string, ExportHandler<TRequest, TResponse>[]>>> _exports;
+        private readonly Lazy<
+            Task<Dictionary<string, ExportHandler<TRequest, TResponse>[]>>
+        > _exports;
         private readonly OmniSharpWorkspace _workspace;
         private readonly bool _hasLanguageProperty;
         private readonly bool _hasFileNameProperty;
@@ -57,7 +90,15 @@ namespace OmniSharp.Endpoint
         private readonly IEnumerable<Plugin> _plugins;
         private readonly Lazy<EndpointHandler<UpdateBufferRequest, object>> _updateBufferHandler;
 
-        public EndpointHandler(IPredicateHandler languagePredicateHandler, CompositionHost host, ILogger logger, OmniSharpEndpointMetadata metadata, IEnumerable<Lazy<IRequestHandler, OmniSharpRequestHandlerMetadata>> handlers, Lazy<EndpointHandler<UpdateBufferRequest, object>> updateBufferHandler, IEnumerable<Plugin> plugins)
+        public EndpointHandler(
+            IPredicateHandler languagePredicateHandler,
+            CompositionHost host,
+            ILogger logger,
+            OmniSharpEndpointMetadata metadata,
+            IEnumerable<Lazy<IRequestHandler, OmniSharpRequestHandlerMetadata>> handlers,
+            Lazy<EndpointHandler<UpdateBufferRequest, object>> updateBufferHandler,
+            IEnumerable<Plugin> plugins
+        )
         {
             EndpointName = metadata.EndpointName;
             _host = host;
@@ -66,31 +107,44 @@ namespace OmniSharp.Endpoint
             _plugins = plugins;
             _workspace = host.GetExport<OmniSharpWorkspace>();
 
-            _hasLanguageProperty = metadata.RequestType.GetRuntimeProperty(nameof(LanguageModel.Language)) != null;
-            _hasFileNameProperty = metadata.RequestType.GetRuntimeProperty(nameof(Request.FileName)) != null;
+            _hasLanguageProperty =
+                metadata.RequestType.GetRuntimeProperty(nameof(LanguageModel.Language)) != null;
+            _hasFileNameProperty =
+                metadata.RequestType.GetRuntimeProperty(nameof(Request.FileName)) != null;
             _canBeAggregated = typeof(IAggregateResponse).IsAssignableFrom(metadata.ResponseType);
             _updateBufferHandler = updateBufferHandler;
 
-            _exports = new Lazy<Task<Dictionary<string, ExportHandler<TRequest, TResponse>[]>>>(() => LoadExportHandlers(handlers));
+            _exports = new Lazy<Task<Dictionary<string, ExportHandler<TRequest, TResponse>[]>>>(
+                () => LoadExportHandlers(handlers)
+            );
         }
 
-        private Task<Dictionary<string, ExportHandler<TRequest, TResponse>[]>> LoadExportHandlers(IEnumerable<Lazy<IRequestHandler, OmniSharpRequestHandlerMetadata>> handlers)
+        private Task<Dictionary<string, ExportHandler<TRequest, TResponse>[]>> LoadExportHandlers(
+            IEnumerable<Lazy<IRequestHandler, OmniSharpRequestHandlerMetadata>> handlers
+        )
         {
             var interfaceHandlers = handlers
-                .Select(export => new RequestHandlerExportHandler<TRequest, TResponse>(export.Metadata.Language, (IRequestHandler<TRequest, TResponse>)export.Value))
+                .Select(export => new RequestHandlerExportHandler<TRequest, TResponse>(
+                    export.Metadata.Language,
+                    (IRequestHandler<TRequest, TResponse>)export.Value
+                ))
                 .Cast<ExportHandler<TRequest, TResponse>>();
 
-            var plugins = _plugins.Where(x => x.Config.Endpoints.Contains(EndpointName))
-                .Select(plugin => new PluginExportHandler<TRequest, TResponse>(EndpointName, plugin))
+            var plugins = _plugins
+                .Where(x => x.Config.Endpoints.Contains(EndpointName))
+                .Select(plugin => new PluginExportHandler<TRequest, TResponse>(
+                    EndpointName,
+                    plugin
+                ))
                 .Cast<ExportHandler<TRequest, TResponse>>();
 
             // Group handlers by language and sort each group for consistency
-            return Task.FromResult(interfaceHandlers
-                .Concat(plugins)
-                .GroupBy(export => export.Language, StringComparer.OrdinalIgnoreCase)
-                .ToDictionary(
-                    group => group.Key,
-                    group => group.OrderBy(g => g).ToArray()));
+            return Task.FromResult(
+                interfaceHandlers
+                    .Concat(plugins)
+                    .GroupBy(export => export.Language, StringComparer.OrdinalIgnoreCase)
+                    .ToDictionary(group => group.Key, group => group.OrderBy(g => g).ToArray())
+            );
         }
 
         public string EndpointName { get; }
@@ -103,12 +157,19 @@ namespace OmniSharp.Endpoint
             return Process(packet, model, requestObject);
         }
 
-        public async Task<object> Process(RequestPacket packet, LanguageModel model, JToken requestObject)
+        public async Task<object> Process(
+            RequestPacket packet,
+            LanguageModel model,
+            JToken requestObject
+        )
         {
             var request = requestObject.ToObject<TRequest>();
             if (request is Request realRequest && _updateBufferHandler.Value != null)
             {
-                if (!string.IsNullOrWhiteSpace(realRequest.FileName) && (realRequest.Buffer != null || realRequest.Changes != null))
+                if (
+                    !string.IsNullOrWhiteSpace(realRequest.FileName)
+                    && (realRequest.Buffer != null || realRequest.Changes != null)
+                )
                 {
                     await _updateBufferHandler.Value.Process(packet, model, requestObject);
                 }
@@ -126,7 +187,9 @@ namespace OmniSharp.Endpoint
             }
             else if (_hasFileNameProperty)
             {
-                var language = _languagePredicateHandler.GetLanguageForFilePath(model.FileName ?? string.Empty);
+                var language = _languagePredicateHandler.GetLanguageForFilePath(
+                    model.FileName ?? string.Empty
+                );
                 return await HandleLanguageRequest(language, request, packet);
             }
             else
@@ -141,7 +204,11 @@ namespace OmniSharp.Endpoint
             return await HandleAllRequest(request, packet);
         }
 
-        private Task<object> HandleLanguageRequest(string language, TRequest request, RequestPacket packet)
+        private Task<object> HandleLanguageRequest(
+            string language,
+            TRequest request,
+            RequestPacket packet
+        )
         {
             if (!string.IsNullOrEmpty(language))
             {
@@ -151,11 +218,16 @@ namespace OmniSharp.Endpoint
             return HandleAllRequest(request, packet);
         }
 
-        private async Task<IAggregateResponse> AggregateResponsesFromLanguageHandlers(ExportHandler<TRequest, TResponse>[] handlers, TRequest request)
+        private async Task<IAggregateResponse> AggregateResponsesFromLanguageHandlers(
+            ExportHandler<TRequest, TResponse>[] handlers,
+            TRequest request
+        )
         {
             if (!_canBeAggregated)
             {
-                throw new NotSupportedException($"Must be able to aggregate responses from all handlers for {EndpointName}");
+                throw new NotSupportedException(
+                    $"Must be able to aggregate responses from all handlers for {EndpointName}"
+                );
             }
 
             IAggregateResponse aggregateResponse = null;
@@ -189,7 +261,10 @@ namespace OmniSharp.Endpoint
             return aggregateResponse;
         }
 
-        private async Task<object> GetFirstNotEmptyResponseFromHandlers(ExportHandler<TRequest, TResponse>[] handlers, TRequest request)
+        private async Task<object> GetFirstNotEmptyResponseFromHandlers(
+            ExportHandler<TRequest, TResponse>[] handlers,
+            TRequest request
+        )
         {
             var responses = new List<Task<TResponse>>();
             foreach (var handler in handlers)
@@ -216,7 +291,11 @@ namespace OmniSharp.Endpoint
             return null;
         }
 
-        private async Task<object> HandleRequestForLanguage(string language, TRequest request, RequestPacket packet)
+        private async Task<object> HandleRequestForLanguage(
+            string language,
+            TRequest request,
+            RequestPacket packet
+        )
         {
             var exports = await _exports.Value;
             if (exports.TryGetValue(language, out var handlers))
@@ -236,7 +315,9 @@ namespace OmniSharp.Endpoint
         {
             if (!_canBeAggregated)
             {
-                throw new NotSupportedException($"Must be able to aggregate the response to spread them out across all plugins for {EndpointName}");
+                throw new NotSupportedException(
+                    $"Must be able to aggregate the response to spread them out across all plugins for {EndpointName}"
+                );
             }
 
             var exports = await _exports.Value;
@@ -279,13 +360,24 @@ namespace OmniSharp.Endpoint
                 return response;
             }
 
-            if (jobject.TryGetValue(nameof(LanguageModel.Language), StringComparison.OrdinalIgnoreCase, out var token))
+            if (
+                jobject.TryGetValue(
+                    nameof(LanguageModel.Language),
+                    StringComparison.OrdinalIgnoreCase,
+                    out var token
+                )
+            )
             {
                 response.Language = token.ToString();
             }
 
-
-            if (jobject.TryGetValue(nameof(LanguageModel.FileName), StringComparison.OrdinalIgnoreCase, out token))
+            if (
+                jobject.TryGetValue(
+                    nameof(LanguageModel.FileName),
+                    StringComparison.OrdinalIgnoreCase,
+                    out token
+                )
+            )
             {
                 response.FileName = token.ToString();
             }

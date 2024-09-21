@@ -1,4 +1,4 @@
-﻿// Based on dotnet/roslyn:src/Features/LanguageServer/Protocol/Handler/Completion/CompletionListCache.cs
+// Based on dotnet/roslyn:src/Features/LanguageServer/Protocol/Handler/Completion/CompletionListCache.cs
 // CommitID: 62528a6843dc5b21b1a7d399bae814868456e823
 // Original license is MIT
 
@@ -92,6 +92,11 @@ namespace OmniSharp.Roslyn.CSharp.Services.Completion
             }
         }
 
-        public record CacheEntry(long ResultId, Document Document, int Position, CompletionList CompletionList);
+        public record CacheEntry(
+            long ResultId,
+            Document Document,
+            int Position,
+            CompletionList CompletionList
+        );
     }
 }

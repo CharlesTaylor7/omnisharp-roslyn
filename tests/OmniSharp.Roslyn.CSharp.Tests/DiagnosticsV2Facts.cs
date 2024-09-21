@@ -13,10 +13,11 @@ namespace OmniSharp.Roslyn.CSharp.Tests
 {
     public partial class DiagnosticsV2Facts : AbstractTestFixture
     {
-        public DiagnosticsV2Facts(ITestOutputHelper output, SharedOmniSharpHostFixture sharedOmniSharpHostFixture)
-            : base(output, sharedOmniSharpHostFixture)
-        {
-        }
+        public DiagnosticsV2Facts(
+            ITestOutputHelper output,
+            SharedOmniSharpHostFixture sharedOmniSharpHostFixture
+        )
+            : base(output, sharedOmniSharpHostFixture) { }
 
         [Theory(Skip = "Test needs to be updated for service changes")]
         [InlineData("a.cs")]
@@ -28,29 +29,31 @@ namespace OmniSharp.Roslyn.CSharp.Tests
             var testFile = new TestFile(filename, "class C { int n = true; }");
 
             var emitter = new TestEventEmitter<DiagnosticMessage>();
-            var forwarder = new DiagnosticEventForwarder(emitter)
-            {
-                IsEnabled = true
-            };
+            var forwarder = new DiagnosticEventForwarder(emitter) { IsEnabled = true };
 
             var service = CreateDiagnosticService(forwarder);
             SharedOmniSharpTestHost.AddFilesToWorkspace(testFile);
 
             var controller = new DiagnosticsService(forwarder, service);
-            var response = await controller.Handle(new DiagnosticsRequest { FileName = testFile.FileName });
+            var response = await controller.Handle(
+                new DiagnosticsRequest { FileName = testFile.FileName }
+            );
 
             await emitter.ExpectForEmitted(msg => msg.Results.Any(m => m.FileName == filename));
         }
 
-        private CSharpDiagnosticWorkerWithAnalyzers CreateDiagnosticService(DiagnosticEventForwarder forwarder)
+        private CSharpDiagnosticWorkerWithAnalyzers CreateDiagnosticService(
+            DiagnosticEventForwarder forwarder
+        )
         {
             return new CSharpDiagnosticWorkerWithAnalyzers(
-                    SharedOmniSharpTestHost.Workspace,
-                    Enumerable.Empty<ICodeActionProvider>(),
-                    this.LoggerFactory,
-                    forwarder,
-                    new OmniSharpOptions(),
-                    new FileSystemHelper(new OmniSharpOptions(), new OmniSharpEnvironment()));
+                SharedOmniSharpTestHost.Workspace,
+                Enumerable.Empty<ICodeActionProvider>(),
+                this.LoggerFactory,
+                forwarder,
+                new OmniSharpOptions(),
+                new FileSystemHelper(new OmniSharpOptions(), new OmniSharpEnvironment())
+            );
         }
 
         [Theory(Skip = "Test needs to be updated for service changes")]
@@ -71,10 +74,12 @@ namespace OmniSharp.Roslyn.CSharp.Tests
             var controller = new DiagnosticsService(forwarder, service);
             var response = await controller.Handle(new DiagnosticsRequest());
 
-            await emitter.ExpectForEmitted(msg => msg.Results
-                .Any(r => r.FileName == filename1 && r.QuickFixes.Count() == 1));
-            await emitter.ExpectForEmitted(msg => msg.Results
-                .Any(r => r.FileName == filename2 && r.QuickFixes.Count() == 1));
+            await emitter.ExpectForEmitted(msg =>
+                msg.Results.Any(r => r.FileName == filename1 && r.QuickFixes.Count() == 1)
+            );
+            await emitter.ExpectForEmitted(msg =>
+                msg.Results.Any(r => r.FileName == filename2 && r.QuickFixes.Count() == 1)
+            );
         }
 
         [Theory(Skip = "Test needs to be updated for service changes")]

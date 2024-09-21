@@ -1,6 +1,4 @@
-﻿namespace OmniSharp
+namespace OmniSharp
 {
-    public interface IRequest
-    {
-    }
+    public interface IRequest { }
 }

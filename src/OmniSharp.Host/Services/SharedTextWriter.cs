@@ -19,7 +19,11 @@ namespace OmniSharp.Services
             _writer = writer ?? throw new ArgumentNullException(nameof(writer));
             _queue = new BlockingCollection<object>();
             _cancel = new CancellationTokenSource();
-            _thread = new Thread(ProcessWriteQueue) { IsBackground = true, Name = "ProcessWriteQueue" };
+            _thread = new Thread(ProcessWriteQueue)
+            {
+                IsBackground = true,
+                Name = "ProcessWriteQueue",
+            };
             _thread.Start();
         }
 

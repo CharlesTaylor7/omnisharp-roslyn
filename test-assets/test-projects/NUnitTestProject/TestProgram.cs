@@ -1,5 +1,5 @@
-using NUnit.Framework;
 using System;
+using NUnit.Framework;
 
 namespace Main.Test
 {
@@ -40,15 +40,13 @@ namespace Main.Test
         [Test]
         public void CheckStandardOutput()
         {
-            int a = 1, b = 1;
+            int a = 1,
+                b = 1;
             Console.WriteLine($"a = {a}, b = {b}");
             Assert.AreEqual(a, b);
         }
 
-        public void UtilityFunction()
-        {
-
-        }
+        public void UtilityFunction() { }
 
         private static int[] _items = new int[1] { 1 };
     }
@@ -71,20 +69,13 @@ namespace Main.Test
 
         private class NestedClass
         {
-
-            public void M()
-            {
-
-            }
+            public void M() { }
         }
     }
 
     public class NoTests
     {
-        public void M()
-        {
-
-        }
+        public void M() { }
     }
 
     [TestFixture(typeof(int))]

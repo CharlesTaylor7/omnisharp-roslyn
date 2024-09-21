@@ -1,4 +1,4 @@
-﻿#nullable enable
+#nullable enable
 
 using System;
 using System.Collections.Generic;
@@ -137,6 +137,7 @@ namespace OmniSharp.Models.v1.Completion
     public enum InsertTextFormat
     {
         PlainText = 1,
+
         // TODO: Support snippets
         Snippet = 2,
     }

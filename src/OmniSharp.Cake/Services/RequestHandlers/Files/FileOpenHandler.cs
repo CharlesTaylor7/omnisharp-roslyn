@@ -1,4 +1,4 @@
-﻿using System.Composition;
+using System.Composition;
 using OmniSharp.Mef;
 using OmniSharp.Models.FileOpen;
 
@@ -8,7 +8,6 @@ namespace OmniSharp.Cake.Services.RequestHandlers.Files;
 public class FileOpenHandler : CakeRequestHandler<FileOpenRequest, FileOpenResponse>
 {
     [ImportingConstructor]
-    public FileOpenHandler(OmniSharpWorkspace workspace) : base(workspace)
-    {
-    }
+    public FileOpenHandler(OmniSharpWorkspace workspace)
+        : base(workspace) { }
 }

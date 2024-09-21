@@ -8,15 +8,17 @@ using OmniSharp.Models.FindImplementations;
 namespace OmniSharp.Cake.Services.RequestHandlers.Navigation
 {
     [OmniSharpHandler(OmniSharpEndpoints.FindImplementations, Constants.LanguageNames.Cake), Shared]
-    public class FindImplementationsHandler : CakeRequestHandler<FindImplementationsRequest, QuickFixResponse>
+    public class FindImplementationsHandler
+        : CakeRequestHandler<FindImplementationsRequest, QuickFixResponse>
     {
         [ImportingConstructor]
-        public FindImplementationsHandler(OmniSharpWorkspace workspace) 
-            : base(workspace)
-        {
-        }
+        public FindImplementationsHandler(OmniSharpWorkspace workspace)
+            : base(workspace) { }
 
-        protected override Task<QuickFixResponse> TranslateResponse(QuickFixResponse response, FindImplementationsRequest request)
+        protected override Task<QuickFixResponse> TranslateResponse(
+            QuickFixResponse response,
+            FindImplementationsRequest request
+        )
         {
             return response.TranslateAsync(Workspace, request);
         }

@@ -15,7 +15,8 @@ using OmniSharp.Models.FindImplementations;
 namespace OmniSharp.Roslyn.CSharp.Services.Navigation
 {
     [OmniSharpHandler(OmniSharpEndpoints.FindImplementations, LanguageNames.CSharp)]
-    public class FindImplementationsService : IRequestHandler<FindImplementationsRequest, QuickFixResponse>
+    public class FindImplementationsService
+        : IRequestHandler<FindImplementationsRequest, QuickFixResponse>
     {
         private readonly OmniSharpWorkspace _workspace;
 
@@ -37,7 +38,11 @@ namespace OmniSharp.Roslyn.CSharp.Services.Navigation
                 var position = sourceText.GetTextPosition(request);
 
                 var quickFixes = new List<QuickFix>();
-                var symbol = await SymbolFinder.FindSymbolAtPositionAsync(semanticModel, position, _workspace);
+                var symbol = await SymbolFinder.FindSymbolAtPositionAsync(
+                    semanticModel,
+                    position,
+                    _workspace
+                );
 
                 if (symbol == null)
                 {
@@ -47,14 +52,20 @@ namespace OmniSharp.Roslyn.CSharp.Services.Navigation
                 if (symbol.IsInterfaceType() || symbol.IsImplementableMember())
                 {
                     // SymbolFinder.FindImplementationsAsync will not include the method overrides
-                    var implementations = await SymbolFinder.FindImplementationsAsync(symbol, _workspace.CurrentSolution);
+                    var implementations = await SymbolFinder.FindImplementationsAsync(
+                        symbol,
+                        _workspace.CurrentSolution
+                    );
                     foreach (var implementation in implementations)
                     {
                         quickFixes.Add(implementation, _workspace);
 
                         if (implementation.IsOverridable())
                         {
-                            var overrides = await SymbolFinder.FindOverridesAsync(implementation, _workspace.CurrentSolution);
+                            var overrides = await SymbolFinder.FindOverridesAsync(
+                                implementation,
+                                _workspace.CurrentSolution
+                            );
                             quickFixes.AddRange(overrides, _workspace);
                         }
                     }
@@ -63,12 +74,18 @@ namespace OmniSharp.Roslyn.CSharp.Services.Navigation
                 {
                     // for types also include derived classes
                     // for other symbols, find overrides and include those
-                    var derivedTypes = await SymbolFinder.FindDerivedClassesAsync(namedTypeSymbol, _workspace.CurrentSolution);
+                    var derivedTypes = await SymbolFinder.FindDerivedClassesAsync(
+                        namedTypeSymbol,
+                        _workspace.CurrentSolution
+                    );
                     quickFixes.AddRange(derivedTypes, _workspace);
                 }
                 else if (symbol.IsOverridable())
                 {
-                    var overrides = await SymbolFinder.FindOverridesAsync(symbol, _workspace.CurrentSolution);
+                    var overrides = await SymbolFinder.FindOverridesAsync(
+                        symbol,
+                        _workspace.CurrentSolution
+                    );
                     quickFixes.AddRange(overrides, _workspace);
                 }
 
@@ -86,9 +103,9 @@ namespace OmniSharp.Roslyn.CSharp.Services.Navigation
                     }
                 }
 
-                response = new QuickFixResponse(quickFixes.OrderBy(q => q.FileName)
-                                                            .ThenBy(q => q.Line)
-                                                            .ThenBy(q => q.Column));
+                response = new QuickFixResponse(
+                    quickFixes.OrderBy(q => q.FileName).ThenBy(q => q.Line).ThenBy(q => q.Column)
+                );
             }
 
             return response;

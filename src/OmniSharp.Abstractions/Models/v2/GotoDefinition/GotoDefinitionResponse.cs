@@ -1,8 +1,8 @@
 #nullable enable
 
+using System.Collections.Generic;
 using OmniSharp.Models.Metadata;
 using OmniSharp.Models.v1.SourceGeneratedFile;
-using System.Collections.Generic;
 
 namespace OmniSharp.Models.V2.GotoDefinition
 {

@@ -8,7 +8,8 @@ namespace OmniSharp.Endpoint.Exports
         private readonly string _endpoint;
         private readonly Plugin _plugin;
 
-        public PluginExportHandler(string endpoint, Plugin plugin) : base(plugin.Config.Language)
+        public PluginExportHandler(string endpoint, Plugin plugin)
+            : base(plugin.Config.Language)
         {
             _endpoint = endpoint;
             _plugin = plugin;

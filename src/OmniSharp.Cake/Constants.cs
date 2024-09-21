@@ -1,4 +1,4 @@
-﻿namespace OmniSharp.Cake
+namespace OmniSharp.Cake
 {
     internal class Constants
     {
@@ -15,7 +15,7 @@
 
         public static class Directive
         {
-            public const string Generated = "#line 1 \""+Paths.Generated+"\"";
+            public const string Generated = "#line 1 \"" + Paths.Generated + "\"";
         }
     }
 }

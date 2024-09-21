@@ -1,22 +1,23 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Reflection.PortableExecutable;
-using ICSharpCode.Decompiler.Metadata;
-using Microsoft.CodeAnalysis.Shared.Extensions;
-using System.IO;
-using Microsoft.CodeAnalysis;
-using Microsoft.Extensions.Logging;
 using System.Threading.Tasks;
+using ICSharpCode.Decompiler.Metadata;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.Shared.Extensions;
+using Microsoft.Extensions.Logging;
 
 namespace OmniSharp.Roslyn.CSharp.Services.Decompilation
 {
     internal class AssemblyResolver : IAssemblyResolver
     {
         private readonly Compilation _parentCompilation;
-        private readonly Dictionary<string, List<IAssemblySymbol>> _cache = new Dictionary<string, List<IAssemblySymbol>>();
+        private readonly Dictionary<string, List<IAssemblySymbol>> _cache =
+            new Dictionary<string, List<IAssemblySymbol>>();
         private readonly ILogger _logger;
 
         public AssemblyResolver(Compilation parentCompilation, ILoggerFactory loggerFactory)
@@ -27,7 +28,11 @@ namespace OmniSharp.Roslyn.CSharp.Services.Decompilation
 
             void BuildReferenceCache()
             {
-                foreach (var reference in parentCompilation.Assembly.Modules.First().ReferencedAssemblySymbols)
+                foreach (
+                    var reference in parentCompilation
+                        .Assembly.Modules.First()
+                        .ReferencedAssemblySymbols
+                )
                 {
                     if (!_cache.TryGetValue(reference.Identity.Name, out var list))
                     {
@@ -65,7 +70,11 @@ namespace OmniSharp.Roslyn.CSharp.Services.Decompilation
                 Log("Found single assembly: {0}", assemblies[0]);
                 if (assemblies[0].Identity.Version != name.Version)
                 {
-                    Log("Mismatch in assembly versions. Expectted: {0}, Got: {1}", name.Version, assemblies[0].Identity.Version);
+                    Log(
+                        "Mismatch in assembly versions. Expectted: {0}, Got: {1}",
+                        name.Version,
+                        assemblies[0].Identity.Version
+                    );
                 }
                 return MakePEFile(assemblies[0]);
             }
@@ -105,7 +114,10 @@ namespace OmniSharp.Roslyn.CSharp.Services.Decompilation
                 // reference assemblies should be fine here, we only need the metadata of references.
                 var reference = _parentCompilation.GetMetadataReference(assembly);
                 Log("Loading from: {0}", ((PortableExecutableReference)reference).FilePath);
-                return new PEFile(((PortableExecutableReference)reference).FilePath, PEStreamOptions.PrefetchMetadata);
+                return new PEFile(
+                    ((PortableExecutableReference)reference).FilePath,
+                    PEStreamOptions.PrefetchMetadata
+                );
             }
         }
 
@@ -137,7 +149,6 @@ namespace OmniSharp.Roslyn.CSharp.Services.Decompilation
             return Task.Run(() => ResolveModule(mainModule, moduleName));
         }
 
-        private void Log(string format, params object[] args)
-            => _logger.LogTrace(format, args);
+        private void Log(string format, params object[] args) => _logger.LogTrace(format, args);
     }
 }

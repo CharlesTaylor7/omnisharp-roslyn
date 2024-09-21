@@ -14,7 +14,7 @@ namespace OmniSharp.Models.MembersTree
         public int AttributeSpanEnd { get; set; }
 
         public string Kind { get; set; }
-        
+
         public ICollection<SyntaxFeature> Features { get; } = new List<SyntaxFeature>();
 
         public IEnumerable<string> Projects { get; set; }
@@ -75,10 +75,10 @@ namespace OmniSharp.Models.MembersTree
 
         public override int GetHashCode()
         {
-            return 13 * Location.Line +
-                17 * Location.Column +
-                23 * Location.EndLine +
-                31 * Location.EndColumn;
+            return 13 * Location.Line
+                + 17 * Location.Column
+                + 23 * Location.EndLine
+                + 31 * Location.EndColumn;
         }
     }
 }

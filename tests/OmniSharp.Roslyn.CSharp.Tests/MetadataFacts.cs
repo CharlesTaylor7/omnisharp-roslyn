@@ -9,10 +9,11 @@ namespace OmniSharp.Roslyn.CSharp.Tests
 {
     public class MetadataFacts : AbstractSingleRequestHandlerTestFixture<MetadataService>
     {
-        public MetadataFacts(ITestOutputHelper output, SharedOmniSharpHostFixture sharedOmniSharpHostFixture)
-            : base(output, sharedOmniSharpHostFixture)
-        {
-        }
+        public MetadataFacts(
+            ITestOutputHelper output,
+            SharedOmniSharpHostFixture sharedOmniSharpHostFixture
+        )
+            : base(output, sharedOmniSharpHostFixture) { }
 
         protected override string EndpointName => OmniSharpEndpoints.Metadata;
 
@@ -34,9 +35,9 @@ namespace OmniSharp.Roslyn.CSharp.Tests
         {
             var assemblyName =
 #if NETCOREAPP
-            "System.Linq";
+                "System.Linq";
 #else
-            "System.Core";
+                "System.Core";
 #endif
             var typeName = "System.Linq.Enumerable";
 
@@ -64,7 +65,7 @@ namespace OmniSharp.Roslyn.CSharp.Tests
             {
                 AssemblyName = assemblyName,
                 TypeName = typeName,
-                Timeout = 60000
+                Timeout = 60000,
             };
 
             var response = await requestHandler.Handle(request);

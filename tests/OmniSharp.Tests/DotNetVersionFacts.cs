@@ -9,9 +9,7 @@ namespace OmniSharp.Tests
     public class DotNetVersionFacts : AbstractTestFixture
     {
         public DotNetVersionFacts(ITestOutputHelper output)
-            : base(output)
-        {
-        }
+            : base(output) { }
 
         [Theory]
         [InlineData("6.0.201")]
@@ -30,9 +28,11 @@ namespace OmniSharp.Tests
         {
             const string RequestedSdkVersion = "6.0.301-rtm.22263.15";
             const string GlobalJsonFile = "/Users/username/Source/format/global.json";
-            const string ExpectedErrorMessage = $"Install the [{RequestedSdkVersion}] .NET SDK or update [{GlobalJsonFile}] to match an installed SDK.";
+            const string ExpectedErrorMessage =
+                $"Install the [{RequestedSdkVersion}] .NET SDK or update [{GlobalJsonFile}] to match an installed SDK.";
 
-            var lines = new List<string>() {
+            var lines = new List<string>()
+            {
                 "The command could not be loaded, possibly because:",
                 "  * You intended to execute a .NET application:",
                 "      The application '--version' does not exist.",
@@ -51,7 +51,7 @@ namespace OmniSharp.Tests
                 $"Install the [{RequestedSdkVersion}] .NET SDK or update [{GlobalJsonFile}] to match an installed SDK.",
                 "",
                 "Learn about SDK resolution:",
-                "https://aka.ms/dotnet/sdk-not-found"
+                "https://aka.ms/dotnet/sdk-not-found",
             };
 
             var cliVersion = DotNetVersion.Parse(lines);

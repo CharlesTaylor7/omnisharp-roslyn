@@ -16,16 +16,20 @@ namespace OmniSharp.Cake.Tests
 {
     public class FileOpenFacts : CakeSingleRequestHandlerTestFixture<FileOpenHandler>
     {
-        public FileOpenFacts(ITestOutputHelper testOutput) : base(testOutput)
-        {
-        }
+        public FileOpenFacts(ITestOutputHelper testOutput)
+            : base(testOutput) { }
 
         protected override string EndpointName => OmniSharpEndpoints.Open;
 
         [Fact]
         public async Task AddsOpenFile()
         {
-            using (var testProject = await TestAssets.Instance.GetTestProjectAsync("CakeProject", shadowCopy : false))
+            using (
+                var testProject = await TestAssets.Instance.GetTestProjectAsync(
+                    "CakeProject",
+                    shadowCopy: false
+                )
+            )
             using (var host = CreateOmniSharpHost(testProject.Directory))
             {
                 var filename = Path.Combine(testProject.Directory, "build.cake");
@@ -33,10 +37,7 @@ namespace OmniSharp.Cake.Tests
 
                 Assert.False(host.Workspace.IsDocumentOpen(documentId));
 
-                var request = new FileOpenRequest
-                {
-                    FileName = filename
-                };
+                var request = new FileOpenRequest { FileName = filename };
 
                 var requestHandler = GetRequestHandler(host);
 

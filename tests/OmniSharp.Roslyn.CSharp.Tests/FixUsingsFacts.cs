@@ -13,17 +13,19 @@ namespace OmniSharp.Roslyn.CSharp.Tests
     {
         private const string TestFileName = "test.cs";
 
-        public FixUsingsFacts(ITestOutputHelper output, SharedOmniSharpHostFixture sharedOmniSharpHostFixture)
-            : base(output, sharedOmniSharpHostFixture)
-        {
-        }
+        public FixUsingsFacts(
+            ITestOutputHelper output,
+            SharedOmniSharpHostFixture sharedOmniSharpHostFixture
+        )
+            : base(output, sharedOmniSharpHostFixture) { }
 
         protected override string EndpointName => OmniSharpEndpoints.FixUsings;
 
         [Fact]
         public async Task FixUsings_AddsUsingSingle()
         {
-            const string code = @"
+            const string code =
+                @"
 namespace nsA
 {
     public class classX{}
@@ -40,7 +42,8 @@ namespace OmniSharp
     }
 }";
 
-            const string expectedCode = @"
+            const string expectedCode =
+                @"
 using nsA;
 
 namespace nsA
@@ -65,7 +68,8 @@ namespace OmniSharp
         [Fact]
         public async Task FixUsings_AddsUsingSingleForFrameworkMethod()
         {
-            const string code = @"
+            const string code =
+                @"
 namespace OmniSharp
 {
     public class class1
@@ -77,7 +81,8 @@ namespace OmniSharp
     }
 }";
 
-            string expectedCode = @"
+            string expectedCode =
+                @"
 using System;
 
 namespace OmniSharp
@@ -97,7 +102,8 @@ namespace OmniSharp
         [Fact]
         public async Task FixUsings_AddsUsingSingleForFrameworkClass()
         {
-            const string code = @"
+            const string code =
+                @"
 namespace OmniSharp
 {
     public class class1
@@ -109,7 +115,8 @@ namespace OmniSharp
     }
 }";
 
-            const string expectedCode = @"
+            const string expectedCode =
+                @"
 using System.Text;
 
 namespace OmniSharp
@@ -129,7 +136,8 @@ namespace OmniSharp
         [Fact]
         public async Task FixUsings_AddsUsingMultiple()
         {
-            const string code = @"
+            const string code =
+                @"
 namespace nsA
 {
     public class classX{}
@@ -152,7 +160,8 @@ namespace OmniSharp
     }
 }";
 
-            const string expectedCode = @"
+            const string expectedCode =
+                @"
 using nsA;
 using nsB;
 
@@ -184,7 +193,8 @@ namespace OmniSharp
         [Fact]
         public async Task FixUsings_AddsUsingMultipleForFramework()
         {
-            const string code = @"
+            const string code =
+                @"
 namespace OmniSharp
 {
     public class class1
@@ -197,7 +207,8 @@ namespace OmniSharp
     }
 }";
 
-            const string expectedCode = @"
+            const string expectedCode =
+                @"
 using System;
 using System.Text;
 
@@ -219,7 +230,8 @@ namespace OmniSharp
         [Fact]
         public async Task FixUsings_ReturnsAmbiguousResult()
         {
-            const string code = @"
+            const string code =
+                @"
 namespace nsA
 {
     public class classX{}
@@ -251,7 +263,7 @@ namespace OmniSharp
                     Column = point.Offset,
                     FileName = TestFileName,
                     Text = "`classX` is ambiguous. Namespaces: using nsA; using nsB;",
-                }
+                },
             };
 
             await AssertUnresolvedReferencesAsync(content.Code, expectedUnresolved);
@@ -260,7 +272,8 @@ namespace OmniSharp
         [Fact]
         public async Task FixUsings_ReturnsNoUsingsForAmbiguousResult()
         {
-            const string code = @"
+            const string code =
+                @"
 namespace nsA {
     public class classX{}
 }
@@ -285,7 +298,8 @@ namespace OmniSharp {
         [Fact]
         public async Task FixUsings_AddsUsingForExtension()
         {
-            const string code = @"
+            const string code =
+                @"
 namespace nsA {
     public static class StringExtension {
         public static void Whatever(this string astring) {}
@@ -302,7 +316,8 @@ namespace OmniSharp {
     }
 }";
 
-            const string expectedCode = @"
+            const string expectedCode =
+                @"
 using nsA;
 
 namespace nsA {
@@ -327,7 +342,8 @@ namespace OmniSharp {
         [Fact]
         public async Task FixUsings_AddsUsingLinqMethodSyntax()
         {
-            const string code = @"namespace OmniSharp
+            const string code =
+                @"namespace OmniSharp
 {
     public class class1
     {
@@ -339,7 +355,8 @@ namespace OmniSharp {
     }
 }";
 
-            const string expectedCode = @"using System.Collections.Generic;
+            const string expectedCode =
+                @"using System.Collections.Generic;
 using System.Linq;
 
 namespace OmniSharp
@@ -360,7 +377,8 @@ namespace OmniSharp
         [Fact]
         public async Task FixUsings_AddsUsingLinqQuerySyntax()
         {
-            const string code = @"namespace OmniSharp
+            const string code =
+                @"namespace OmniSharp
 {
     public class class1
     {
@@ -375,7 +393,8 @@ namespace OmniSharp
      }
 }";
 
-            const string expectedCode = @"using System.Linq;
+            const string expectedCode =
+                @"using System.Linq;
 namespace OmniSharp
 {
     public class class1
@@ -397,7 +416,8 @@ namespace OmniSharp
         [Fact]
         public async Task FixUsings_RemoveDuplicateUsing()
         {
-            const string code = @"
+            const string code =
+                @"
 using System;
 using System;
 
@@ -412,7 +432,8 @@ namespace OmniSharp
     }
 }";
 
-            const string expectedCode = @"
+            const string expectedCode =
+                @"
 using System;
 
 namespace OmniSharp
@@ -432,7 +453,8 @@ namespace OmniSharp
         [Fact]
         public async Task FixUsings_RemoveUnusedUsing()
         {
-            const string code = @"
+            const string code =
+                @"
 using System;
 using System.Linq;
 
@@ -447,7 +469,8 @@ namespace OmniSharp
     }
 }";
 
-            const string expectedCode = @"
+            const string expectedCode =
+                @"
 using System;
 
 namespace OmniSharp
@@ -498,10 +521,7 @@ namespace OmniSharp
         {
             SharedOmniSharpTestHost.AddFilesToWorkspace(new TestFile(TestFileName, code));
             var requestHandler = GetRequestHandler(SharedOmniSharpTestHost);
-            var request = new FixUsingsRequest
-            {
-                FileName = TestFileName
-            };
+            var request = new FixUsingsRequest { FileName = TestFileName };
 
             return await requestHandler.Handle(request);
         }

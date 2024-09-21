@@ -1,16 +1,18 @@
-﻿using Microsoft.CodeAnalysis;
-using OmniSharp.Models.Diagnostics;
-using OmniSharp.Roslyn.CSharp.Services.Diagnostics;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
+using Microsoft.CodeAnalysis;
+using OmniSharp.Models.Diagnostics;
+using OmniSharp.Roslyn.CSharp.Services.Diagnostics;
 
 namespace OmniSharp.Helpers
 {
     internal static class DiagnosticExtensions
     {
-        private static readonly ImmutableHashSet<string> _tagFilter =
-            ImmutableHashSet.Create("Unnecessary", "Deprecated");
+        private static readonly ImmutableHashSet<string> _tagFilter = ImmutableHashSet.Create(
+            "Unnecessary",
+            "Deprecated"
+        );
 
         internal static DiagnosticLocation ToDiagnosticLocation(this Diagnostic diagnostic)
         {
@@ -25,21 +27,25 @@ namespace OmniSharp.Helpers
                 Text = diagnostic.GetMessage(),
                 LogLevel = diagnostic.Severity.ToString(),
                 Tags = diagnostic
-                    .Descriptor.CustomTags
-                    .Where(x => _tagFilter.Contains(x))
+                    .Descriptor.CustomTags.Where(x => _tagFilter.Contains(x))
                     .ToArray(),
-                Id = diagnostic.Id
+                Id = diagnostic.Id,
             };
         }
 
-        internal static IEnumerable<DiagnosticLocation> DistinctDiagnosticLocationsByProject(this IEnumerable<DocumentDiagnostics> documentDiagnostic)
+        internal static IEnumerable<DiagnosticLocation> DistinctDiagnosticLocationsByProject(
+            this IEnumerable<DocumentDiagnostics> documentDiagnostic
+        )
         {
             return documentDiagnostic
-                .SelectMany(x => x.Diagnostics, (parent, child) => (projectName: parent.ProjectName, diagnostic: child))
+                .SelectMany(
+                    x => x.Diagnostics,
+                    (parent, child) => (projectName: parent.ProjectName, diagnostic: child)
+                )
                 .Select(x => new
                 {
                     location = x.diagnostic.ToDiagnosticLocation(),
-                    project = x.projectName
+                    project = x.projectName,
                 })
                 .GroupBy(x => x.location)
                 .Select(x =>

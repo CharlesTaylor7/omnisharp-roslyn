@@ -9,14 +9,14 @@ namespace TestUtility
     /// <summary>
     /// MarkupCode allows encoding additional pieces of information along with a piece of source code
     /// that are useful for testing. The following information can be encoded:
-    /// 
+    ///
     /// $$ - The position in the code. There can be no more than one of these.
-    /// 
+    ///
     /// [| ... |] - A span in the code. There can be many of these and they can be nested.
-    /// 
+    ///
     /// {|Name: ... |} - A span of code that is annotated with a name. There can be many of these and
     /// they can be nested.
-    /// 
+    ///
     /// This is similar the MarkupTestFile used in Roslyn:
     ///     https://github.com/dotnet/roslyn/blob/master/src/Test/Utilities/Shared/MarkedSource/MarkupTestFile.cs
     /// </summary>
@@ -42,12 +42,17 @@ namespace TestUtility
             return new TextPoint(line.LineNumber, offset);
         }
 
-        public TextRange GetRangeFromSpan(TextSpan span)
-            => new TextRange(
+        public TextRange GetRangeFromSpan(TextSpan span) =>
+            new TextRange(
                 start: GetPointFromPosition(span.Start),
-                end: GetPointFromPosition(span.End));
+                end: GetPointFromPosition(span.End)
+            );
 
-        private TestContent(string code, int? position, ImmutableDictionary<string, ImmutableList<TextSpan>> spans)
+        private TestContent(
+            string code,
+            int? position,
+            ImmutableDictionary<string, ImmutableList<TextSpan>> spans
+        )
         {
             this.Code = code;
             this.position = position;
@@ -94,9 +99,11 @@ namespace TestUtility
                 switch (ch)
                 {
                     case '$':
-                        if (position == null &&
-                            markupIndex + 1 < markupLength &&
-                            input[markupIndex + 1] == '$')
+                        if (
+                            position == null
+                            && markupIndex + 1 < markupLength
+                            && input[markupIndex + 1] == '$'
+                        )
                         {
                             position = codeIndex;
                             markupIndex += 2;
@@ -106,8 +113,7 @@ namespace TestUtility
                         break;
 
                     case '[':
-                        if (markupIndex + 1 < markupLength &&
-                            input[markupIndex + 1] == '|')
+                        if (markupIndex + 1 < markupLength && input[markupIndex + 1] == '|')
                         {
                             spanStartStack.Push(codeIndex);
                             markupIndex += 2;
@@ -117,8 +123,7 @@ namespace TestUtility
                         break;
 
                     case '{':
-                        if (markupIndex + 1 < markupLength &&
-                            input[markupIndex + 1] == '|')
+                        if (markupIndex + 1 < markupLength && input[markupIndex + 1] == '|')
                         {
                             var nameIndex = markupIndex + 2;
                             var nameStartIndex = nameIndex;
@@ -197,12 +202,18 @@ namespace TestUtility
 
             var finalSpans = spans.ToImmutableDictionary(
                 keySelector: kvp => kvp.Key,
-                elementSelector: kvp => kvp.Value.ToImmutableList().Sort());
+                elementSelector: kvp => kvp.Value.ToImmutableList().Sort()
+            );
 
             return new TestContent(codeBuilder.ToString(), position, finalSpans);
         }
 
-        private static void AddSpan(Dictionary<string, List<TextSpan>> spans, string spanName, int spanStart, int spanEnd)
+        private static void AddSpan(
+            Dictionary<string, List<TextSpan>> spans,
+            string spanName,
+            int spanStart,
+            int spanEnd
+        )
         {
             if (!spans.TryGetValue(spanName, out var spanList))
             {

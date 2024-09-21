@@ -11,10 +11,11 @@ namespace OmniSharp.Roslyn.CSharp.Tests
 {
     public class GoToFileFacts : AbstractSingleRequestHandlerTestFixture<GotoFileService>
     {
-        public GoToFileFacts(ITestOutputHelper output, SharedOmniSharpHostFixture sharedOmniSharpHostFixture)
-            : base(output, sharedOmniSharpHostFixture)
-        {
-        }
+        public GoToFileFacts(
+            ITestOutputHelper output,
+            SharedOmniSharpHostFixture sharedOmniSharpHostFixture
+        )
+            : base(output, sharedOmniSharpHostFixture) { }
 
         protected override string EndpointName => OmniSharpEndpoints.GotoFile;
 

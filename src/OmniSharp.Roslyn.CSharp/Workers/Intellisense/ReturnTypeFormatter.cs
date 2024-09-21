@@ -14,14 +14,14 @@ namespace OmniSharp
         {
             return symbol switch
             {
-                IMethodSymbol methodSymbol when methodSymbol.MethodKind != MethodKind.Constructor
-                        => methodSymbol.ReturnType,
+                IMethodSymbol methodSymbol when methodSymbol.MethodKind != MethodKind.Constructor =>
+                    methodSymbol.ReturnType,
                 IPropertySymbol propertySymbol => propertySymbol.Type,
                 ILocalSymbol localSymbol => localSymbol.Type,
                 IParameterSymbol parameterSymbol => parameterSymbol.Type,
                 IFieldSymbol fieldSymbol => fieldSymbol.Type,
                 IEventSymbol eventSymbol => eventSymbol.Type,
-                _ => null
+                _ => null,
             };
         }
     }

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Composition;
 using System.IO;
@@ -28,7 +28,12 @@ namespace OmniSharp.Script
         private readonly ILogger _logger;
 
         [ImportingConstructor]
-        public ScriptContextProvider(ILoggerFactory loggerFactory, IOmniSharpEnvironment env, MetadataFileReferenceCache metadataFileReferenceCache, FileSystemHelper fileSystemHelper)
+        public ScriptContextProvider(
+            ILoggerFactory loggerFactory,
+            IOmniSharpEnvironment env,
+            MetadataFileReferenceCache metadataFileReferenceCache,
+            FileSystemHelper fileSystemHelper
+        )
         {
             _loggerFactory = loggerFactory;
             _env = env;
@@ -40,53 +45,77 @@ namespace OmniSharp.Script
                 // Prefix with "OmniSharp" so that we make it through the log filter.
                 var categoryName = $"OmniSharp.Script.{type.FullName}";
                 var dependencyResolverLogger = loggerFactory.CreateLogger(categoryName);
-                return ((level, message, exception) =>
-                {
-                    if (level == LogLevel.Trace)
+                return (
+                    (level, message, exception) =>
                     {
-                        dependencyResolverLogger.LogTrace(message);
+                        if (level == LogLevel.Trace)
+                        {
+                            dependencyResolverLogger.LogTrace(message);
+                        }
+                        if (level == LogLevel.Debug)
+                        {
+                            dependencyResolverLogger.LogDebug(message);
+                        }
+                        if (level == LogLevel.Info)
+                        {
+                            dependencyResolverLogger.LogInformation(message);
+                        }
+                        if (level == LogLevel.Warning)
+                        {
+                            dependencyResolverLogger.LogWarning(message);
+                        }
+                        if (level == LogLevel.Error)
+                        {
+                            dependencyResolverLogger.LogError(exception, message);
+                        }
+                        if (level == LogLevel.Critical)
+                        {
+                            dependencyResolverLogger.LogCritical(exception, message);
+                        }
                     }
-                    if (level == LogLevel.Debug)
-                    {
-                        dependencyResolverLogger.LogDebug(message);
-                    }
-                    if (level == LogLevel.Info)
-                    {
-                        dependencyResolverLogger.LogInformation(message);
-                    }
-                    if (level == LogLevel.Warning)
-                    {
-                        dependencyResolverLogger.LogWarning(message);
-                    }
-                    if (level == LogLevel.Error)
-                    {
-                        dependencyResolverLogger.LogError(exception, message);
-                    }
-                    if (level == LogLevel.Critical)
-                    {
-                        dependencyResolverLogger.LogCritical(exception, message);
-                    }
-                });
+                );
             });
         }
 
-        public ScriptContext CreateScriptContext(ScriptOptions scriptOptions, string[] allCsxFiles, bool editorConfigEnabled)
+        public ScriptContext CreateScriptContext(
+            ScriptOptions scriptOptions,
+            string[] allCsxFiles,
+            bool editorConfigEnabled
+        )
         {
             var currentDomainAssemblies = AppDomain.CurrentDomain.GetAssemblies();
 
             // explicitly inherit scripting library references to all global script object (CommandLineScriptGlobals) to be recognized
-            var inheritedCompileLibraries = currentDomainAssemblies.Where(x =>
-                x.FullName.StartsWith("microsoft.codeanalysis", StringComparison.OrdinalIgnoreCase)).ToList();
+            var inheritedCompileLibraries = currentDomainAssemblies
+                .Where(x =>
+                    x.FullName.StartsWith(
+                        "microsoft.codeanalysis",
+                        StringComparison.OrdinalIgnoreCase
+                    )
+                )
+                .ToList();
 
             // explicitly include System.ValueTuple
-            inheritedCompileLibraries.AddRange(currentDomainAssemblies.Where(x =>
-                x.FullName.StartsWith("system.valuetuple", StringComparison.OrdinalIgnoreCase)));
+            inheritedCompileLibraries.AddRange(
+                currentDomainAssemblies.Where(x =>
+                    x.FullName.StartsWith("system.valuetuple", StringComparison.OrdinalIgnoreCase)
+                )
+            );
 
             CompilationDependency[] compilationDependencies = null;
             try
             {
-                _logger.LogInformation($"Searching for compilation dependencies with the fallback framework of '{scriptOptions.DefaultTargetFramework}'.");
-                compilationDependencies = _compilationDependencyResolver.GetDependencies(_env.TargetDirectory, allCsxFiles, scriptOptions.IsNugetEnabled(), scriptOptions.DefaultTargetFramework).ToArray();
+                _logger.LogInformation(
+                    $"Searching for compilation dependencies with the fallback framework of '{scriptOptions.DefaultTargetFramework}'."
+                );
+                compilationDependencies = _compilationDependencyResolver
+                    .GetDependencies(
+                        _env.TargetDirectory,
+                        allCsxFiles,
+                        scriptOptions.IsNugetEnabled(),
+                        scriptOptions.DefaultTargetFramework
+                    )
+                    .ToArray();
             }
             catch (Exception e)
             {
@@ -94,7 +123,9 @@ namespace OmniSharp.Script
                 compilationDependencies = Array.Empty<CompilationDependency>();
             }
 
-            var metadataReferences = new HashSet<MetadataReference>(MetadataReferenceEqualityComparer.Instance);
+            var metadataReferences = new HashSet<MetadataReference>(
+                MetadataReferenceEqualityComparer.Instance
+            );
 
             var isDesktopClr = true;
             // if we have no compilation dependencies
@@ -103,7 +134,9 @@ namespace OmniSharp.Script
             // same applies for having a context that is not a .NET Core app
             if (!compilationDependencies.Any())
             {
-                _logger.LogInformation("Unable to find dependency context for CSX files. Will default to non-context usage (Desktop CLR scripts).");
+                _logger.LogInformation(
+                    "Unable to find dependency context for CSX files. Will default to non-context usage (Desktop CLR scripts)."
+                );
                 AddDefaultClrMetadataReferences(metadataReferences);
             }
             else
@@ -112,16 +145,31 @@ namespace OmniSharp.Script
                 HashSet<string> loadedFiles = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
                 // Pick the highest version
-                var resolvedAssemblyPaths = compilationDependencies.SelectMany(cd => cd.AssemblyPaths)
-                    .Select(path => new { AssemblyName = AssemblyName.GetAssemblyName(path), Path = path }).Distinct()
-                    .GroupBy(nameAndPath => nameAndPath.AssemblyName.Name, nameAndPath => nameAndPath)
-                    .Select(gr => gr.OrderBy(nameAndPath => nameAndPath.AssemblyName.Version).Last()).Select(nameAndPath => nameAndPath.Path);
+                var resolvedAssemblyPaths = compilationDependencies
+                    .SelectMany(cd => cd.AssemblyPaths)
+                    .Select(path => new
+                    {
+                        AssemblyName = AssemblyName.GetAssemblyName(path),
+                        Path = path,
+                    })
+                    .Distinct()
+                    .GroupBy(
+                        nameAndPath => nameAndPath.AssemblyName.Name,
+                        nameAndPath => nameAndPath
+                    )
+                    .Select(gr =>
+                        gr.OrderBy(nameAndPath => nameAndPath.AssemblyName.Version).Last()
+                    )
+                    .Select(nameAndPath => nameAndPath.Path);
 
                 foreach (var compilationAssembly in resolvedAssemblyPaths)
                 {
                     if (loadedFiles.Add(Path.GetFileName(compilationAssembly)))
                     {
-                        _logger.LogDebug("Discovered script compilation assembly reference: " + compilationAssembly);
+                        _logger.LogDebug(
+                            "Discovered script compilation assembly reference: "
+                                + compilationAssembly
+                        );
                         AddMetadataReference(metadataReferences, compilationAssembly);
                     }
                 }
@@ -134,14 +182,26 @@ namespace OmniSharp.Script
                 AddMetadataReference(metadataReferences, inheritedCompileLib.Location);
             }
 
-            var scriptProjectProvider = new ScriptProjectProvider(scriptOptions, _env, _loggerFactory, isDesktopClr, editorConfigEnabled);
+            var scriptProjectProvider = new ScriptProjectProvider(
+                scriptOptions,
+                _env,
+                _loggerFactory,
+                isDesktopClr,
+                editorConfigEnabled
+            );
 
-            return new ScriptContext(scriptProjectProvider, metadataReferences, compilationDependencies, _defaultGlobalsType);
+            return new ScriptContext(
+                scriptProjectProvider,
+                metadataReferences,
+                compilationDependencies,
+                _defaultGlobalsType
+            );
         }
 
         private void AddDefaultClrMetadataReferences(HashSet<MetadataReference> commonReferences)
         {
-            var references = DefaultMetadataReferenceHelper.GetDefaultMetadataReferenceLocations()
+            var references = DefaultMetadataReferenceHelper
+                .GetDefaultMetadataReferenceLocations()
                 .Select(l => _metadataFileReferenceCache.GetMetadataReference(l));
 
             foreach (var reference in references)
@@ -150,18 +210,25 @@ namespace OmniSharp.Script
             }
         }
 
-        private void AddMetadataReference(ISet<MetadataReference> referenceCollection, string fileReference)
+        private void AddMetadataReference(
+            ISet<MetadataReference> referenceCollection,
+            string fileReference
+        )
         {
             if (!File.Exists(fileReference))
             {
-                _logger.LogWarning($"Couldn't add reference to '{fileReference}' because the file was not found.");
+                _logger.LogWarning(
+                    $"Couldn't add reference to '{fileReference}' because the file was not found."
+                );
                 return;
             }
 
             var metadataReference = _metadataFileReferenceCache.GetMetadataReference(fileReference);
             if (metadataReference == null)
             {
-                _logger.LogWarning($"Couldn't add reference to '{fileReference}' because the loaded metadata reference was null.");
+                _logger.LogWarning(
+                    $"Couldn't add reference to '{fileReference}' because the loaded metadata reference was null."
+                );
                 return;
             }
 

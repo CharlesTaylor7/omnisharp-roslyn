@@ -1,11 +1,12 @@
-using Newtonsoft.Json;
 using System;
+using Newtonsoft.Json;
 
 namespace OmniSharp.Options
 {
     public class OmniSharpOptions
     {
-        public RoslynExtensionsOptions RoslynExtensionsOptions { get; set; } = new RoslynExtensionsOptions();
+        public RoslynExtensionsOptions RoslynExtensionsOptions { get; set; } =
+            new RoslynExtensionsOptions();
 
         public FormattingOptions FormattingOptions { get; set; } = new FormattingOptions();
 

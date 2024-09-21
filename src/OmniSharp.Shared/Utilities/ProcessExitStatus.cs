@@ -1,4 +1,4 @@
-﻿namespace OmniSharp.Utilities
+namespace OmniSharp.Utilities
 {
     public struct ProcessExitStatus
     {

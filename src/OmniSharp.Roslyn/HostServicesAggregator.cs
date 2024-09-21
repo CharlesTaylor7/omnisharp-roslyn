@@ -25,7 +25,8 @@ namespace OmniSharp
         public HostServicesAggregator(
             [ImportMany] IEnumerable<IHostServicesProvider> hostServicesProviders,
             ILoggerFactory loggerFactory,
-            IOptionsMonitor<OmniSharpOptions> options = null)
+            IOptionsMonitor<OmniSharpOptions> options = null
+        )
         {
             var logger = loggerFactory.CreateLogger<HostServicesAggregator>();
             var builder = ImmutableHashSet.CreateBuilder<Assembly>();
@@ -49,18 +50,27 @@ namespace OmniSharp
                     {
                         var exportedTypes = assembly.ExportedTypes;
                         builder.Add(assembly);
-                        logger.LogTrace("Successfully added {assembly} to host service assemblies.", assembly.FullName);
+                        logger.LogTrace(
+                            "Successfully added {assembly} to host service assemblies.",
+                            assembly.FullName
+                        );
                     }
                     catch (Exception ex)
                     {
                         // if we can't see exported types, it means that the assembly cannot participate
                         // in MefHostServices. Most likely cause is that one or more of its dependencies (typically a Visual Studio or GACed DLL) are missing
-                        logger.LogWarning("Expected to use {assembly} in host services but the assembly cannot be loaded due to an exception: {exceptionMessage}.", assembly.FullName, ex.Message);
+                        logger.LogWarning(
+                            "Expected to use {assembly} in host services but the assembly cannot be loaded due to an exception: {exceptionMessage}.",
+                            assembly.FullName,
+                            ex.Message
+                        );
                     }
                 }
             }
 
-            builder.Add(typeof(OmniSharpSymbolRenamedCodeActionOperationFactoryWorkspaceService).Assembly);
+            builder.Add(
+                typeof(OmniSharpSymbolRenamedCodeActionOperationFactoryWorkspaceService).Assembly
+            );
             _assemblies = builder.ToImmutableArray();
             _options = options;
         }
@@ -86,7 +96,10 @@ namespace OmniSharp
                 _metadata = metadata;
             }
 
-            public override IEnumerable<ExportDescriptorPromise> GetExportDescriptors(CompositionContract contract, DependencyAccessor descriptorAccessor)
+            public override IEnumerable<ExportDescriptorPromise> GetExportDescriptors(
+                CompositionContract contract,
+                DependencyAccessor descriptorAccessor
+            )
             {
                 if (contract.ContractType == typeof(T))
                 {
@@ -95,7 +108,12 @@ namespace OmniSharp
                         origin: string.Empty,
                         isShared: true,
                         () => Enumerable.Empty<CompositionDependency>(),
-                        deps => ExportDescriptor.Create((context, operation) => _item, _metadata ?? new Dictionary<string, object>()));
+                        deps =>
+                            ExportDescriptor.Create(
+                                (context, operation) => _item,
+                                _metadata ?? new Dictionary<string, object>()
+                            )
+                    );
                 }
             }
         }

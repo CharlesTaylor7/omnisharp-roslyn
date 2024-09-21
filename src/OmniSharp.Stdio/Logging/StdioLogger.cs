@@ -24,8 +24,8 @@ namespace OmniSharp.Stdio.Logging
                 {
                     LogLevel = logLevel.ToString().ToUpperInvariant(),
                     Name = this.CategoryName,
-                    Message = message
-                }
+                    Message = message,
+                },
             };
 
             _writer.WriteLine(packet);

@@ -20,7 +20,11 @@ namespace OmniSharp.Roslyn.CSharp.Services.Navigation
 
         public async Task<NavigateResponse> Handle(NavigateUpRequest request)
         {
-            return await NavigationHelpers.Navigate(_workspace, request, NavigationHelpers.IsCloserNodeUp);
+            return await NavigationHelpers.Navigate(
+                _workspace,
+                request,
+                NavigationHelpers.IsCloserNodeUp
+            );
         }
     }
 
@@ -37,7 +41,11 @@ namespace OmniSharp.Roslyn.CSharp.Services.Navigation
 
         public async Task<NavigateResponse> Handle(NavigateDownRequest request)
         {
-            return await NavigationHelpers.Navigate(_workspace, request, NavigationHelpers.IsCloserNodeDown);
+            return await NavigationHelpers.Navigate(
+                _workspace,
+                request,
+                NavigationHelpers.IsCloserNodeDown
+            );
         }
     }
 }

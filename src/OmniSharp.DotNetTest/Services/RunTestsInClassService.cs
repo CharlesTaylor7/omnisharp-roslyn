@@ -1,4 +1,4 @@
-﻿using System.Composition;
+using System.Composition;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
@@ -14,23 +14,35 @@ namespace OmniSharp.DotNetTest.Services
     internal class RunTestsInClassService : BaseTestService<RunTestsInClassRequest, RunTestResponse>
     {
         [ImportingConstructor]
-        public RunTestsInClassService(OmniSharpWorkspace workspace, IDotNetCliService dotNetCli, IEventEmitter eventEmitter, ILoggerFactory loggerFactory)
-            : base(workspace, dotNetCli, eventEmitter, loggerFactory)
-        {
-        }
+        public RunTestsInClassService(
+            OmniSharpWorkspace workspace,
+            IDotNetCliService dotNetCli,
+            IEventEmitter eventEmitter,
+            ILoggerFactory loggerFactory
+        )
+            : base(workspace, dotNetCli, eventEmitter, loggerFactory) { }
 
-        protected override async Task<RunTestResponse> HandleRequest(RunTestsInClassRequest request, TestManager testManager)
+        protected override async Task<RunTestResponse> HandleRequest(
+            RunTestsInClassRequest request,
+            TestManager testManager
+        )
         {
             if (testManager.IsConnected)
             {
-                return await testManager.RunTestAsync(request.MethodNames, request.RunSettings, request.TestFrameworkName, request.TargetFrameworkVersion, CancellationToken.None);
+                return await testManager.RunTestAsync(
+                    request.MethodNames,
+                    request.RunSettings,
+                    request.TestFrameworkName,
+                    request.TargetFrameworkVersion,
+                    CancellationToken.None
+                );
             }
 
             var response = new RunTestResponse
             {
                 Failure = "Failed to connect to 'dotnet test' process",
                 Pass = false,
-                ContextHadNoTests = false
+                ContextHadNoTests = false,
             };
 
             return response;

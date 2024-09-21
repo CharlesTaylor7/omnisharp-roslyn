@@ -13,14 +13,13 @@ namespace OmniSharp.Lsp.Tests
     public class OmniSharpImplementationHandlerFacts : AbstractLanguageServerTestBase
     {
         public OmniSharpImplementationHandlerFacts(ITestOutputHelper output)
-            : base(output)
-        {
-        }
+            : base(output) { }
 
         [Fact]
         public async Task CanFindImplementationsOfClass()
         {
-            const string code = @"
+            const string code =
+                @"
                 public class Foo$$Base
                 {
                 }
@@ -40,7 +39,8 @@ namespace OmniSharp.Lsp.Tests
         [Fact]
         public async Task CanFindImplementationsOfInterface()
         {
-            const string code = @"
+            const string code =
+                @"
                 public interface IF$$oo
                 {
                 }
@@ -60,7 +60,8 @@ namespace OmniSharp.Lsp.Tests
         [Fact]
         public async Task CanFindImplementationsOfVirtualFunction()
         {
-            const string code = @"
+            const string code =
+                @"
                 public class FooBase
                 {
                     public virtual int B$$ar() { return 1; }
@@ -83,7 +84,8 @@ namespace OmniSharp.Lsp.Tests
         [Fact]
         public async Task CanFindImplementationsOfAbstractFunction()
         {
-            const string code = @"
+            const string code =
+                @"
                 public abstract class FooBase
                 {
                     public abstract int B$$ar();
@@ -106,7 +108,8 @@ namespace OmniSharp.Lsp.Tests
         [Fact]
         public async Task CanFindImplementationsOfVirtualProperty()
         {
-            const string code = @"
+            const string code =
+                @"
                 public class FooBase
                 {
                     public virtual int B$$ar => 1;
@@ -129,7 +132,8 @@ namespace OmniSharp.Lsp.Tests
         [Fact]
         public async Task CanFindImplementationsOfAbstractProperty()
         {
-            const string code = @"
+            const string code =
+                @"
                 public abstract class FooBase
                 {
                     public abstract int B$$ar { get; }
@@ -152,7 +156,8 @@ namespace OmniSharp.Lsp.Tests
         [Fact]
         public async Task CannotFindImplementationsWithoutSymbol()
         {
-            const string code = @"
+            const string code =
+                @"
                 public class Foo
                 {
                     $$
@@ -165,7 +170,8 @@ namespace OmniSharp.Lsp.Tests
         [Fact]
         public async Task CannotFindImplementationsForUnsupportedSymbol()
         {
-            const string code = @"
+            const string code =
+                @"
                 pub$$lic class Foo
                 {
                 }";
@@ -177,11 +183,10 @@ namespace OmniSharp.Lsp.Tests
         [Fact]
         public async Task CannotFindImplementationsForEmptyFiles()
         {
-            var response = await Client.TextDocument.RequestImplementation(new ImplementationParams
-            {
-                Position = (0, 0),
-                TextDocument = "notfound.cs"
-            }, CancellationToken);
+            var response = await Client.TextDocument.RequestImplementation(
+                new ImplementationParams { Position = (0, 0), TextDocument = "notfound.cs" },
+                CancellationToken
+            );
 
             Assert.Empty(response);
         }
@@ -193,35 +198,44 @@ namespace OmniSharp.Lsp.Tests
 
         private async Task<LocationOrLocationLinks> FindImplementationsAsync(TestFile[] testFiles)
         {
-            OmniSharpTestHost.AddFilesToWorkspace(testFiles
-                .Select(f =>
-                    new TestFile(
-                        ((f.FileName.StartsWith("/") || f.FileName.StartsWith("\\")) ? f.FileName : ("/" + f.FileName))
-                        .Replace(Path.AltDirectorySeparatorChar, Path.DirectorySeparatorChar), f.Content))
-                .ToArray()
+            OmniSharpTestHost.AddFilesToWorkspace(
+                testFiles
+                    .Select(f => new TestFile(
+                        (
+                            (f.FileName.StartsWith("/") || f.FileName.StartsWith("\\"))
+                                ? f.FileName
+                                : ("/" + f.FileName)
+                        ).Replace(Path.AltDirectorySeparatorChar, Path.DirectorySeparatorChar),
+                        f.Content
+                    ))
+                    .ToArray()
             );
 
             var file = testFiles.Single(tf => tf.Content.HasPosition);
             var point = file.Content.GetPointFromPosition();
 
-            Client.TextDocument.DidChangeTextDocument(new DidChangeTextDocumentParams
-            {
-                ContentChanges = new Container<TextDocumentContentChangeEvent>(new TextDocumentContentChangeEvent
+            Client.TextDocument.DidChangeTextDocument(
+                new DidChangeTextDocumentParams
                 {
-                    Text = file.Content.Code
-                }),
-                TextDocument = new OptionalVersionedTextDocumentIdentifier
-                {
-                    Uri = DocumentUri.From(file.FileName),
-                    Version = 1
+                    ContentChanges = new Container<TextDocumentContentChangeEvent>(
+                        new TextDocumentContentChangeEvent { Text = file.Content.Code }
+                    ),
+                    TextDocument = new OptionalVersionedTextDocumentIdentifier
+                    {
+                        Uri = DocumentUri.From(file.FileName),
+                        Version = 1,
+                    },
                 }
-            });
+            );
 
-            return await Client.TextDocument.RequestImplementation(new ImplementationParams
-            {
-                Position = new Position(point.Line, point.Offset),
-                TextDocument = new TextDocumentIdentifier(DocumentUri.From(file.FileName))
-            }, CancellationToken);
+            return await Client.TextDocument.RequestImplementation(
+                new ImplementationParams
+                {
+                    Position = new Position(point.Line, point.Offset),
+                    TextDocument = new TextDocumentIdentifier(DocumentUri.From(file.FileName)),
+                },
+                CancellationToken
+            );
         }
     }
 }

@@ -27,18 +27,34 @@ namespace OmniSharp.LanguageServerProtocol.Handlers
         public static IEnumerable<IJsonRpcHandler> Enumerate(
             RequestHandlers handlers,
             ILanguageServer mediator,
-            DocumentVersions versions)
+            DocumentVersions versions
+        )
         {
-            foreach (var (selector, getActionsHandler, runActionHandler) in handlers
-                     .OfType<Mef.IRequestHandler<GetCodeActionsRequest, GetCodeActionsResponse>,
-                             Mef.IRequestHandler<RunCodeActionRequest, RunCodeActionResponse>>())
+            foreach (
+                var (selector, getActionsHandler, runActionHandler) in handlers.OfType<
+                    Mef.IRequestHandler<GetCodeActionsRequest, GetCodeActionsResponse>,
+                    Mef.IRequestHandler<RunCodeActionRequest, RunCodeActionResponse>
+                >()
+            )
             {
-                yield return new OmniSharpCodeActionHandler(getActionsHandler, runActionHandler, selector, mediator, versions);
+                yield return new OmniSharpCodeActionHandler(
+                    getActionsHandler,
+                    runActionHandler,
+                    selector,
+                    mediator,
+                    versions
+                );
             }
         }
 
-        private readonly Mef.IRequestHandler<GetCodeActionsRequest, GetCodeActionsResponse> _getActionsHandler;
-        private readonly Mef.IRequestHandler<RunCodeActionRequest, RunCodeActionResponse> _runActionHandler;
+        private readonly Mef.IRequestHandler<
+            GetCodeActionsRequest,
+            GetCodeActionsResponse
+        > _getActionsHandler;
+        private readonly Mef.IRequestHandler<
+            RunCodeActionRequest,
+            RunCodeActionResponse
+        > _runActionHandler;
         private readonly TextDocumentSelector _documentSelector;
         private readonly ILanguageServer _server;
         private readonly DocumentVersions _documentVersions;
@@ -48,7 +64,8 @@ namespace OmniSharp.LanguageServerProtocol.Handlers
             Mef.IRequestHandler<RunCodeActionRequest, RunCodeActionResponse> runActionHandler,
             TextDocumentSelector documentSelector,
             ILanguageServer server,
-            DocumentVersions documentVersions)
+            DocumentVersions documentVersions
+        )
         {
             _getActionsHandler = getActionsHandler;
             _runActionHandler = runActionHandler;
@@ -57,7 +74,10 @@ namespace OmniSharp.LanguageServerProtocol.Handlers
             _documentVersions = documentVersions;
         }
 
-        public override async Task<CommandOrCodeActionContainer> Handle(CodeActionParams request, CancellationToken cancellationToken)
+        public override async Task<CommandOrCodeActionContainer> Handle(
+            CodeActionParams request,
+            CancellationToken cancellationToken
+        )
         {
             var omnisharpRequest = new GetCodeActionsRequest
             {
@@ -77,7 +97,9 @@ namespace OmniSharp.LanguageServerProtocol.Handlers
                     new CodeAction
                     {
                         Title = ca.Name,
-                        Kind = OmniSharpCodeActionHandler.FromOmniSharpCodeActionKind(ca.CodeActionKind),
+                        Kind = OmniSharpCodeActionHandler.FromOmniSharpCodeActionKind(
+                            ca.CodeActionKind
+                        ),
                         Diagnostics = new Container<Diagnostic>(),
                         Data = new CommandData()
                         {
@@ -85,15 +107,20 @@ namespace OmniSharp.LanguageServerProtocol.Handlers
                             Identifier = ca.Identifier,
                             Name = ca.Name,
                             Range = request.Range,
-                        }.ToJToken()
-                    });
+                        }.ToJToken(),
+                    }
+                );
             }
 
             return new CommandOrCodeActionContainer(
-                codeActions.Select(ca => new CommandOrCodeAction(ca)));
+                codeActions.Select(ca => new CommandOrCodeAction(ca))
+            );
         }
 
-        public override async Task<CodeAction> Handle(CodeAction request, CancellationToken cancellationToken)
+        public override async Task<CodeAction> Handle(
+            CodeAction request,
+            CancellationToken cancellationToken
+        )
         {
             var data = request.Data.FromJToken<CommandData>();
 
@@ -106,7 +133,7 @@ namespace OmniSharp.LanguageServerProtocol.Handlers
                 Selection = Helpers.FromRange(data.Range),
                 ApplyTextChanges = false,
                 WantsTextChanges = true,
-                WantsAllCodeActionOperations = true
+                WantsAllCodeActionOperations = true,
             };
 
             var omnisharpCaResponse = await _runActionHandler.Handle(omnisharpCaRequest);
@@ -121,7 +148,10 @@ namespace OmniSharp.LanguageServerProtocol.Handlers
                 _documentVersions
             );
 
-            return request with { Edit = edit };
+            return request with
+            {
+                Edit = edit,
+            };
         }
 
         class CommandData
@@ -132,17 +162,22 @@ namespace OmniSharp.LanguageServerProtocol.Handlers
             public Range Range { get; set; }
         }
 
-        private static CodeActionKind FromOmniSharpCodeActionKind(string omnisharpCodeAction)
-            => omnisharpCodeAction switch
+        private static CodeActionKind FromOmniSharpCodeActionKind(string omnisharpCodeAction) =>
+            omnisharpCodeAction switch
             {
                 OmniSharpCodeActionKind.QuickFix => CodeActionKind.QuickFix,
                 OmniSharpCodeActionKind.Refactor => CodeActionKind.Refactor,
                 OmniSharpCodeActionKind.RefactorInline => CodeActionKind.RefactorInline,
                 OmniSharpCodeActionKind.RefactorExtract => CodeActionKind.RefactorExtract,
-                _ => throw new InvalidOperationException($"Unexpected code action kind {omnisharpCodeAction}")
+                _ => throw new InvalidOperationException(
+                    $"Unexpected code action kind {omnisharpCodeAction}"
+                ),
             };
 
-        protected override CodeActionRegistrationOptions CreateRegistrationOptions(CodeActionCapability capability, ClientCapabilities clientCapabilities)
+        protected override CodeActionRegistrationOptions CreateRegistrationOptions(
+            CodeActionCapability capability,
+            ClientCapabilities clientCapabilities
+        )
         {
             return new CodeActionRegistrationOptions()
             {
@@ -152,7 +187,8 @@ namespace OmniSharp.LanguageServerProtocol.Handlers
                     CodeActionKind.SourceOrganizeImports,
                     CodeActionKind.Refactor,
                     CodeActionKind.RefactorExtract,
-                    CodeActionKind.RefactorInline),
+                    CodeActionKind.RefactorInline
+                ),
             };
         }
     }

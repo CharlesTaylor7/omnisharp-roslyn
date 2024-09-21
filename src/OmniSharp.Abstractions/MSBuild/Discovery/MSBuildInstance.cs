@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Immutable;
 
 namespace OmniSharp.MSBuild.Discovery
@@ -13,9 +13,13 @@ namespace OmniSharp.MSBuild.Discovery
         public bool SetMSBuildExePathVariable { get; }
 
         public MSBuildInstance(
-            string name, string msbuildPath, Version version, DiscoveryType discoveryType,
+            string name,
+            string msbuildPath,
+            Version version,
+            DiscoveryType discoveryType,
             ImmutableDictionary<string, string> propertyOverrides = null,
-            bool setMSBuildExePathVariable = false)
+            bool setMSBuildExePathVariable = false
+        )
         {
             Name = name;
             MSBuildPath = msbuildPath;
@@ -25,7 +29,6 @@ namespace OmniSharp.MSBuild.Discovery
             SetMSBuildExePathVariable = setMSBuildExePathVariable;
         }
 
-        public override string ToString()
-            => $"{Name} {Version} - \"{MSBuildPath}\"";
+        public override string ToString() => $"{Name} {Version} - \"{MSBuildPath}\"";
     }
 }

@@ -36,7 +36,10 @@ namespace OmniSharp.Services
 
                 using (var stream = File.OpenRead(filePath))
                 {
-                    var moduleMetadata = ModuleMetadata.CreateFromStream(stream, PEStreamOptions.PrefetchMetadata);
+                    var moduleMetadata = ModuleMetadata.CreateFromStream(
+                        stream,
+                        PEStreamOptions.PrefetchMetadata
+                    );
                     assemblyMetadata = AssemblyMetadata.Create(moduleMetadata);
 
                     var options = new MemoryCacheEntryOptions();
@@ -54,13 +57,17 @@ namespace OmniSharp.Services
                 : null;
 
             return assemblyMetadata.GetReference(
-                documentationProvider, filePath: filePath, display: displayText);
+                documentationProvider,
+                filePath: filePath,
+                display: displayText
+            );
         }
 
         private class FileWriteTimeTrigger : IChangeToken
         {
             private readonly string _path;
             private readonly DateTime _lastWriteTime;
+
             public FileWriteTimeTrigger(string path)
             {
                 _path = path;
@@ -69,18 +76,12 @@ namespace OmniSharp.Services
 
             public bool ActiveChangeCallbacks
             {
-                get
-                {
-                    return false;
-                }
+                get { return false; }
             }
 
             public bool HasChanged
             {
-                get
-                {
-                    return File.GetLastWriteTime(_path).ToUniversalTime() > _lastWriteTime;
-                }
+                get { return File.GetLastWriteTime(_path).ToUniversalTime() > _lastWriteTime; }
             }
 
             public IDisposable RegisterChangeCallback(Action<object> callback, object state)

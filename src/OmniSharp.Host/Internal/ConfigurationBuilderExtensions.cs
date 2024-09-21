@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.FileProviders;
@@ -8,9 +8,13 @@ namespace OmniSharp.Internal
 {
     internal static class ConfigurationBuilderExtensions
     {
-        internal static void CreateAndAddGlobalOptionsFile(this IConfigurationBuilder configBuilder, IOmniSharpEnvironment env)
+        internal static void CreateAndAddGlobalOptionsFile(
+            this IConfigurationBuilder configBuilder,
+            IOmniSharpEnvironment env
+        )
         {
-            if (env?.SharedDirectory == null) return;
+            if (env?.SharedDirectory == null)
+                return;
 
             try
             {
@@ -23,12 +27,15 @@ namespace OmniSharp.Internal
                     new PhysicalFileProvider(env.SharedDirectory).WrapForPolling(),
                     Constants.OptionsFile,
                     optional: true,
-                    reloadOnChange: true);
+                    reloadOnChange: true
+                );
             }
             catch (Exception e)
             {
                 // at this point we have no ILogger yet
-                Console.Error.WriteLine($"There was an error when trying to create a global '{Constants.OptionsFile}' file in '{env.SharedDirectory}'. {e.ToString()}");
+                Console.Error.WriteLine(
+                    $"There was an error when trying to create a global '{Constants.OptionsFile}' file in '{env.SharedDirectory}'. {e.ToString()}"
+                );
             }
         }
     }

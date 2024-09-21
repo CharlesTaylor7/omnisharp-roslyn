@@ -9,9 +9,15 @@ namespace OmniSharp.Helpers
 {
     public static class NavigationHelpers
     {
-        public static async Task<NavigateResponse> Navigate(OmniSharpWorkspace workspace, Request request, Func<FileMemberElement, FileMemberElement, Request, bool> IsCloserNode)
+        public static async Task<NavigateResponse> Navigate(
+            OmniSharpWorkspace workspace,
+            Request request,
+            Func<FileMemberElement, FileMemberElement, Request, bool> IsCloserNode
+        )
         {
-            var stack = new List<FileMemberElement>(await StructureComputer.Compute(workspace.GetDocuments(request.FileName)));
+            var stack = new List<FileMemberElement>(
+                await StructureComputer.Compute(workspace.GetDocuments(request.FileName))
+            );
             var response = new NavigateResponse();
             //Retain current line in case we dont need to navigate.
             response.Line = request.Line;
@@ -50,14 +56,34 @@ namespace OmniSharp.Helpers
             return response;
         }
 
-        public static bool IsCloserNodeUp(FileMemberElement candidateClosestNode, FileMemberElement closestNode, Request request)
+        public static bool IsCloserNodeUp(
+            FileMemberElement candidateClosestNode,
+            FileMemberElement closestNode,
+            Request request
+        )
         {
-            return ((candidateClosestNode.Location.Line < request.Line) && (closestNode == null || candidateClosestNode.Location.Line > closestNode.Location.Line));
+            return (
+                (candidateClosestNode.Location.Line < request.Line)
+                && (
+                    closestNode == null
+                    || candidateClosestNode.Location.Line > closestNode.Location.Line
+                )
+            );
         }
 
-        public static bool IsCloserNodeDown(FileMemberElement candidateClosestNode, FileMemberElement closestNode, Request request)
+        public static bool IsCloserNodeDown(
+            FileMemberElement candidateClosestNode,
+            FileMemberElement closestNode,
+            Request request
+        )
         {
-            return ((candidateClosestNode.Location.Line > request.Line) && (closestNode == null || candidateClosestNode.Location.Line < closestNode.Location.Line));
+            return (
+                (candidateClosestNode.Location.Line > request.Line)
+                && (
+                    closestNode == null
+                    || candidateClosestNode.Location.Line < closestNode.Location.Line
+                )
+            );
         }
     }
 }

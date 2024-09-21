@@ -8,7 +8,8 @@ namespace OmniSharp.Roslyn.CSharp.Tests
         [Fact]
         public void Converts_xml_documentation_to_plain_text()
         {
-            var documentation = @"
+            var documentation =
+                @"
 <member name=""M:TestNamespace.TestClass.GetZero"">
     <summary>
     The GetZero method.
@@ -28,7 +29,7 @@ namespace OmniSharp.Roslyn.CSharp.Tests
 </member>";
             var plainText = DocumentationConverter.ConvertDocumentation(documentation, "\n");
             var expected =
-@"The GetZero method.
+                @"The GetZero method.
 
 Example:
 This sample shows how to call the TestNamespace.TestClass.GetZero method.
@@ -47,13 +48,14 @@ This sample shows how to call the TestNamespace.TestClass.GetZero method.
         [Fact]
         public void Has_correct_spacing_around_paramref()
         {
-            var documentation = @"
+            var documentation =
+                @"
 <summary>DoWork is a method in the TestClass class.
 The <paramref name=""arg""/> parameter takes a number and <paramref name=""arg2""/> takes a string.
 </summary>";
             var plainText = DocumentationConverter.ConvertDocumentation(documentation, "\n");
             var expected =
-@"DoWork is a method in the TestClass class.
+                @"DoWork is a method in the TestClass class.
 The arg parameter takes a number and arg2 takes a string.";
             Assert.Equal(expected, plainText, ignoreLineEndingDifferences: true);
         }
@@ -61,7 +63,8 @@ The arg parameter takes a number and arg2 takes a string.";
         [Fact]
         public void Has_typeparam_and_param_in_description()
         {
-            var documentation = @"
+            var documentation =
+                @"
 <member name=""M:TestNamespace.TestClass.CreateWorkspace`1"">
     <summary>
     Creates a workspace.
@@ -71,7 +74,7 @@ The arg parameter takes a number and arg2 takes a string.";
 </member>";
             var plainText = DocumentationConverter.ConvertDocumentation(documentation, "\n");
             var expected =
-@"Creates a workspace.
+                @"Creates a workspace.
 
 <T>: The type of workspace being created.
 Path: The path to the workspace.";

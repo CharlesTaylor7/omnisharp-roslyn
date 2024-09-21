@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging;
 using OmniSharp.Eventing;
 using OmniSharp.Services;
 
@@ -11,7 +11,12 @@ namespace OmniSharp.DotNetTest.Services
         protected readonly IEventEmitter EventEmitter;
         protected readonly ILoggerFactory LoggerFactory;
 
-        protected BaseTestService(OmniSharpWorkspace workspace, IDotNetCliService dotNetCli, IEventEmitter eventEmitter, ILoggerFactory loggerFactory)
+        protected BaseTestService(
+            OmniSharpWorkspace workspace,
+            IDotNetCliService dotNetCli,
+            IEventEmitter eventEmitter,
+            ILoggerFactory loggerFactory
+        )
         {
             Workspace = workspace;
             DotNetCli = dotNetCli;
@@ -23,7 +28,13 @@ namespace OmniSharp.DotNetTest.Services
         {
             var document = Workspace.GetDocument(fileName);
 
-            return TestManager.Start(document.Project, DotNetCli, EventEmitter, LoggerFactory, noBuild);
+            return TestManager.Start(
+                document.Project,
+                DotNetCli,
+                EventEmitter,
+                LoggerFactory,
+                noBuild
+            );
         }
     }
 }

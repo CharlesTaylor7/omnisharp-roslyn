@@ -1,22 +1,23 @@
-﻿namespace OmniSharp.Options
+namespace OmniSharp.Options
 {
     public struct InlayHintsOptions
     {
-        public static readonly InlayHintsOptions AllOn = new()
-        {
-            EnableForParameters = true,
-            ForLiteralParameters = true,
-            ForIndexerParameters = true,
-            ForObjectCreationParameters = true,
-            ForOtherParameters = true,
-            SuppressForParametersThatDifferOnlyBySuffix = true,
-            SuppressForParametersThatMatchMethodIntent = true,
-            SuppressForParametersThatMatchArgumentName = true,
-            EnableForTypes = true,
-            ForImplicitVariableTypes = true,
-            ForLambdaParameterTypes = true,
-            ForImplicitObjectCreation = true
-        };
+        public static readonly InlayHintsOptions AllOn =
+            new()
+            {
+                EnableForParameters = true,
+                ForLiteralParameters = true,
+                ForIndexerParameters = true,
+                ForObjectCreationParameters = true,
+                ForOtherParameters = true,
+                SuppressForParametersThatDifferOnlyBySuffix = true,
+                SuppressForParametersThatMatchMethodIntent = true,
+                SuppressForParametersThatMatchArgumentName = true,
+                EnableForTypes = true,
+                ForImplicitVariableTypes = true,
+                ForLambdaParameterTypes = true,
+                ForImplicitObjectCreation = true,
+            };
 
         public bool EnableForParameters { get; set; }
         public bool ForLiteralParameters { get; set; }

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Composition.Hosting;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -13,10 +14,9 @@ using OmniSharp.Endpoint;
 using OmniSharp.Mef;
 using OmniSharp.Models.UpdateBuffer;
 using OmniSharp.Plugins;
-using OmniSharp.Services;
 using OmniSharp.Protocol;
+using OmniSharp.Services;
 using OmniSharp.Utilities;
-using System.Globalization;
 
 namespace OmniSharp.Stdio
 {
@@ -31,11 +31,18 @@ namespace OmniSharp.Stdio
         private readonly IOmniSharpEnvironment _environment;
         private readonly CancellationTokenSource _cancellationTokenSource;
         private readonly CachedStringBuilder _cachedStringBuilder;
-        private static readonly double TimestampToTicks = TimeSpan.TicksPerSecond / (double)Stopwatch.Frequency;
+        private static readonly double TimestampToTicks =
+            TimeSpan.TicksPerSecond / (double)Stopwatch.Frequency;
 
         public Host(
-            TextReader input, ISharedTextWriter writer, IOmniSharpEnvironment environment,
-            IServiceProvider serviceProvider, CompositionHostBuilder compositionHostBuilder, ILoggerFactory loggerFactory, CancellationTokenSource cancellationTokenSource)
+            TextReader input,
+            ISharedTextWriter writer,
+            IOmniSharpEnvironment environment,
+            IServiceProvider serviceProvider,
+            CompositionHostBuilder compositionHostBuilder,
+            ILoggerFactory loggerFactory,
+            CancellationTokenSource cancellationTokenSource
+        )
         {
             _cancellationTokenSource = cancellationTokenSource;
             _input = input;
@@ -57,14 +64,22 @@ namespace OmniSharp.Stdio
         {
             var workspace = _compositionHost.GetExport<OmniSharpWorkspace>();
             var projectSystems = _compositionHost.GetExports<IProjectSystem>();
-            var endpointMetadatas = _compositionHost.GetExports<Lazy<IRequest, OmniSharpEndpointMetadata>>()
+            var endpointMetadatas = _compositionHost
+                .GetExports<Lazy<IRequest, OmniSharpEndpointMetadata>>()
                 .Select(x => x.Metadata)
                 .ToArray();
 
-            var handlers = _compositionHost.GetExports<Lazy<IRequestHandler, OmniSharpRequestHandlerMetadata>>();
+            var handlers = _compositionHost.GetExports<
+                Lazy<IRequestHandler, OmniSharpRequestHandlerMetadata>
+            >();
 
-            var updateBufferEndpointHandler = new Lazy<EndpointHandler<UpdateBufferRequest, object>>(
-                () => (EndpointHandler<UpdateBufferRequest, object>)_endpointHandlers[OmniSharpEndpoints.UpdateBuffer].Value);
+            var updateBufferEndpointHandler = new Lazy<
+                EndpointHandler<UpdateBufferRequest, object>
+            >(
+                () =>
+                    (EndpointHandler<UpdateBufferRequest, object>)
+                        _endpointHandlers[OmniSharpEndpoints.UpdateBuffer].Value
+            );
             var languagePredicateHandler = new LanguagePredicateHandler(projectSystems);
             var projectSystemPredicateHandler = new StaticLanguagePredicateHandler("Projects");
             var nugetPredicateHandler = new StaticLanguagePredicateHandler("NuGet");
@@ -75,9 +90,16 @@ namespace OmniSharp.Stdio
                     IPredicateHandler handler;
 
                     // Projects are a special case, this allows us to select the correct "Projects" language for them
-                    if (endpoint.EndpointName == OmniSharpEndpoints.ProjectInformation || endpoint.EndpointName == OmniSharpEndpoints.WorkspaceInformation)
+                    if (
+                        endpoint.EndpointName == OmniSharpEndpoints.ProjectInformation
+                        || endpoint.EndpointName == OmniSharpEndpoints.WorkspaceInformation
+                    )
                         handler = projectSystemPredicateHandler;
-                    else if (endpoint.EndpointName == OmniSharpEndpoints.PackageSearch || endpoint.EndpointName == OmniSharpEndpoints.PackageSource || endpoint.EndpointName == OmniSharpEndpoints.PackageVersion)
+                    else if (
+                        endpoint.EndpointName == OmniSharpEndpoints.PackageSearch
+                        || endpoint.EndpointName == OmniSharpEndpoints.PackageSource
+                        || endpoint.EndpointName == OmniSharpEndpoints.PackageVersion
+                    )
                         handler = nugetPredicateHandler;
                     else
                         handler = languagePredicateHandler;
@@ -89,34 +111,50 @@ namespace OmniSharp.Stdio
                     if (endpoint.EndpointName == OmniSharpEndpoints.UpdateBuffer)
                     {
                         // We don't want to call update buffer on update buffer.
-                        updateEndpointHandler = new Lazy<EndpointHandler<UpdateBufferRequest, object>>(() => null);
+                        updateEndpointHandler = new Lazy<
+                            EndpointHandler<UpdateBufferRequest, object>
+                        >(() => null);
                     }
 
-                    return EndpointHandler.Factory(handler, _compositionHost, _logger, endpoint, handlers, updateEndpointHandler, Enumerable.Empty<Plugin>());
+                    return EndpointHandler.Factory(
+                        handler,
+                        _compositionHost,
+                        _logger,
+                        endpoint,
+                        handlers,
+                        updateEndpointHandler,
+                        Enumerable.Empty<Plugin>()
+                    );
                 }),
                 StringComparer.OrdinalIgnoreCase
             );
-
 
             // Handled as alternative middleware in http
             endpointHandlers.Add(
                 OmniSharpEndpoints.CheckAliveStatus,
                 new Lazy<EndpointHandler>(
-                    () => new GenericEndpointHandler(x => Task.FromResult<object>(true)))
+                    () => new GenericEndpointHandler(x => Task.FromResult<object>(true))
+                )
             );
             endpointHandlers.Add(
                 OmniSharpEndpoints.CheckReadyStatus,
                 new Lazy<EndpointHandler>(
-                    () => new GenericEndpointHandler(x => Task.FromResult<object>(workspace.Initialized)))
+                    () =>
+                        new GenericEndpointHandler(x =>
+                            Task.FromResult<object>(workspace.Initialized)
+                        )
+                )
             );
             endpointHandlers.Add(
                 OmniSharpEndpoints.StopServer,
                 new Lazy<EndpointHandler>(
-                    () => new GenericEndpointHandler(x =>
-                    {
-                        _cancellationTokenSource.Cancel();
-                        return Task.FromResult<object>(null);
-                    }))
+                    () =>
+                        new GenericEndpointHandler(x =>
+                        {
+                            _cancellationTokenSource.Cancel();
+                            return Task.FromResult<object>(null);
+                        })
+                )
             );
 
             return endpointHandlers;
@@ -134,10 +172,7 @@ namespace OmniSharp.Stdio
 
             Task.Factory.StartNew(async () =>
             {
-                _writer.WriteLine(new EventPacket()
-                {
-                    Event = "started"
-                });
+                _writer.WriteLine(new EventPacket() { Event = "started" });
 
                 while (!_cancellationTokenSource.IsCancellationRequested)
                 {
@@ -160,17 +195,25 @@ namespace OmniSharp.Stdio
                                 e = aggregateEx.Flatten().InnerException;
                             }
 
-                            _writer.WriteLine(new EventPacket()
-                            {
-                                Event = "error",
-                                Body = JsonConvert.ToString(e.ToString(), '"', StringEscapeHandling.Default)
-                            });
+                            _writer.WriteLine(
+                                new EventPacket()
+                                {
+                                    Event = "error",
+                                    Body = JsonConvert.ToString(
+                                        e.ToString(),
+                                        '"',
+                                        StringEscapeHandling.Default
+                                    ),
+                                }
+                            );
                         }
                     });
                 }
             });
 
-            _logger.LogInformation($"Omnisharp server running using {nameof(TransportType.Stdio)} at location '{_environment.TargetDirectory}' on host {_environment.HostProcessId}.");
+            _logger.LogInformation(
+                $"Omnisharp server running using {nameof(TransportType.Stdio)} at location '{_environment.TargetDirectory}' on host {_environment.HostProcessId}."
+            );
 
             Console.CancelKeyPress += (sender, e) =>
             {
@@ -231,7 +274,11 @@ namespace OmniSharp.Stdio
                 // updating the response object here so that the ResponseStream
                 // prints the latest state when being closed
                 response.Success = false;
-                response.Message = JsonConvert.ToString(e.ToString(), '"', StringEscapeHandling.Default);
+                response.Message = JsonConvert.ToString(
+                    e.ToString(),
+                    '"',
+                    StringEscapeHandling.Default
+                );
             }
             finally
             {
@@ -247,7 +294,9 @@ namespace OmniSharp.Stdio
                     }
 
                     var currentTimestamp = Stopwatch.GetTimestamp();
-                    var elapsed = new TimeSpan((long)(TimestampToTicks * (currentTimestamp - startTimestamp)));
+                    var elapsed = new TimeSpan(
+                        (long)(TimestampToTicks * (currentTimestamp - startTimestamp))
+                    );
 
                     LogResponse(response.ToString(), logger, response.Success, elapsed);
                 }
@@ -277,7 +326,9 @@ namespace OmniSharp.Stdio
             var builder = _cachedStringBuilder.Acquire();
             try
             {
-                builder.AppendLine($"************  Response ({elapsed.TotalMilliseconds.ToString("0.0000", CultureInfo.InvariantCulture)}ms) ************ ");
+                builder.AppendLine(
+                    $"************  Response ({elapsed.TotalMilliseconds.ToString("0.0000", CultureInfo.InvariantCulture)}ms) ************ "
+                );
                 builder.Append(JToken.Parse(json).ToString(Formatting.Indented));
 
                 if (isSuccess)

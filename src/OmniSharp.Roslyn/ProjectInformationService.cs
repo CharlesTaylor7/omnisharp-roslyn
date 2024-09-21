@@ -10,7 +10,8 @@ namespace OmniSharp
 {
     [Shared]
     [OmniSharpHandler(OmniSharpEndpoints.ProjectInformation, "Projects")]
-    public class ProjectInformationService : IRequestHandler<ProjectInformationRequest, ProjectInformationResponse>
+    public class ProjectInformationService
+        : IRequestHandler<ProjectInformationRequest, ProjectInformationResponse>
     {
         private readonly IEnumerable<IProjectSystem> _projectSystems;
 

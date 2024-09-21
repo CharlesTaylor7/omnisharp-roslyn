@@ -1,4 +1,4 @@
-﻿using System.Collections.Immutable;
+using System.Collections.Immutable;
 
 namespace OmniSharp.Models.V2.CodeStructure
 {
@@ -47,10 +47,13 @@ namespace OmniSharp.Models.V2.CodeStructure
             public CodeElement ToCodeElement()
             {
                 return new CodeElement(
-                    Kind, Name, DisplayName,
+                    Kind,
+                    Name,
+                    DisplayName,
                     _childrenBuilder?.ToImmutable(),
                     _rangesBuilder?.ToImmutable(),
-                    _propertiesBuilder?.ToImmutable());
+                    _propertiesBuilder?.ToImmutable()
+                );
             }
         }
     }

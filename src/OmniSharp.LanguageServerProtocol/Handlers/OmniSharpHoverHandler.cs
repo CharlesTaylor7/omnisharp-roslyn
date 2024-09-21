@@ -14,16 +14,26 @@ namespace OmniSharp.LanguageServerProtocol.Handlers
     {
         public static IEnumerable<IJsonRpcHandler> Enumerate(RequestHandlers handlers)
         {
-            foreach (var (selector, handler) in handlers
-                .OfType<Mef.IRequestHandler<QuickInfoRequest, QuickInfoResponse>>())
+            foreach (
+                var (selector, handler) in handlers.OfType<Mef.IRequestHandler<
+                    QuickInfoRequest,
+                    QuickInfoResponse
+                >>()
+            )
                 if (handler != null)
                     yield return new OmniSharpHoverHandler(handler, selector);
         }
 
-        private readonly Mef.IRequestHandler<QuickInfoRequest, QuickInfoResponse> _definitionHandler;
+        private readonly Mef.IRequestHandler<
+            QuickInfoRequest,
+            QuickInfoResponse
+        > _definitionHandler;
         private readonly TextDocumentSelector _documentSelector;
 
-        public OmniSharpHoverHandler(Mef.IRequestHandler<QuickInfoRequest, QuickInfoResponse> definitionHandler, TextDocumentSelector documentSelector)
+        public OmniSharpHoverHandler(
+            Mef.IRequestHandler<QuickInfoRequest, QuickInfoResponse> definitionHandler,
+            TextDocumentSelector documentSelector
+        )
         {
             _definitionHandler = definitionHandler;
             _documentSelector = documentSelector;
@@ -44,16 +54,22 @@ namespace OmniSharp.LanguageServerProtocol.Handlers
             {
                 // TODO: Range?  We don't currently have that!
                 // Range =
-                Contents = new MarkedStringsOrMarkupContent(new MarkupContent() { Value = omnisharpResponse.Markdown, Kind = MarkupKind.Markdown })
+                Contents = new MarkedStringsOrMarkupContent(
+                    new MarkupContent()
+                    {
+                        Value = omnisharpResponse.Markdown,
+                        Kind = MarkupKind.Markdown,
+                    }
+                ),
             };
         }
 
-        protected override HoverRegistrationOptions CreateRegistrationOptions(HoverCapability capability, ClientCapabilities clientCapabilities)
+        protected override HoverRegistrationOptions CreateRegistrationOptions(
+            HoverCapability capability,
+            ClientCapabilities clientCapabilities
+        )
         {
-            return new HoverRegistrationOptions()
-            {
-                DocumentSelector = _documentSelector,
-            };
+            return new HoverRegistrationOptions() { DocumentSelector = _documentSelector };
         }
     }
 }

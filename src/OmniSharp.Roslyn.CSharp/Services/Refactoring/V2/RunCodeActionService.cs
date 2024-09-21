@@ -21,7 +21,8 @@ using RunCodeActionResponse = OmniSharp.Models.V2.CodeActions.RunCodeActionRespo
 namespace OmniSharp.Roslyn.CSharp.Services.Refactoring.V2
 {
     [OmniSharpHandler(OmniSharpEndpoints.V2.RunCodeAction, LanguageNames.CSharp)]
-    public class RunCodeActionService : BaseCodeActionService<RunCodeActionRequest, RunCodeActionResponse>
+    public class RunCodeActionService
+        : BaseCodeActionService<RunCodeActionRequest, RunCodeActionResponse>
     {
         private readonly IAssemblyLoader _loader;
         private readonly Lazy<Assembly> _workspaceAssembly;
@@ -35,8 +36,16 @@ namespace OmniSharp.Roslyn.CSharp.Services.Refactoring.V2
             ILoggerFactory loggerFactory,
             ICsDiagnosticWorker diagnostics,
             CachingCodeFixProviderForProjects codeFixesForProjects,
-            OmniSharpOptions options)
-            : base(workspace, providers, loggerFactory.CreateLogger<RunCodeActionService>(), diagnostics, codeFixesForProjects, options)
+            OmniSharpOptions options
+        )
+            : base(
+                workspace,
+                providers,
+                loggerFactory.CreateLogger<RunCodeActionService>(),
+                diagnostics,
+                codeFixesForProjects,
+                options
+            )
         {
             _loader = loader;
             _workspaceAssembly = _loader.LazyLoad(Configuration.RoslynWorkspaces);
@@ -45,7 +54,9 @@ namespace OmniSharp.Roslyn.CSharp.Services.Refactoring.V2
         public override async Task<RunCodeActionResponse> Handle(RunCodeActionRequest request)
         {
             var availableActions = await GetAvailableCodeActions(request);
-            var availableAction = availableActions.FirstOrDefault(a => a.GetIdentifier().Equals(request.Identifier));
+            var availableAction = availableActions.FirstOrDefault(a =>
+                a.GetIdentifier().Equals(request.Identifier)
+            );
             if (availableAction == null)
             {
                 return new RunCodeActionResponse();
@@ -65,7 +76,13 @@ namespace OmniSharp.Roslyn.CSharp.Services.Refactoring.V2
                 {
                     if (o is ApplyChangesOperation applyChangesOperation)
                     {
-                        var fileChangesResult = await GetFileChangesAsync(applyChangesOperation.ChangedSolution, solution, directory, request.WantsTextChanges, request.WantsAllCodeActionOperations);
+                        var fileChangesResult = await GetFileChangesAsync(
+                            applyChangesOperation.ChangedSolution,
+                            solution,
+                            directory,
+                            request.WantsTextChanges,
+                            request.WantsAllCodeActionOperations
+                        );
 
                         changes.AddRange(fileChangesResult.FileChanges);
                         solution = fileChangesResult.Solution;
@@ -94,13 +111,13 @@ namespace OmniSharp.Roslyn.CSharp.Services.Refactoring.V2
             }
             catch (Exception e)
             {
-                Logger.LogError(e, $"An error occurred when running a code action: {availableAction.GetTitle()}");
+                Logger.LogError(
+                    e,
+                    $"An error occurred when running a code action: {availableAction.GetTitle()}"
+                );
             }
 
-            return new RunCodeActionResponse
-            {
-                Changes = changes
-            };
+            return new RunCodeActionResponse { Changes = changes };
         }
     }
 }

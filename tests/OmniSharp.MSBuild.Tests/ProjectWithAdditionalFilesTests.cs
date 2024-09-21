@@ -10,17 +10,23 @@ namespace OmniSharp.MSBuild.Tests
     public class ProjectWithAdditionalFilesTests : AbstractMSBuildTestFixture
     {
         public ProjectWithAdditionalFilesTests(ITestOutputHelper output)
-            : base(output)
-        {
-        }
+            : base(output) { }
 
         [Fact]
         public async Task WhenProjectIsNoAdditionalFiles()
         {
-            using (var testProject = await TestAssets.Instance.GetTestProjectAsync("ProjectWithAdditionalFiles"))
+            using (
+                var testProject = await TestAssets.Instance.GetTestProjectAsync(
+                    "ProjectWithAdditionalFiles"
+                )
+            )
             using (var host = CreateMSBuildTestHost(testProject.Directory))
             {
-                var project = host.Workspace.CurrentSolution.Projects.Where(x => x.AssemblyName == "ProjectWithNoAdditionalFiles").Single();
+                var project = host
+                    .Workspace.CurrentSolution.Projects.Where(x =>
+                        x.AssemblyName == "ProjectWithNoAdditionalFiles"
+                    )
+                    .Single();
                 Assert.Empty(project.AdditionalDocuments);
             }
         }
@@ -28,10 +34,18 @@ namespace OmniSharp.MSBuild.Tests
         [Fact]
         public async Task WhenProjectIsSingleAdditionalFiles()
         {
-            using (var testProject = await TestAssets.Instance.GetTestProjectAsync("ProjectWithAdditionalFiles"))
+            using (
+                var testProject = await TestAssets.Instance.GetTestProjectAsync(
+                    "ProjectWithAdditionalFiles"
+                )
+            )
             using (var host = CreateMSBuildTestHost(testProject.Directory))
             {
-                var project = host.Workspace.CurrentSolution.Projects.Where(x => x.AssemblyName == "ProjectWithSingleAdditionalFiles").Single();
+                var project = host
+                    .Workspace.CurrentSolution.Projects.Where(x =>
+                        x.AssemblyName == "ProjectWithSingleAdditionalFiles"
+                    )
+                    .Single();
                 Assert.Single(project.AdditionalDocuments);
 
                 var doc = project.AdditionalDocuments.Single();
@@ -44,10 +58,18 @@ namespace OmniSharp.MSBuild.Tests
         [Fact]
         public async Task WhenProjectIsMultiAdditionalFiles()
         {
-            using (var testProject = await TestAssets.Instance.GetTestProjectAsync("ProjectWithAdditionalFiles"))
+            using (
+                var testProject = await TestAssets.Instance.GetTestProjectAsync(
+                    "ProjectWithAdditionalFiles"
+                )
+            )
             using (var host = CreateMSBuildTestHost(testProject.Directory))
             {
-                var project = host.Workspace.CurrentSolution.Projects.Where(x => x.AssemblyName == "ProjectWithMultiAdditionalFiles").Single();
+                var project = host
+                    .Workspace.CurrentSolution.Projects.Where(x =>
+                        x.AssemblyName == "ProjectWithMultiAdditionalFiles"
+                    )
+                    .Single();
                 var additionalDocuments = project.AdditionalDocuments.ToList();
                 Assert.Equal(3, additionalDocuments.Count());
 

@@ -1,6 +1,4 @@
-﻿namespace OmniSharp.Mef
+namespace OmniSharp.Mef
 {
-    public interface IRequestHandler
-    {
-    }
+    public interface IRequestHandler { }
 }

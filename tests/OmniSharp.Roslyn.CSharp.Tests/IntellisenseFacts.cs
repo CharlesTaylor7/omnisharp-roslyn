@@ -14,7 +14,10 @@ namespace OmniSharp.Roslyn.CSharp.Tests
     {
         private readonly ILogger _logger;
 
-        public IntellisenseFacts(ITestOutputHelper output, SharedOmniSharpHostFixture sharedOmniSharpHostFixture)
+        public IntellisenseFacts(
+            ITestOutputHelper output,
+            SharedOmniSharpHostFixture sharedOmniSharpHostFixture
+        )
             : base(output, sharedOmniSharpHostFixture)
         {
             this._logger = this.LoggerFactory.CreateLogger<IntellisenseFacts>();
@@ -73,7 +76,11 @@ namespace OmniSharp.Roslyn.CSharp.Tests
                     }";
 
             var completions = await FindCompletionsAsync(filename, input, wantSnippet: true);
-            ContainsCompletions(completions.Select(c => c.DisplayText).Take(2), "Foo()", "Foo(int bar = 1)");
+            ContainsCompletions(
+                completions.Select(c => c.DisplayText).Take(2),
+                "Foo()",
+                "Foo(int bar = 1)"
+            );
         }
 
         [Theory]
@@ -133,7 +140,9 @@ namespace OmniSharp.Roslyn.CSharp.Tests
         [Theory]
         [InlineData("dummy.cs")]
         [InlineData("dummy.csx")]
-        public async Task Returns_sub_sequence_completions_without_matching_firstletter(string filename)
+        public async Task Returns_sub_sequence_completions_without_matching_firstletter(
+            string filename
+        )
         {
             const string input =
                 @"public class Class1 {
@@ -300,9 +309,14 @@ public class MyClass
                 ";
 
             var completions = await FindCompletionsAsync(filename, source);
-            ContainsCompletions(completions.Select(c => c.CompletionText), "my", "myClass", "My", "MyClass");
+            ContainsCompletions(
+                completions.Select(c => c.CompletionText),
+                "my",
+                "myClass",
+                "My",
+                "MyClass"
+            );
         }
-
 
         [Theory]
         [InlineData("dummy.cs")]
@@ -324,9 +338,23 @@ public class MyClass
 
             var completions = await FindCompletionsAsync(filename, source);
 #if NETCOREAPP
-            ContainsCompletions(completions.Select(c => c.CompletionText), "Equals(object? obj)", "GetHashCode()", "Test(string text)", "Test(string text, string moreText)", "ToString()");
+            ContainsCompletions(
+                completions.Select(c => c.CompletionText),
+                "Equals(object? obj)",
+                "GetHashCode()",
+                "Test(string text)",
+                "Test(string text, string moreText)",
+                "ToString()"
+            );
 #else
-            ContainsCompletions(completions.Select(c => c.CompletionText), "Equals(object obj)", "GetHashCode()", "Test(string text)", "Test(string text, string moreText)", "ToString()");
+            ContainsCompletions(
+                completions.Select(c => c.CompletionText),
+                "Equals(object obj)",
+                "GetHashCode()",
+                "Test(string text)",
+                "Test(string text, string moreText)",
+                "ToString()"
+            );
 #endif
         }
 
@@ -350,11 +378,13 @@ public class MyClass
         [Fact]
         public async Task Returns_host_object_members_in_csx()
         {
-            const string source =
-                "Prin$$";
+            const string source = "Prin$$";
 
             var completions = await FindCompletionsAsync("dummy.csx", source);
-            ContainsCompletions(completions.Select(c => c.CompletionText), new[] { "Print", "PrintOptions" });
+            ContainsCompletions(
+                completions.Select(c => c.CompletionText),
+                new[] { "Print", "PrintOptions" }
+            );
         }
 
         [Theory]
@@ -362,7 +392,8 @@ public class MyClass
         [InlineData("dummy.csx")]
         public async Task Is_suggestion_mode_true_for_lambda_expression_position1(string filename)
         {
-            const string source = @"
+            const string source =
+                @"
 using System;
 class C
 {
@@ -387,7 +418,8 @@ class C
         [InlineData("dummy.csx")]
         public async Task Is_suggestion_mode_true_for_lambda_expression_position2(string filename)
         {
-            const string source = @"
+            const string source =
+                @"
 using System;
 class C
 {
@@ -410,7 +442,8 @@ class C
         [InlineData("dummy.csx")]
         public async Task Is_suggestion_mode_false_for_normal_position1(string filename)
         {
-            const string source = @"
+            const string source =
+                @"
 using System;
 class C
 {
@@ -435,7 +468,8 @@ class C
         [InlineData("dummy.csx")]
         public async Task Is_suggestion_mode_false_for_normal_position2(string filename)
         {
-            const string source = @"
+            const string source =
+                @"
 using System;
 class C
 {
@@ -458,7 +492,8 @@ class C
         [InlineData("dummy.csx")]
         public async Task Embedded_language_completion_provider_for_datetime_format(string filename)
         {
-            const string source = @"
+            const string source =
+                @"
 using System;
 class C
 {
@@ -476,7 +511,10 @@ class C
             var gStandardCompletion = completions.FirstOrDefault(x => x.CompletionText == "G");
             Assert.NotNull(gStandardCompletion);
             Assert.Equal("general long date/time", gStandardCompletion.DisplayText);
-            Assert.Contains(@"The ""G"" standard format specifier", gStandardCompletion.Description);
+            Assert.Contains(
+                @"The ""G"" standard format specifier",
+                gStandardCompletion.Description
+            );
         }
 
         [ConditionalTheory(typeof(WindowsOnly), typeof(DesktopRuntimeOnly))]
@@ -484,7 +522,8 @@ class C
         [InlineData("dummy.csx")]
         public async Task Embedded_language_completion_provider_for_regex(string filename)
         {
-            const string source = @"
+            const string source =
+                @"
  using System;
  using System.Text.RegularExpressions;
  class C
@@ -518,7 +557,10 @@ class C
                 ";
 
             var completions = await FindCompletionsAsync("dummy.csx", source);
-            ContainsCompletions(completions.Select(c => c.CompletionText), new[] { "number1", "number2" });
+            ContainsCompletions(
+                completions.Select(c => c.CompletionText),
+                new[] { "number1", "number2" }
+            );
         }
 
         [Fact]
@@ -558,7 +600,10 @@ class C
                 ";
 
             var completions = await FindCompletionsAsync("dummy.csx", source);
-            ContainsCompletions(completions.Select(c => c.CompletionText), new[] { "PositionX", "PositionY" });
+            ContainsCompletions(
+                completions.Select(c => c.CompletionText),
+                new[] { "PositionX", "PositionY" }
+            );
         }
 
         private void ContainsCompletions(IEnumerable<string> completions, params string[] expected)
@@ -595,14 +640,19 @@ class C
         public async Task TriggeredOnSpaceForObjectCreation(string filename)
         {
             const string input =
-@"public class Class1 {
+                @"public class Class1 {
     public M()
     {
         Class1 c = new $$
     }
 }";
 
-            var completions = await FindCompletionsAsync(filename, input, wantSnippet: true, triggerChar: " ");
+            var completions = await FindCompletionsAsync(
+                filename,
+                input,
+                wantSnippet: true,
+                triggerChar: " "
+            );
             Assert.NotEmpty(completions);
         }
 
@@ -612,14 +662,19 @@ class C
         public async Task ReturnsAtleastOnePreselectOnNew(string filename)
         {
             const string input =
-@"public class Class1 {
+                @"public class Class1 {
     public M()
     {
         Class1 c = new $$
     }
 }";
 
-            var completions = await FindCompletionsAsync(filename, input, wantSnippet: true, triggerChar: " ");
+            var completions = await FindCompletionsAsync(
+                filename,
+                input,
+                wantSnippet: true,
+                triggerChar: " "
+            );
             Assert.NotEmpty(completions.Where(completion => completion.Preselect == true));
         }
 
@@ -629,14 +684,19 @@ class C
         public async Task NotTriggeredOnSpaceWithoutObjectCreation(string filename)
         {
             const string input =
-@"public class Class1 {
+                @"public class Class1 {
     public M()
     {
         $$
     }
 }";
 
-            var completions = await FindCompletionsAsync(filename, input, wantSnippet: true, triggerChar: " ");
+            var completions = await FindCompletionsAsync(
+                filename,
+                input,
+                wantSnippet: true,
+                triggerChar: " "
+            );
             Assert.Empty(completions);
         }
     }

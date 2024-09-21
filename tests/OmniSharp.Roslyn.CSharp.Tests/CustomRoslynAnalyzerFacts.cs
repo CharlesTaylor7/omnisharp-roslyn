@@ -32,12 +32,18 @@ namespace OmniSharp.Roslyn.CSharp.Tests
 
             public override ImmutableArray<DiagnosticAnalyzer> GetAnalyzers(string language)
             {
-                return new DiagnosticAnalyzer[] { new TestDiagnosticAnalyzer(Id.ToString(), _isEnabledByDefault) }.ToImmutableArray();
+                return new DiagnosticAnalyzer[]
+                {
+                    new TestDiagnosticAnalyzer(Id.ToString(), _isEnabledByDefault),
+                }.ToImmutableArray();
             }
 
             public override ImmutableArray<DiagnosticAnalyzer> GetAnalyzersForAllLanguages()
             {
-                return new DiagnosticAnalyzer[] { new TestDiagnosticAnalyzer(Id.ToString(), _isEnabledByDefault) }.ToImmutableArray();
+                return new DiagnosticAnalyzer[]
+                {
+                    new TestDiagnosticAnalyzer(Id.ToString(), _isEnabledByDefault),
+                }.ToImmutableArray();
             }
         }
 
@@ -52,14 +58,15 @@ namespace OmniSharp.Roslyn.CSharp.Tests
                 _isEnabledByDefault = isEnabledByDefault;
             }
 
-            private DiagnosticDescriptor Rule => new DiagnosticDescriptor(
-                this.id,
-                "Testtitle",
-                "Type name '{0}' contains lowercase letters",
-                "Naming",
-                DiagnosticSeverity.Error,
-                isEnabledByDefault: _isEnabledByDefault
-            );
+            private DiagnosticDescriptor Rule =>
+                new DiagnosticDescriptor(
+                    this.id,
+                    "Testtitle",
+                    "Type name '{0}' contains lowercase letters",
+                    "Naming",
+                    DiagnosticSeverity.Error,
+                    isEnabledByDefault: _isEnabledByDefault
+                );
 
             private readonly string id;
             private readonly bool _isEnabledByDefault;
@@ -71,7 +78,10 @@ namespace OmniSharp.Roslyn.CSharp.Tests
 
             public override void Initialize(AnalysisContext context)
             {
-                context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.Analyze | GeneratedCodeAnalysisFlags.ReportDiagnostics);
+                context.ConfigureGeneratedCodeAnalysis(
+                    GeneratedCodeAnalysisFlags.Analyze
+                        | GeneratedCodeAnalysisFlags.ReportDiagnostics
+                );
                 context.EnableConcurrentExecution();
                 context.RegisterSymbolAction(AnalyzeSymbol, SymbolKind.NamedType);
             }
@@ -81,11 +91,9 @@ namespace OmniSharp.Roslyn.CSharp.Tests
                 var namedTypeSymbol = (INamedTypeSymbol)context.Symbol;
                 if (namedTypeSymbol.Name == "_this_is_invalid_test_class_name")
                 {
-                    context.ReportDiagnostic(Diagnostic.Create(
-                        Rule,
-                        namedTypeSymbol.Locations[0],
-                        namedTypeSymbol.Name
-                    ));
+                    context.ReportDiagnostic(
+                        Diagnostic.Create(Rule, namedTypeSymbol.Locations[0], namedTypeSymbol.Name)
+                    );
                 }
             }
         }
@@ -102,7 +110,10 @@ namespace OmniSharp.Roslyn.CSharp.Tests
         {
             using (var host = GetHost())
             {
-                var testFile = new TestFile("testFile_66.cs", "class _this_is_invalid_test_class_name { int n = true; }");
+                var testFile = new TestFile(
+                    "testFile_66.cs",
+                    "class _this_is_invalid_test_class_name { int n = true; }"
+                );
 
                 var testAnalyzerRef = new TestAnalyzerReference("TS1100");
 
@@ -110,14 +121,22 @@ namespace OmniSharp.Roslyn.CSharp.Tests
 
                 var result = await host.RequestCodeCheckAsync("testFile_66.cs");
 
-                Assert.Contains(result.QuickFixes.OfType<DiagnosticLocation>(), f => f.Id == testAnalyzerRef.Id.ToString());
+                Assert.Contains(
+                    result.QuickFixes.OfType<DiagnosticLocation>(),
+                    f => f.Id == testAnalyzerRef.Id.ToString()
+                );
             }
         }
 
         private OmniSharpTestHost GetHost(bool analyzeOpenDocumentsOnly = false)
         {
-            return OmniSharpTestHost.Create(testOutput: _testOutput,
-                configurationData: TestHelpers.GetConfigurationDataWithAnalyzerConfig(roslynAnalyzersEnabled: true, analyzeOpenDocumentsOnly: analyzeOpenDocumentsOnly));
+            return OmniSharpTestHost.Create(
+                testOutput: _testOutput,
+                configurationData: TestHelpers.GetConfigurationDataWithAnalyzerConfig(
+                    roslynAnalyzersEnabled: true,
+                    analyzeOpenDocumentsOnly: analyzeOpenDocumentsOnly
+                )
+            );
         }
 
         [Fact]
@@ -131,7 +150,12 @@ namespace OmniSharp.Roslyn.CSharp.Tests
 
                 var result = await host.RequestCodeCheckAsync(testFile.FileName);
 
-                Assert.Contains(result.QuickFixes.OfType<DiagnosticLocation>().Where(x => x.FileName == testFile.FileName), f => f.Id.Contains("CS"));
+                Assert.Contains(
+                    result
+                        .QuickFixes.OfType<DiagnosticLocation>()
+                        .Where(x => x.FileName == testFile.FileName),
+                    f => f.Id.Contains("CS")
+                );
             }
         }
 
@@ -140,7 +164,9 @@ namespace OmniSharp.Roslyn.CSharp.Tests
         {
             using (var host = GetHost())
             {
-                var testFile = new TestFile("testFile_9.cs", @"
+                var testFile = new TestFile(
+                    "testFile_9.cs",
+                    @"
                     class Program
                     {
                         static void Main(string[] args)
@@ -148,16 +174,23 @@ namespace OmniSharp.Roslyn.CSharp.Tests
                             return;
                             Console.WriteLine(null); // This is CS0162, unreachable code.
                         }
-                    }");
+                    }"
+                );
 
                 var projectId = AddProjectWithFile(host, testFile);
                 var testRules = CreateRules("CS0162", ReportDiagnostic.Hidden);
 
-                host.Workspace.UpdateDiagnosticOptionsForProject(projectId, testRules.ToImmutableDictionary());
+                host.Workspace.UpdateDiagnosticOptionsForProject(
+                    projectId,
+                    testRules.ToImmutableDictionary()
+                );
 
                 var result = await host.RequestCodeCheckAsync(testFile.FileName);
 
-                Assert.Contains(result.QuickFixes.OfType<DiagnosticLocation>(), f => f.Id == "CS0162" && f.LogLevel == "Hidden");
+                Assert.Contains(
+                    result.QuickFixes.OfType<DiagnosticLocation>(),
+                    f => f.Id == "CS0162" && f.LogLevel == "Hidden"
+                );
             }
         }
 
@@ -166,28 +199,37 @@ namespace OmniSharp.Roslyn.CSharp.Tests
         {
             using (var host = GetHost())
             {
-                var testFile = new TestFile("testFile_2.cs", "class _this_is_invalid_test_class_name { int n = true; }");
+                var testFile = new TestFile(
+                    "testFile_2.cs",
+                    "class _this_is_invalid_test_class_name { int n = true; }"
+                );
 
                 var testAnalyzerRef = new TestAnalyzerReference("TS1100");
 
                 var projectId = AddProjectWithFile(host, testFile, testAnalyzerRef);
                 var testRules = CreateRules(testAnalyzerRef.Id.ToString(), ReportDiagnostic.Hidden);
 
-                host.Workspace.UpdateDiagnosticOptionsForProject(projectId, testRules.ToImmutableDictionary());
+                host.Workspace.UpdateDiagnosticOptionsForProject(
+                    projectId,
+                    testRules.ToImmutableDictionary()
+                );
 
                 var result = await host.RequestCodeCheckAsync("testFile_2.cs");
 
                 var bar = result.QuickFixes.ToList();
-                Assert.Contains(result.QuickFixes.OfType<DiagnosticLocation>(), f => f.Id == testAnalyzerRef.Id.ToString() && f.LogLevel == "Hidden");
+                Assert.Contains(
+                    result.QuickFixes.OfType<DiagnosticLocation>(),
+                    f => f.Id == testAnalyzerRef.Id.ToString() && f.LogLevel == "Hidden"
+                );
             }
         }
 
-        private static Dictionary<string, ReportDiagnostic> CreateRules(string analyzerId, ReportDiagnostic diagnostic)
+        private static Dictionary<string, ReportDiagnostic> CreateRules(
+            string analyzerId,
+            ReportDiagnostic diagnostic
+        )
         {
-            return new Dictionary<string, ReportDiagnostic>
-            {
-                { analyzerId, diagnostic }
-            };
+            return new Dictionary<string, ReportDiagnostic> { { analyzerId, diagnostic } };
         }
 
         [Fact]
@@ -196,18 +238,30 @@ namespace OmniSharp.Roslyn.CSharp.Tests
         {
             using (var host = GetHost())
             {
-                var testFile = new TestFile("testFile_3.cs", "class _this_is_invalid_test_class_name { int n = true; }");
+                var testFile = new TestFile(
+                    "testFile_3.cs",
+                    "class _this_is_invalid_test_class_name { int n = true; }"
+                );
 
                 var testAnalyzerRef = new TestAnalyzerReference("TS1101");
 
                 var projectId = AddProjectWithFile(host, testFile, testAnalyzerRef);
 
-                var testRules = CreateRules(testAnalyzerRef.Id.ToString(), ReportDiagnostic.Suppress);
+                var testRules = CreateRules(
+                    testAnalyzerRef.Id.ToString(),
+                    ReportDiagnostic.Suppress
+                );
 
-                host.Workspace.UpdateDiagnosticOptionsForProject(projectId, testRules.ToImmutableDictionary());
+                host.Workspace.UpdateDiagnosticOptionsForProject(
+                    projectId,
+                    testRules.ToImmutableDictionary()
+                );
 
                 var result = await host.RequestCodeCheckAsync("testFile_3.cs");
-                Assert.DoesNotContain(result.QuickFixes.OfType<DiagnosticLocation>(), f => f.Id == testAnalyzerRef.Id.ToString());
+                Assert.DoesNotContain(
+                    result.QuickFixes.OfType<DiagnosticLocation>(),
+                    f => f.Id == testAnalyzerRef.Id.ToString()
+                );
             }
         }
 
@@ -216,18 +270,30 @@ namespace OmniSharp.Roslyn.CSharp.Tests
         {
             using (var host = GetHost())
             {
-                var testFile = new TestFile("testFile_4.cs", "class _this_is_invalid_test_class_name { int n = true; }");
+                var testFile = new TestFile(
+                    "testFile_4.cs",
+                    "class _this_is_invalid_test_class_name { int n = true; }"
+                );
 
-                var testAnalyzerRef = new TestAnalyzerReference("TS1101", isEnabledByDefault: false);
+                var testAnalyzerRef = new TestAnalyzerReference(
+                    "TS1101",
+                    isEnabledByDefault: false
+                );
 
                 var projectId = AddProjectWithFile(host, testFile, testAnalyzerRef);
 
                 var testRules = CreateRules(testAnalyzerRef.Id.ToString(), ReportDiagnostic.Error);
 
-                host.Workspace.UpdateDiagnosticOptionsForProject(projectId, testRules.ToImmutableDictionary());
+                host.Workspace.UpdateDiagnosticOptionsForProject(
+                    projectId,
+                    testRules.ToImmutableDictionary()
+                );
 
                 var result = await host.RequestCodeCheckAsync("testFile_4.cs");
-                Assert.Contains(result.QuickFixes.OfType<DiagnosticLocation>(), f => f.Id == testAnalyzerRef.Id.ToString());
+                Assert.Contains(
+                    result.QuickFixes.OfType<DiagnosticLocation>(),
+                    f => f.Id == testAnalyzerRef.Id.ToString()
+                );
             }
         }
 
@@ -236,39 +302,71 @@ namespace OmniSharp.Roslyn.CSharp.Tests
         {
             using (var host = GetHost())
             {
-                var testFile = new TestFile("testFile_4.cs", "class _this_is_invalid_test_class_name { int n = true; }");
+                var testFile = new TestFile(
+                    "testFile_4.cs",
+                    "class _this_is_invalid_test_class_name { int n = true; }"
+                );
 
-                var testAnalyzerRef = new TestAnalyzerReference("TS1101", isEnabledByDefault: false);
+                var testAnalyzerRef = new TestAnalyzerReference(
+                    "TS1101",
+                    isEnabledByDefault: false
+                );
 
                 var projectId = AddProjectWithFile(host, testFile, testAnalyzerRef);
-                var testRulesOriginal = CreateRules(testAnalyzerRef.Id.ToString(), ReportDiagnostic.Error);
-                host.Workspace.UpdateDiagnosticOptionsForProject(projectId, testRulesOriginal.ToImmutableDictionary());
+                var testRulesOriginal = CreateRules(
+                    testAnalyzerRef.Id.ToString(),
+                    ReportDiagnostic.Error
+                );
+                host.Workspace.UpdateDiagnosticOptionsForProject(
+                    projectId,
+                    testRulesOriginal.ToImmutableDictionary()
+                );
                 await host.RequestCodeCheckAsync("testFile_4.cs");
 
-                var testRulesUpdated = CreateRules(testAnalyzerRef.Id.ToString(), ReportDiagnostic.Suppress);
+                var testRulesUpdated = CreateRules(
+                    testAnalyzerRef.Id.ToString(),
+                    ReportDiagnostic.Suppress
+                );
 
                 var workspaceUpdatedCheck = new AutoResetEvent(false);
-                host.Workspace.WorkspaceChanged += (_, e) => { if (e.Kind == WorkspaceChangeKind.ProjectChanged) { workspaceUpdatedCheck.Set(); } };
-                host.Workspace.UpdateDiagnosticOptionsForProject(projectId, testRulesUpdated.ToImmutableDictionary());
+                host.Workspace.WorkspaceChanged += (_, e) =>
+                {
+                    if (e.Kind == WorkspaceChangeKind.ProjectChanged)
+                    {
+                        workspaceUpdatedCheck.Set();
+                    }
+                };
+                host.Workspace.UpdateDiagnosticOptionsForProject(
+                    projectId,
+                    testRulesUpdated.ToImmutableDictionary()
+                );
 
                 Assert.True(workspaceUpdatedCheck.WaitOne(timeout: TimeSpan.FromSeconds(15)));
 
                 var result = await host.RequestCodeCheckAsync("testFile_4.cs");
-                Assert.DoesNotContain(result.QuickFixes.OfType<DiagnosticLocation>(), f => f.Id == testAnalyzerRef.Id.ToString());
+                Assert.DoesNotContain(
+                    result.QuickFixes.OfType<DiagnosticLocation>(),
+                    f => f.Id == testAnalyzerRef.Id.ToString()
+                );
             }
         }
-
 
         [Theory]
         [InlineData(false, false)]
         [InlineData(false, true)]
         [InlineData(true, false)]
         [InlineData(true, true)]
-        public async Task WhenDocumentIsntOpenAndAnalyzeOpenDocumentsOnlyIsSet_DontAnalyzeFiles(bool analyzeOpenDocumentsOnly, bool isDocumentOpen)
+        public async Task WhenDocumentIsntOpenAndAnalyzeOpenDocumentsOnlyIsSet_DontAnalyzeFiles(
+            bool analyzeOpenDocumentsOnly,
+            bool isDocumentOpen
+        )
         {
             using (var host = GetHost(analyzeOpenDocumentsOnly))
             {
-                var testFile = new TestFile("testFile.cs", "class _this_is_invalid_test_class_name { int n = true; }");
+                var testFile = new TestFile(
+                    "testFile.cs",
+                    "class _this_is_invalid_test_class_name { int n = true; }"
+                );
                 var testAnalyzerRef = new TestAnalyzerReference("TS1100");
 
                 AddProjectWithFile(host, testFile, testAnalyzerRef);
@@ -285,26 +383,43 @@ namespace OmniSharp.Roslyn.CSharp.Tests
                 var result = await host.RequestCodeCheckAsync("testFile.cs");
 
                 if (analyzeOpenDocumentsOnly && !isDocumentOpen)
-                    Assert.DoesNotContain(result.QuickFixes.OfType<DiagnosticLocation>(), f => f.Id == testAnalyzerRef.Id.ToString());
+                    Assert.DoesNotContain(
+                        result.QuickFixes.OfType<DiagnosticLocation>(),
+                        f => f.Id == testAnalyzerRef.Id.ToString()
+                    );
                 else
-                    Assert.Contains(result.QuickFixes.OfType<DiagnosticLocation>(), f => f.Id == testAnalyzerRef.Id.ToString());
+                    Assert.Contains(
+                        result.QuickFixes.OfType<DiagnosticLocation>(),
+                        f => f.Id == testAnalyzerRef.Id.ToString()
+                    );
 
-                Assert.Contains(result.QuickFixes.OfType<DiagnosticLocation>(), f => f.Id == "CS0029");
+                Assert.Contains(
+                    result.QuickFixes.OfType<DiagnosticLocation>(),
+                    f => f.Id == "CS0029"
+                );
             }
         }
 
-        private ProjectId AddProjectWithFile(OmniSharpTestHost host, TestFile testFile, TestAnalyzerReference testAnalyzerRef = null)
+        private ProjectId AddProjectWithFile(
+            OmniSharpTestHost host,
+            TestFile testFile,
+            TestAnalyzerReference testAnalyzerRef = null
+        )
         {
-            var analyzerReferences = testAnalyzerRef == null ? default :
-                new AnalyzerReference[] { testAnalyzerRef }.ToImmutableArray();
+            var analyzerReferences =
+                testAnalyzerRef == null
+                    ? default
+                    : new AnalyzerReference[] { testAnalyzerRef }.ToImmutableArray();
 
-            return TestHelpers.AddProjectToWorkspace(
-                            host.Workspace,
-                            "project.csproj",
-                            new[] { "net6.0" },
-                            new[] { testFile },
-                            analyzerRefs: analyzerReferences)
-                    .Single();
+            return TestHelpers
+                .AddProjectToWorkspace(
+                    host.Workspace,
+                    "project.csproj",
+                    new[] { "net6.0" },
+                    new[] { testFile },
+                    analyzerRefs: analyzerReferences
+                )
+                .Single();
         }
     }
 }

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
@@ -21,7 +21,10 @@ namespace OmniSharp.MSBuild.ProjectFile
         public string FilePath { get; }
         public string Directory { get; }
 
-        public ProjectId Id { get => ProjectIdInfo.Id; }
+        public ProjectId Id
+        {
+            get => ProjectIdInfo.Id;
+        }
 
         public Guid Guid => _data.Guid;
         public string Name => _data.Name;
@@ -61,7 +64,8 @@ namespace OmniSharp.MSBuild.ProjectFile
         public ImmutableArray<string> AdditionalFiles => _data.AdditionalFiles;
         public ImmutableArray<string> AnalyzerConfigFiles => _data.AnalyzerConfigFiles;
         public ImmutableDictionary<string, string> ReferenceAliases => _data.ReferenceAliases;
-        public ImmutableDictionary<string, string> ProjectReferenceAliases => _data.ProjectReferenceAliases;
+        public ImmutableDictionary<string, string> ProjectReferenceAliases =>
+            _data.ProjectReferenceAliases;
         public bool TreatWarningsAsErrors => _data.TreatWarningsAsErrors;
         public bool RunAnalyzers => _data.RunAnalyzers;
         public bool RunAnalyzersDuringLiveAnalysis => _data.RunAnalyzersDuringLiveAnalysis;
@@ -77,7 +81,8 @@ namespace OmniSharp.MSBuild.ProjectFile
             string filePath,
             ProjectData data,
             Guid sessionId,
-            DotNetInfo dotNetInfo)
+            DotNetInfo dotNetInfo
+        )
         {
             this.ProjectIdInfo = projectIdInfo;
             this.FilePath = filePath;
@@ -92,10 +97,20 @@ namespace OmniSharp.MSBuild.ProjectFile
         {
             var id = ProjectId.CreateNewId(debugName: filePath);
 
-            return new ProjectFileInfo(new ProjectIdInfo(id, isDefinedInSolution: false), filePath, data: null, sessionId: Guid.NewGuid(), DotNetInfo.Empty);
+            return new ProjectFileInfo(
+                new ProjectIdInfo(id, isDefinedInSolution: false),
+                filePath,
+                data: null,
+                sessionId: Guid.NewGuid(),
+                DotNetInfo.Empty
+            );
         }
 
-        internal static ProjectFileInfo CreateNoBuild(string filePath, ProjectLoader loader, DotNetInfo dotNetInfo)
+        internal static ProjectFileInfo CreateNoBuild(
+            string filePath,
+            ProjectLoader loader,
+            DotNetInfo dotNetInfo
+        )
         {
             var id = ProjectId.CreateNewId(debugName: filePath);
             var project = loader.EvaluateProjectFile(filePath);
@@ -104,71 +119,118 @@ namespace OmniSharp.MSBuild.ProjectFile
             //we are not reading the solution here
             var projectIdInfo = new ProjectIdInfo(id, isDefinedInSolution: false);
 
-            return new ProjectFileInfo(projectIdInfo, filePath, data, sessionId: Guid.NewGuid(), dotNetInfo);
+            return new ProjectFileInfo(
+                projectIdInfo,
+                filePath,
+                data,
+                sessionId: Guid.NewGuid(),
+                dotNetInfo
+            );
         }
 
-        public static (ProjectFileInfo, ImmutableArray<MSBuildDiagnostic>, ProjectLoadedEventArgs) Load(string filePath, ProjectIdInfo projectIdInfo, ProjectLoader loader, Guid sessionId, DotNetInfo dotNetInfo)
+        public static (
+            ProjectFileInfo,
+            ImmutableArray<MSBuildDiagnostic>,
+            ProjectLoadedEventArgs
+        ) Load(
+            string filePath,
+            ProjectIdInfo projectIdInfo,
+            ProjectLoader loader,
+            Guid sessionId,
+            DotNetInfo dotNetInfo
+        )
         {
             if (!File.Exists(filePath))
             {
                 return (null, ImmutableArray<MSBuildDiagnostic>.Empty, null);
             }
 
-            var (projectInstance, project, diagnostics) = loader.BuildProject(filePath, projectIdInfo?.SolutionConfiguration);
+            var (projectInstance, project, diagnostics) = loader.BuildProject(
+                filePath,
+                projectIdInfo?.SolutionConfiguration
+            );
             if (projectInstance == null)
             {
                 return (null, diagnostics, null);
             }
 
             var data = ProjectData.Create(filePath, projectInstance, project);
-            var projectFileInfo = new ProjectFileInfo(projectIdInfo, filePath, data, sessionId, dotNetInfo);
-            var eventArgs = new ProjectLoadedEventArgs(projectIdInfo.Id,
-                                                       project,
-                                                       sessionId,
-                                                       projectInstance,
-                                                       diagnostics,
-                                                       isReload: false,
-                                                       projectIdInfo.IsDefinedInSolution,
-                                                       projectFileInfo.SourceFiles,
-                                                       dotNetInfo.Version,
-                                                       data.References);
+            var projectFileInfo = new ProjectFileInfo(
+                projectIdInfo,
+                filePath,
+                data,
+                sessionId,
+                dotNetInfo
+            );
+            var eventArgs = new ProjectLoadedEventArgs(
+                projectIdInfo.Id,
+                project,
+                sessionId,
+                projectInstance,
+                diagnostics,
+                isReload: false,
+                projectIdInfo.IsDefinedInSolution,
+                projectFileInfo.SourceFiles,
+                dotNetInfo.Version,
+                data.References
+            );
 
             return (projectFileInfo, diagnostics, eventArgs);
         }
 
-        public (ProjectFileInfo, ImmutableArray<MSBuildDiagnostic>, ProjectLoadedEventArgs) Reload(ProjectLoader loader)
+        public (ProjectFileInfo, ImmutableArray<MSBuildDiagnostic>, ProjectLoadedEventArgs) Reload(
+            ProjectLoader loader
+        )
         {
-            var (projectInstance, project, diagnostics) = loader.BuildProject(FilePath, ProjectIdInfo?.SolutionConfiguration);
+            var (projectInstance, project, diagnostics) = loader.BuildProject(
+                FilePath,
+                ProjectIdInfo?.SolutionConfiguration
+            );
             if (projectInstance == null)
             {
                 return (null, diagnostics, null);
             }
 
             var data = ProjectData.Create(FilePath, projectInstance, project);
-            var projectFileInfo = new ProjectFileInfo(ProjectIdInfo, FilePath, data, SessionId, DotNetInfo);
-            var eventArgs = new ProjectLoadedEventArgs(Id,
-                                                       project,
-                                                       SessionId,
-                                                       projectInstance,
-                                                       diagnostics,
-                                                       isReload: true,
-                                                       ProjectIdInfo.IsDefinedInSolution,
-                                                       data.SourceFiles,
-                                                       DotNetInfo.Version,
-                                                       data.References);
+            var projectFileInfo = new ProjectFileInfo(
+                ProjectIdInfo,
+                FilePath,
+                data,
+                SessionId,
+                DotNetInfo
+            );
+            var eventArgs = new ProjectLoadedEventArgs(
+                Id,
+                project,
+                SessionId,
+                projectInstance,
+                diagnostics,
+                isReload: true,
+                ProjectIdInfo.IsDefinedInSolution,
+                data.SourceFiles,
+                DotNetInfo.Version,
+                data.References
+            );
 
             return (projectFileInfo, diagnostics, eventArgs);
         }
 
-        public bool IsUnityProject()
-            => References.Any(filePath =>
-                {
-                    var fileName = Path.GetFileName(filePath);
+        public bool IsUnityProject() =>
+            References.Any(filePath =>
+            {
+                var fileName = Path.GetFileName(filePath);
 
-                    return string.Equals(fileName, "UnityEngine.dll", StringComparison.OrdinalIgnoreCase)
-                        || string.Equals(fileName, "UnityEditor.dll", StringComparison.OrdinalIgnoreCase);
-                });
-
+                return string.Equals(
+                        fileName,
+                        "UnityEngine.dll",
+                        StringComparison.OrdinalIgnoreCase
+                    )
+                    || string.Equals(
+                        fileName,
+                        "UnityEditor.dll",
+                        StringComparison.OrdinalIgnoreCase
+                    );
+            });
 
         public bool IsFileIncluded(string filePath)
         {

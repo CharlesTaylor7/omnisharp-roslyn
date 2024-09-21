@@ -11,9 +11,7 @@ namespace OmniSharp.Tests
     public class LinePositionSpanTextChangeFacts : AbstractTestFixture
     {
         public LinePositionSpanTextChangeFacts(ITestOutputHelper output)
-            : base(output)
-        {
-        }
+            : base(output) { }
 
         [Fact]
         public async Task ExtendsTextChangeAtStart()

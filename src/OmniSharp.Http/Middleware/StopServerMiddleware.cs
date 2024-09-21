@@ -1,11 +1,11 @@
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 #if NETCOREAPP
 using Microsoft.Extensions.Hosting;
 #else
 using Microsoft.AspNetCore.Hosting;
 #endif
-using Microsoft.AspNetCore.Http;
 
 namespace OmniSharp.Http.Middleware
 {

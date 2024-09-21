@@ -1,4 +1,4 @@
-﻿using System.Collections.Concurrent;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using Microsoft.CodeAnalysis;
@@ -8,9 +8,17 @@ namespace OmniSharp.Cake
 {
     internal class CachingScriptMetadataResolver : MetadataReferenceResolver
     {
-        private static readonly ConcurrentDictionary<string, ImmutableArray<PortableExecutableReference>> DirectReferenceCache = new ConcurrentDictionary<string, ImmutableArray<PortableExecutableReference>>();
-        private static readonly ConcurrentDictionary<string, PortableExecutableReference> MissingReferenceCache = new ConcurrentDictionary<string, PortableExecutableReference>();
-        private static readonly MetadataReferenceResolver DefaultRuntimeResolver = ScriptMetadataResolver.Default;
+        private static readonly ConcurrentDictionary<
+            string,
+            ImmutableArray<PortableExecutableReference>
+        > DirectReferenceCache =
+            new ConcurrentDictionary<string, ImmutableArray<PortableExecutableReference>>();
+        private static readonly ConcurrentDictionary<
+            string,
+            PortableExecutableReference
+        > MissingReferenceCache = new ConcurrentDictionary<string, PortableExecutableReference>();
+        private static readonly MetadataReferenceResolver DefaultRuntimeResolver =
+            ScriptMetadataResolver.Default;
 
         public override bool Equals(object other)
         {
@@ -22,9 +30,13 @@ namespace OmniSharp.Cake
             return DefaultRuntimeResolver.GetHashCode();
         }
 
-        public override bool ResolveMissingAssemblies => DefaultRuntimeResolver.ResolveMissingAssemblies;
+        public override bool ResolveMissingAssemblies =>
+            DefaultRuntimeResolver.ResolveMissingAssemblies;
 
-        public override PortableExecutableReference ResolveMissingAssembly(MetadataReference definition, AssemblyIdentity referenceIdentity)
+        public override PortableExecutableReference ResolveMissingAssembly(
+            MetadataReference definition,
+            AssemblyIdentity referenceIdentity
+        )
         {
             if (MissingReferenceCache.TryGetValue(referenceIdentity.Name, out var result))
             {
@@ -40,7 +52,11 @@ namespace OmniSharp.Cake
             return result;
         }
 
-        public override ImmutableArray<PortableExecutableReference> ResolveReference(string reference, string baseFilePath, MetadataReferenceProperties properties)
+        public override ImmutableArray<PortableExecutableReference> ResolveReference(
+            string reference,
+            string baseFilePath,
+            MetadataReferenceProperties properties
+        )
         {
             var key = $"{reference}-{baseFilePath}";
             if (DirectReferenceCache.TryGetValue(key, out var result))

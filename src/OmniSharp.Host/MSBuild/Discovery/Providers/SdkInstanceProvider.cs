@@ -23,15 +23,24 @@ namespace OmniSharp.MSBuild.Discovery.Providers
             var includePrerelease = _options?.IncludePrereleases == true;
 
             SemanticVersion optionsVersion = null;
-            if (!string.IsNullOrEmpty(_options?.Version) &&
-                !TryParseVersion(_options.Version, out optionsVersion, out var errorMessage))
+            if (
+                !string.IsNullOrEmpty(_options?.Version)
+                && !TryParseVersion(_options.Version, out optionsVersion, out var errorMessage)
+            )
             {
                 Logger.LogError(errorMessage);
                 return NoInstances;
             }
 
-            var instances = MicrosoftBuildLocator.QueryVisualStudioInstances()
-                .Where(instance => IncludeSdkInstance(instance.VisualStudioRootPath, optionsVersion, includePrerelease))
+            var instances = MicrosoftBuildLocator
+                .QueryVisualStudioInstances()
+                .Where(instance =>
+                    IncludeSdkInstance(
+                        instance.VisualStudioRootPath,
+                        optionsVersion,
+                        includePrerelease
+                    )
+                )
                 .OrderByDescending(instance => instance.Version)
                 .ToImmutableArray();
 
@@ -39,40 +48,56 @@ namespace OmniSharp.MSBuild.Discovery.Providers
             {
                 if (optionsVersion is null)
                 {
-                    Logger.LogError($"OmniSharp requires the .NET 6 SDK or higher be installed. Please visit https://dotnet.microsoft.com/download/dotnet/6.0 to download the .NET SDK.");
+                    Logger.LogError(
+                        $"OmniSharp requires the .NET 6 SDK or higher be installed. Please visit https://dotnet.microsoft.com/download/dotnet/6.0 to download the .NET SDK."
+                    );
                 }
                 else
                 {
-                    Logger.LogError($"The Sdk version specified in the OmniSharp settings could not be found. Configured version is '{optionsVersion}'. Please update your settings and restart OmniSharp.");
+                    Logger.LogError(
+                        $"The Sdk version specified in the OmniSharp settings could not be found. Configured version is '{optionsVersion}'. Please update your settings and restart OmniSharp."
+                    );
                 }
 
                 return NoInstances;
             }
 
-            return instances.Select(instance =>
-            {
-                var microsoftBuildPath = Path.Combine(instance.MSBuildPath, "Microsoft.Build.dll");
-                var version = GetMSBuildVersion(microsoftBuildPath);
+            return instances
+                .Select(instance =>
+                {
+                    var microsoftBuildPath = Path.Combine(
+                        instance.MSBuildPath,
+                        "Microsoft.Build.dll"
+                    );
+                    var version = GetMSBuildVersion(microsoftBuildPath);
 
-                return new MSBuildInstance(
-                    $"{instance.Name} {instance.Version}",
-                    instance.MSBuildPath,
-                    version,
-                    DiscoveryType.DotNetSdk,
-                    _options?.PropertyOverrides?.ToImmutableDictionary());
-            }).ToImmutableArray();
+                    return new MSBuildInstance(
+                        $"{instance.Name} {instance.Version}",
+                        instance.MSBuildPath,
+                        version,
+                        DiscoveryType.DotNetSdk,
+                        _options?.PropertyOverrides?.ToImmutableDictionary()
+                    );
+                })
+                .ToImmutableArray();
         }
 
-        public static bool TryParseVersion(string versionString, out SemanticVersion version, out string errorMessage)
+        public static bool TryParseVersion(
+            string versionString,
+            out SemanticVersion version,
+            out string errorMessage
+        )
         {
             if (!SemanticVersion.TryParse(versionString, out version))
             {
-                errorMessage = $"The Sdk version specified in the OmniSharp settings was not a valid semantic version. Configured version is '{versionString}'. Please update your settings and restart OmniSharp.";
+                errorMessage =
+                    $"The Sdk version specified in the OmniSharp settings was not a valid semantic version. Configured version is '{versionString}'. Please update your settings and restart OmniSharp.";
                 return false;
             }
             else if (version.Major < 6)
             {
-                errorMessage = $"The Sdk version specified in the OmniSharp settings is not .NET 6 or higher. Configured version is '{versionString}'. Please update your settings and restart OmniSharp.";
+                errorMessage =
+                    $"The Sdk version specified in the OmniSharp settings is not .NET 6 or higher. Configured version is '{versionString}'. Please update your settings and restart OmniSharp.";
                 return false;
             }
 
@@ -80,7 +105,11 @@ namespace OmniSharp.MSBuild.Discovery.Providers
             return true;
         }
 
-        public static bool IncludeSdkInstance(string sdkPath, SemanticVersion targetVersion, bool includePrerelease)
+        public static bool IncludeSdkInstance(
+            string sdkPath,
+            SemanticVersion targetVersion,
+            bool includePrerelease
+        )
         {
             // If the path does not have a `.version` file, then do not consider it a valid option.
             if (!TryGetSdkVersion(sdkPath, out var version))
@@ -101,8 +130,7 @@ namespace OmniSharp.MSBuild.Discovery.Providers
             }
 
             // If we are including prereleases then everything else is valid, otherwise check that it is not a prerelease sdk.
-            return includePrerelease ||
-                string.IsNullOrEmpty(version.PreReleaseLabel);
+            return includePrerelease || string.IsNullOrEmpty(version.PreReleaseLabel);
         }
 
         public static bool TryGetSdkVersion(string sdkPath, out SemanticVersion version)

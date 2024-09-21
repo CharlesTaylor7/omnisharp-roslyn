@@ -1,4 +1,4 @@
-﻿namespace OmniSharp.MSBuild.Discovery
+namespace OmniSharp.MSBuild.Discovery
 {
     public enum DiscoveryType
     {
@@ -6,6 +6,6 @@
         VisualStudioSetup = 2,
         Mono = 3,
         UserOverride = 4,
-        DotNetSdk = 5
+        DotNetSdk = 5,
     }
 }

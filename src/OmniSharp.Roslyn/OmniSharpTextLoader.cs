@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -26,7 +26,10 @@ namespace OmniSharp
             this._filePath = filePath;
         }
 
-        public override Task<TextAndVersion> LoadTextAndVersionAsync(LoadTextOptions options, CancellationToken cancellationToken)
+        public override Task<TextAndVersion> LoadTextAndVersionAsync(
+            LoadTextOptions options,
+            CancellationToken cancellationToken
+        )
         {
             var prevLastWriteTime = File.GetLastWriteTimeUtc(_filePath);
 

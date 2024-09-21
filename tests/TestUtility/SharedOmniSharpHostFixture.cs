@@ -4,9 +4,7 @@ namespace TestUtility
 {
     public class SharedOmniSharpHostFixture : IDisposable
     {
-        public SharedOmniSharpHostFixture()
-        {
-        }
+        public SharedOmniSharpHostFixture() { }
 
         static SharedOmniSharpHostFixture()
         {
@@ -19,6 +17,5 @@ namespace TestUtility
         }
 
         public OmniSharpTestHost OmniSharpTestHost { get; set; }
-
     }
 }

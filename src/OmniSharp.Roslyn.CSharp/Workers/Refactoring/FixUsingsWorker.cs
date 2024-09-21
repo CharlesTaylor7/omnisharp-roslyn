@@ -38,12 +38,21 @@ namespace OmniSharp
 
             var codeFixProviders = providers.SelectMany(p => p.CodeFixProviders);
 
-            _addImportProvider = FindCodeFixProviderByTypeFullName(codeFixProviders, CodeActionHelper.AddImportProviderName);
-            _removeUnnecessaryUsingsProvider = FindCodeFixProviderByTypeFullName(codeFixProviders, CodeActionHelper.RemoveUnnecessaryUsingsProviderName);
+            _addImportProvider = FindCodeFixProviderByTypeFullName(
+                codeFixProviders,
+                CodeActionHelper.AddImportProviderName
+            );
+            _removeUnnecessaryUsingsProvider = FindCodeFixProviderByTypeFullName(
+                codeFixProviders,
+                CodeActionHelper.RemoveUnnecessaryUsingsProviderName
+            );
             _options = options;
         }
 
-        private static CodeFixProvider FindCodeFixProviderByTypeFullName(IEnumerable<CodeFixProvider> providers, string fullName)
+        private static CodeFixProvider FindCodeFixProviderByTypeFullName(
+            IEnumerable<CodeFixProvider> providers,
+            string fullName
+        )
         {
             var provider = providers.FirstOrDefault(p => p.GetType().FullName == fullName);
             if (provider == null)
@@ -65,27 +74,38 @@ namespace OmniSharp
             return new FixUsingsWorkerResponse()
             {
                 AmbiguousResults = missingUsings.AmbiguousUsings,
-                Document = document
+                Document = document,
             };
         }
 
-        private async Task TrackAmbiguousQuickFix(IList<QuickFix> results, IList<SimpleNameSyntax> ambiguousNodes, SimpleNameSyntax name, ImmutableArray<CodeActionOperation> operations, Document document)
+        private async Task TrackAmbiguousQuickFix(
+            IList<QuickFix> results,
+            IList<SimpleNameSyntax> ambiguousNodes,
+            SimpleNameSyntax name,
+            ImmutableArray<CodeActionOperation> operations,
+            Document document
+        )
         {
             ambiguousNodes.Add(name);
             var unresolvedText = name.Identifier.ValueText;
             var unresolvedLocation = name.GetLocation().GetLineSpan().StartLinePosition;
             var ambiguousNamespaces = await GetAmbiguousNamespacesAsync(operations, document);
 
-            results.Add(new QuickFix
+            results.Add(
+                new QuickFix
                 {
                     Line = unresolvedLocation.Line,
                     Column = unresolvedLocation.Character,
                     FileName = document.FilePath,
-                    Text = $"`{unresolvedText}` is ambiguous. Namespaces:{ambiguousNamespaces}"
-                });
+                    Text = $"`{unresolvedText}` is ambiguous. Namespaces:{ambiguousNamespaces}",
+                }
+            );
         }
 
-        private async Task<string> GetAmbiguousNamespacesAsync(ImmutableArray<CodeActionOperation> operations, Document document)
+        private async Task<string> GetAmbiguousNamespacesAsync(
+            ImmutableArray<CodeActionOperation> operations,
+            Document document
+        )
         {
             var namespaces = new List<string>();
             foreach (var operation in operations.Where(x => x is ApplyChangesOperation))
@@ -115,8 +135,7 @@ namespace OmniSharp
                 var semanticModel = await document.GetSemanticModelAsync();
                 var root = await semanticModel.SyntaxTree.GetRootAsync();
 
-                var unboundNames = root
-                    .DescendantNodes()
+                var unboundNames = root.DescendantNodes()
                     .OfType<SimpleNameSyntax>()
                     .Where(name => semanticModel.GetSymbolInfo(name).Symbol == null)
                     .ToArray();
@@ -130,7 +149,13 @@ namespace OmniSharp
                         continue;
                     }
 
-                    var diagnostics = await GetDiagnosticsAtSpanAsync(document, name.Identifier.Span, "CS0246", "CS1061", "CS0103");
+                    var diagnostics = await GetDiagnosticsAtSpanAsync(
+                        document,
+                        name.Identifier.Span,
+                        "CS0246",
+                        "CS1061",
+                        "CS0103"
+                    );
                     if (diagnostics.Any())
                     {
                         // Ensure that we only process diagnostics where each diagnostic has the same span.
@@ -140,14 +165,27 @@ namespace OmniSharp
                             continue;
                         }
 
-                        var operations = await GetCodeFixOperationsAsync(_addImportProvider, document, span, diagnostics);
+                        var operations = await GetCodeFixOperationsAsync(
+                            _addImportProvider,
+                            document,
+                            span,
+                            diagnostics
+                        );
 
                         if (operations.Length > 1)
-                            await TrackAmbiguousQuickFix(quickFixes, ambiguousNodes, name, operations, document);
+                            await TrackAmbiguousQuickFix(
+                                quickFixes,
+                                ambiguousNodes,
+                                name,
+                                operations,
+                                document
+                            );
                         else if (operations.Length == 1 && operations[0] is ApplyChangesOperation)
                         {
                             // Only one operation - apply it and loop back around
-                            var newSolution = ((ApplyChangesOperation)operations[0]).ChangedSolution;
+                            var newSolution = (
+                                (ApplyChangesOperation)operations[0]
+                            ).ChangedSolution;
                             if (document.Project.Solution != newSolution)
                             {
                                 document = newSolution.GetDocument(document.Id);
@@ -177,7 +215,12 @@ namespace OmniSharp
 
             foreach (var usingDirective in usingDirectives)
             {
-                var diagnostics = await GetDiagnosticsAtSpanAsync(document, usingDirective.Span, "CS0105", "CS8019");
+                var diagnostics = await GetDiagnosticsAtSpanAsync(
+                    document,
+                    usingDirective.Span,
+                    "CS0105",
+                    "CS8019"
+                );
                 if (diagnostics.Any())
                 {
                     // Ensure that we only process diagnostics where each diagnostic has the same span.
@@ -187,7 +230,12 @@ namespace OmniSharp
                         continue;
                     }
 
-                    var operations = await GetCodeFixOperationsAsync(_removeUnnecessaryUsingsProvider, document, span, diagnostics);
+                    var operations = await GetCodeFixOperationsAsync(
+                        _removeUnnecessaryUsingsProvider,
+                        document,
+                        span,
+                        diagnostics
+                    );
 
                     foreach (var operation in operations.OfType<ApplyChangesOperation>())
                     {
@@ -210,7 +258,6 @@ namespace OmniSharp
                 }
             }
 
-
             return document;
         }
 
@@ -223,9 +270,11 @@ namespace OmniSharp
             {
                 var linqName = SyntaxFactory.QualifiedName(
                     SyntaxFactory.IdentifierName("System"),
-                    SyntaxFactory.IdentifierName("Linq"));
+                    SyntaxFactory.IdentifierName("Linq")
+                );
 
-                var linq = SyntaxFactory.UsingDirective(linqName)
+                var linq = SyntaxFactory
+                    .UsingDirective(linqName)
                     .NormalizeWhitespace()
                     .WithTrailingTrivia(SyntaxFactory.Whitespace(Environment.NewLine));
 
@@ -240,14 +289,18 @@ namespace OmniSharp
             CodeFixProvider provider,
             Document document,
             TextSpan span,
-            ImmutableArray<Diagnostic> diagnostics)
+            ImmutableArray<Diagnostic> diagnostics
+        )
         {
             var codeFixes = new List<CodeAction>();
             var context = OmniSharpCodeFixContextFactory.CreateCodeFixContext(
-                document, span, diagnostics,
+                document,
+                span,
+                diagnostics,
                 registerCodeFix: (a, d) => codeFixes.Add(a),
                 CodeActionOptionsFactory.Create(_options),
-                cancellationToken: CancellationToken.None);
+                cancellationToken: CancellationToken.None
+            );
 
             // Note: We're intentionally not checking CodeFixProvider.FixableDiagnosticIds here.
             // The problem is that some providers (like Remove Unnecessary Usings) only listen
@@ -256,8 +309,9 @@ namespace OmniSharp
 
             await provider.RegisterCodeFixesAsync(context);
 
-            var getOperationsTasks = codeFixes
-                .Select(a => a.GetOperationsAsync(CancellationToken.None));
+            var getOperationsTasks = codeFixes.Select(a =>
+                a.GetOperationsAsync(CancellationToken.None)
+            );
 
             // Wait until all tasks to produce CodeActionOperations finish running in parallel.
             await Task.WhenAll(getOperationsTasks);
@@ -270,15 +324,18 @@ namespace OmniSharp
 
         private static HashSet<string> GetAllUsings(SyntaxNode root)
         {
-            var usings = root
-                .DescendantNodes()
+            var usings = root.DescendantNodes()
                 .OfType<UsingDirectiveSyntax>()
                 .Select(u => u.ToString().Trim());
 
             return new HashSet<string>(usings);
         }
 
-        private async Task<ImmutableArray<Diagnostic>> GetDiagnosticsAtSpanAsync(Document document, TextSpan span, params string[] diagnosticIds)
+        private async Task<ImmutableArray<Diagnostic>> GetDiagnosticsAtSpanAsync(
+            Document document,
+            TextSpan span,
+            params string[] diagnosticIds
+        )
         {
             var semanticModel = await document.GetSemanticModelAsync();
             var diagnostics = semanticModel.GetDiagnostics();
@@ -291,9 +348,7 @@ namespace OmniSharp
 
         private static bool HasLinqQuerySyntax(SyntaxNode root)
         {
-            return root
-                .DescendantNodes()
-                .Any(IsLinqQuerySyntax);
+            return root.DescendantNodes().Any(IsLinqQuerySyntax);
         }
 
         private static bool IsLinqQuerySyntax(SyntaxNode node)

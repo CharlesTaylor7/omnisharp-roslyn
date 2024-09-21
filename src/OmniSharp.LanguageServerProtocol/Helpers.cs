@@ -22,8 +22,10 @@ namespace OmniSharp.LanguageServerProtocol
             var tags = new List<DiagnosticTag>();
             foreach (var tag in location?.Tags ?? Array.Empty<string>())
             {
-                if (tag == "Unnecessary") tags.Add(DiagnosticTag.Unnecessary);
-                if (tag == "Deprecated") tags.Add(DiagnosticTag.Deprecated);
+                if (tag == "Unnecessary")
+                    tags.Add(DiagnosticTag.Unnecessary);
+                if (tag == "Deprecated")
+                    tags.Add(DiagnosticTag.Deprecated);
             }
             return new Diagnostic()
             {
@@ -43,16 +45,8 @@ namespace OmniSharp.LanguageServerProtocol
         {
             return new Range()
             {
-                Start = new Position()
-                {
-                    Character = location.Column,
-                    Line = location.Line
-                },
-                End = new Position()
-                {
-                    Character = location.EndColumn,
-                    Line = location.EndLine
-                },
+                Start = new Position() { Character = location.Column, Line = location.Line },
+                End = new Position() { Character = location.EndColumn, Line = location.EndLine },
             };
         }
 
@@ -77,7 +71,9 @@ namespace OmniSharp.LanguageServerProtocol
         {
             // We stringify this value and pass to clients
             // should probably use the enum at somepoint
-            if (Enum.TryParse<Microsoft.CodeAnalysis.DiagnosticSeverity>(logLevel, out var severity))
+            if (
+                Enum.TryParse<Microsoft.CodeAnalysis.DiagnosticSeverity>(logLevel, out var severity)
+            )
             {
                 switch (severity)
                 {
@@ -96,15 +92,14 @@ namespace OmniSharp.LanguageServerProtocol
         }
 
         public static DocumentUri ToUri(string fileName) => DocumentUri.File(fileName);
-        public static string FromUri(DocumentUri uri) => uri.GetFileSystemPath().Replace(Path.AltDirectorySeparatorChar, Path.DirectorySeparatorChar);
+
+        public static string FromUri(DocumentUri uri) =>
+            uri.GetFileSystemPath()
+                .Replace(Path.AltDirectorySeparatorChar, Path.DirectorySeparatorChar);
 
         public static Range ToRange((int column, int line) location)
         {
-            return new Range()
-            {
-                Start = ToPosition(location),
-                End = ToPosition(location)
-            };
+            return new Range() { Start = ToPosition(location), End = ToPosition(location) };
         }
 
         public static Position ToPosition((int column, int line) location)
@@ -119,11 +114,7 @@ namespace OmniSharp.LanguageServerProtocol
 
         public static OmniSharp.Models.V2.Point FromPosition(Position position)
         {
-            return new Models.V2.Point()
-            {
-                Line = position.Line,
-                Column = position.Character,
-            };
+            return new Models.V2.Point() { Line = position.Line, Column = position.Character };
         }
 
         public static Range ToRange((int column, int line) start, (int column, int line) end)
@@ -131,20 +122,19 @@ namespace OmniSharp.LanguageServerProtocol
             return new Range()
             {
                 Start = new Position(start.line, start.column),
-                End = new Position(end.line, end.column)
+                End = new Position(end.line, end.column),
             };
         }
 
         public static Range ToRange(OmniSharp.Models.V2.Range range)
         {
-            return new Range()
-            {
-                Start = ToPosition(range.Start),
-                End = ToPosition(range.End)
-            };
+            return new Range() { Start = ToPosition(range.Start), End = ToPosition(range.End) };
         }
 
-        private static readonly IDictionary<string, SymbolKind> Kinds = new Dictionary<string, SymbolKind>
+        private static readonly IDictionary<string, SymbolKind> Kinds = new Dictionary<
+            string,
+            SymbolKind
+        >
         {
             { OmniSharp.Models.V2.SymbolKinds.Class, SymbolKind.Class },
             { OmniSharp.Models.V2.SymbolKinds.Delegate, SymbolKind.Class },
@@ -167,46 +157,56 @@ namespace OmniSharp.LanguageServerProtocol
 
         public static SymbolKind ToSymbolKind(string omnisharpKind)
         {
-            return Kinds.TryGetValue(omnisharpKind.ToLowerInvariant(), out var symbolKind) ? symbolKind : SymbolKind.Class;
+            return Kinds.TryGetValue(omnisharpKind.ToLowerInvariant(), out var symbolKind)
+                ? symbolKind
+                : SymbolKind.Class;
         }
 
-        public static WorkspaceEdit ToWorkspaceEdit(IEnumerable<FileOperationResponse> responses, WorkspaceEditCapability workspaceEditCapability, DocumentVersions documentVersions)
+        public static WorkspaceEdit ToWorkspaceEdit(
+            IEnumerable<FileOperationResponse> responses,
+            WorkspaceEditCapability workspaceEditCapability,
+            DocumentVersions documentVersions
+        )
         {
             workspaceEditCapability ??= new WorkspaceEditCapability();
             workspaceEditCapability.ResourceOperations ??= Array.Empty<ResourceOperationKind>();
-
 
             if (workspaceEditCapability.DocumentChanges)
             {
                 var documentChanges = new List<WorkspaceEditDocumentChange>();
                 foreach (var response in responses)
                 {
-                    documentChanges.Add(ToWorkspaceEditDocumentChange(response, workspaceEditCapability,
-                        documentVersions));
-
+                    documentChanges.Add(
+                        ToWorkspaceEditDocumentChange(
+                            response,
+                            workspaceEditCapability,
+                            documentVersions
+                        )
+                    );
                 }
 
-                return new WorkspaceEdit()
-                {
-                    DocumentChanges = documentChanges
-                };
+                return new WorkspaceEdit() { DocumentChanges = documentChanges };
             }
             else
             {
                 var changes = new Dictionary<DocumentUri, IEnumerable<TextEdit>>();
                 foreach (var response in responses)
                 {
-                    changes.Add(DocumentUri.FromFileSystemPath(response.FileName), ToTextEdits(response));
+                    changes.Add(
+                        DocumentUri.FromFileSystemPath(response.FileName),
+                        ToTextEdits(response)
+                    );
                 }
 
-                return new WorkspaceEdit()
-                {
-                    Changes = changes
-                };
+                return new WorkspaceEdit() { Changes = changes };
             }
         }
 
-        public static WorkspaceEditDocumentChange ToWorkspaceEditDocumentChange(FileOperationResponse response, WorkspaceEditCapability workspaceEditCapability, DocumentVersions documentVersions)
+        public static WorkspaceEditDocumentChange ToWorkspaceEditDocumentChange(
+            FileOperationResponse response,
+            WorkspaceEditCapability workspaceEditCapability,
+            DocumentVersions documentVersions
+        )
         {
             workspaceEditCapability ??= new WorkspaceEditCapability();
             workspaceEditCapability.ResourceOperations ??= Array.Empty<ResourceOperationKind>();
@@ -218,13 +218,18 @@ namespace OmniSharp.LanguageServerProtocol
                     Edits = new TextEditContainer(modified.Changes.Select(ToTextEdit)),
                     TextDocument = new OptionalVersionedTextDocumentIdentifier()
                     {
-                        Version = documentVersions.GetVersion(DocumentUri.FromFileSystemPath(response.FileName)),
-                        Uri = DocumentUri.FromFileSystemPath(response.FileName)
+                        Version = documentVersions.GetVersion(
+                            DocumentUri.FromFileSystemPath(response.FileName)
+                        ),
+                        Uri = DocumentUri.FromFileSystemPath(response.FileName),
                     },
                 };
             }
 
-            if (response is RenamedFileResponse rename && workspaceEditCapability.ResourceOperations.Contains(ResourceOperationKind.Rename))
+            if (
+                response is RenamedFileResponse rename
+                && workspaceEditCapability.ResourceOperations.Contains(ResourceOperationKind.Rename)
+            )
             {
                 return new RenameFile()
                 {
@@ -251,7 +256,8 @@ namespace OmniSharp.LanguageServerProtocol
 
         public static IEnumerable<TextEdit> ToTextEdits(FileOperationResponse response)
         {
-            if (!(response is ModifiedFileResponse modified)) yield break;
+            if (!(response is ModifiedFileResponse modified))
+                yield break;
             foreach (var change in modified.Changes)
             {
                 yield return ToTextEdit(change);
@@ -266,25 +272,25 @@ namespace OmniSharp.LanguageServerProtocol
                 Range = ToRange(
                     (textChange.StartColumn, textChange.StartLine),
                     (textChange.EndColumn, textChange.EndLine)
-                )
+                ),
             };
         }
 
         public static LinePositionSpanTextChange[] FromTextEdits(IEnumerable<TextEdit> textEdits)
         {
-            return textEdits?.Select(FromTextEdit).ToArray() ?? Array.Empty<LinePositionSpanTextChange>();
+            return textEdits?.Select(FromTextEdit).ToArray()
+                ?? Array.Empty<LinePositionSpanTextChange>();
         }
 
-        public static LinePositionSpanTextChange FromTextEdit(TextEdit textEdit)
-            => new LinePositionSpanTextChange
+        public static LinePositionSpanTextChange FromTextEdit(TextEdit textEdit) =>
+            new LinePositionSpanTextChange
             {
                 NewText = textEdit.NewText,
                 StartLine = textEdit.Range.Start.Line,
                 EndLine = textEdit.Range.End.Line,
                 StartColumn = textEdit.Range.Start.Character,
-                EndColumn = textEdit.Range.End.Character
+                EndColumn = textEdit.Range.End.Character,
             };
-
 
         public static T2 ConvertEnum<T1, T2>(T1 t1)
             where T1 : struct, Enum
@@ -323,51 +329,70 @@ namespace OmniSharp.LanguageServerProtocol
 
     public static class CommandExtensions
     {
-        public static T ExtractArguments<T>(this IExecuteCommandParams @params, ISerializer serializer)
-            where T : notnull =>
-            ExtractArguments<T>(@params.Arguments, serializer);
+        public static T ExtractArguments<T>(
+            this IExecuteCommandParams @params,
+            ISerializer serializer
+        )
+            where T : notnull => ExtractArguments<T>(@params.Arguments, serializer);
 
         public static T ExtractArguments<T>(this Command @params, ISerializer serializer)
-            where T : notnull =>
-            ExtractArguments<T>(@params.Arguments, serializer);
+            where T : notnull => ExtractArguments<T>(@params.Arguments, serializer);
 
-        public static (T arg1, T2 arg2) ExtractArguments<T, T2>(this IExecuteCommandParams command, ISerializer serializer)
+        public static (T arg1, T2 arg2) ExtractArguments<T, T2>(
+            this IExecuteCommandParams command,
+            ISerializer serializer
+        )
             where T : notnull
-            where T2 : notnull =>
-            ExtractArguments<T, T2>(command.Arguments, serializer);
+            where T2 : notnull => ExtractArguments<T, T2>(command.Arguments, serializer);
 
-        public static (T arg1, T2 arg2) ExtractArguments<T, T2>(this Command command, ISerializer serializer)
+        public static (T arg1, T2 arg2) ExtractArguments<T, T2>(
+            this Command command,
+            ISerializer serializer
+        )
             where T : notnull
-            where T2 : notnull =>
-            ExtractArguments<T, T2>(command.Arguments, serializer);
+            where T2 : notnull => ExtractArguments<T, T2>(command.Arguments, serializer);
 
-        public static (T arg1, T2 arg2, T3 arg3) ExtractArguments<T, T2, T3>(this IExecuteCommandParams command, ISerializer serializer)
+        public static (T arg1, T2 arg2, T3 arg3) ExtractArguments<T, T2, T3>(
+            this IExecuteCommandParams command,
+            ISerializer serializer
+        )
             where T : notnull
             where T2 : notnull
-            where T3 : notnull =>
-            ExtractArguments<T, T2, T3>(command.Arguments, serializer);
+            where T3 : notnull => ExtractArguments<T, T2, T3>(command.Arguments, serializer);
 
-        public static (T arg1, T2 arg2, T3 arg3) ExtractArguments<T, T2, T3>(this Command command, ISerializer serializer)
+        public static (T arg1, T2 arg2, T3 arg3) ExtractArguments<T, T2, T3>(
+            this Command command,
+            ISerializer serializer
+        )
             where T : notnull
             where T2 : notnull
-            where T3 : notnull =>
-            ExtractArguments<T, T2, T3>(command.Arguments, serializer);
+            where T3 : notnull => ExtractArguments<T, T2, T3>(command.Arguments, serializer);
 
-        public static (T arg1, T2 arg2, T3 arg3, T4 arg4) ExtractArguments<T, T2, T3, T4>(this IExecuteCommandParams command, ISerializer serializer)
+        public static (T arg1, T2 arg2, T3 arg3, T4 arg4) ExtractArguments<T, T2, T3, T4>(
+            this IExecuteCommandParams command,
+            ISerializer serializer
+        )
             where T : notnull
             where T2 : notnull
             where T3 : notnull
-            where T4 : notnull =>
-            ExtractArguments<T, T2, T3, T4>(command.Arguments, serializer);
+            where T4 : notnull => ExtractArguments<T, T2, T3, T4>(command.Arguments, serializer);
 
-        public static (T arg1, T2 arg2, T3 arg3, T4 arg4) ExtractArguments<T, T2, T3, T4>(this Command command, ISerializer serializer)
+        public static (T arg1, T2 arg2, T3 arg3, T4 arg4) ExtractArguments<T, T2, T3, T4>(
+            this Command command,
+            ISerializer serializer
+        )
             where T : notnull
             where T2 : notnull
             where T3 : notnull
-            where T4 : notnull =>
-            ExtractArguments<T, T2, T3, T4>(command.Arguments, serializer);
+            where T4 : notnull => ExtractArguments<T, T2, T3, T4>(command.Arguments, serializer);
 
-        public static (T arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5) ExtractArguments<T, T2, T3, T4, T5>(this IExecuteCommandParams command, ISerializer serializer)
+        public static (T arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5) ExtractArguments<
+            T,
+            T2,
+            T3,
+            T4,
+            T5
+        >(this IExecuteCommandParams command, ISerializer serializer)
             where T : notnull
             where T2 : notnull
             where T3 : notnull
@@ -375,7 +400,13 @@ namespace OmniSharp.LanguageServerProtocol
             where T5 : notnull =>
             ExtractArguments<T, T2, T3, T4, T5>(command.Arguments, serializer);
 
-        public static (T arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5) ExtractArguments<T, T2, T3, T4, T5>(this Command command, ISerializer serializer)
+        public static (T arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5) ExtractArguments<
+            T,
+            T2,
+            T3,
+            T4,
+            T5
+        >(this Command command, ISerializer serializer)
             where T : notnull
             where T2 : notnull
             where T3 : notnull
@@ -383,7 +414,14 @@ namespace OmniSharp.LanguageServerProtocol
             where T5 : notnull =>
             ExtractArguments<T, T2, T3, T4, T5>(command.Arguments, serializer);
 
-        public static (T arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6) ExtractArguments<T, T2, T3, T4, T5, T6>(this IExecuteCommandParams command, ISerializer serializer)
+        public static (T arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6) ExtractArguments<
+            T,
+            T2,
+            T3,
+            T4,
+            T5,
+            T6
+        >(this IExecuteCommandParams command, ISerializer serializer)
             where T : notnull
             where T2 : notnull
             where T3 : notnull
@@ -392,7 +430,14 @@ namespace OmniSharp.LanguageServerProtocol
             where T6 : notnull =>
             ExtractArguments<T, T2, T3, T4, T5, T6>(command.Arguments, serializer);
 
-        public static (T arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6) ExtractArguments<T, T2, T3, T4, T5, T6>(this Command command, ISerializer serializer)
+        public static (T arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6) ExtractArguments<
+            T,
+            T2,
+            T3,
+            T4,
+            T5,
+            T6
+        >(this Command command, ISerializer serializer)
             where T : notnull
             where T2 : notnull
             where T3 : notnull
@@ -406,40 +451,55 @@ namespace OmniSharp.LanguageServerProtocol
         {
             args ??= new JArray();
             T arg1 = default;
-            if (args.Count > 0) arg1 = args[0].ToObject<T>(serializer.JsonSerializer);
+            if (args.Count > 0)
+                arg1 = args[0].ToObject<T>(serializer.JsonSerializer);
             return arg1!;
         }
 
-        private static (T arg1, T2 arg2) ExtractArguments<T, T2>(JArray args, ISerializer serializer)
+        private static (T arg1, T2 arg2) ExtractArguments<T, T2>(
+            JArray args,
+            ISerializer serializer
+        )
             where T : notnull
             where T2 : notnull
         {
             args ??= new JArray();
             T arg1 = default;
-            if (args.Count > 0) arg1 = args[0].ToObject<T>(serializer.JsonSerializer);
+            if (args.Count > 0)
+                arg1 = args[0].ToObject<T>(serializer.JsonSerializer);
             T2 arg2 = default;
-            if (args.Count > 1) arg2 = args[1].ToObject<T2>(serializer.JsonSerializer);
+            if (args.Count > 1)
+                arg2 = args[1].ToObject<T2>(serializer.JsonSerializer);
 
             return (arg1!, arg2!);
         }
 
-        private static (T arg1, T2 arg2, T3 arg3) ExtractArguments<T, T2, T3>(JArray args, ISerializer serializer)
+        private static (T arg1, T2 arg2, T3 arg3) ExtractArguments<T, T2, T3>(
+            JArray args,
+            ISerializer serializer
+        )
             where T : notnull
             where T2 : notnull
             where T3 : notnull
         {
             args ??= new JArray();
             T arg1 = default;
-            if (args.Count > 0) arg1 = args[0].ToObject<T>(serializer.JsonSerializer);
+            if (args.Count > 0)
+                arg1 = args[0].ToObject<T>(serializer.JsonSerializer);
             T2 arg2 = default;
-            if (args.Count > 1) arg2 = args[1].ToObject<T2>(serializer.JsonSerializer);
+            if (args.Count > 1)
+                arg2 = args[1].ToObject<T2>(serializer.JsonSerializer);
             T3 arg3 = default;
-            if (args.Count > 2) arg3 = args[2].ToObject<T3>(serializer.JsonSerializer);
+            if (args.Count > 2)
+                arg3 = args[2].ToObject<T3>(serializer.JsonSerializer);
 
             return (arg1!, arg2!, arg3!);
         }
 
-        private static (T arg1, T2 arg2, T3 arg3, T4 arg4) ExtractArguments<T, T2, T3, T4>(JArray args, ISerializer serializer)
+        private static (T arg1, T2 arg2, T3 arg3, T4 arg4) ExtractArguments<T, T2, T3, T4>(
+            JArray args,
+            ISerializer serializer
+        )
             where T : notnull
             where T2 : notnull
             where T3 : notnull
@@ -447,18 +507,28 @@ namespace OmniSharp.LanguageServerProtocol
         {
             args ??= new JArray();
             T arg1 = default;
-            if (args.Count > 0) arg1 = args[0].ToObject<T>(serializer.JsonSerializer);
+            if (args.Count > 0)
+                arg1 = args[0].ToObject<T>(serializer.JsonSerializer);
             T2 arg2 = default;
-            if (args.Count > 1) arg2 = args[1].ToObject<T2>(serializer.JsonSerializer);
+            if (args.Count > 1)
+                arg2 = args[1].ToObject<T2>(serializer.JsonSerializer);
             T3 arg3 = default;
-            if (args.Count > 2) arg3 = args[2].ToObject<T3>(serializer.JsonSerializer);
+            if (args.Count > 2)
+                arg3 = args[2].ToObject<T3>(serializer.JsonSerializer);
             T4 arg4 = default;
-            if (args.Count > 3) arg4 = args[3].ToObject<T4>(serializer.JsonSerializer);
+            if (args.Count > 3)
+                arg4 = args[3].ToObject<T4>(serializer.JsonSerializer);
 
             return (arg1!, arg2!, arg3!, arg4!);
         }
 
-        private static (T arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5) ExtractArguments<T, T2, T3, T4, T5>(JArray args, ISerializer serializer)
+        private static (T arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5) ExtractArguments<
+            T,
+            T2,
+            T3,
+            T4,
+            T5
+        >(JArray args, ISerializer serializer)
             where T : notnull
             where T2 : notnull
             where T3 : notnull
@@ -467,20 +537,32 @@ namespace OmniSharp.LanguageServerProtocol
         {
             args ??= new JArray();
             T arg1 = default;
-            if (args.Count > 0) arg1 = args[0].ToObject<T>(serializer.JsonSerializer);
+            if (args.Count > 0)
+                arg1 = args[0].ToObject<T>(serializer.JsonSerializer);
             T2 arg2 = default;
-            if (args.Count > 1) arg2 = args[1].ToObject<T2>(serializer.JsonSerializer);
+            if (args.Count > 1)
+                arg2 = args[1].ToObject<T2>(serializer.JsonSerializer);
             T3 arg3 = default;
-            if (args.Count > 2) arg3 = args[2].ToObject<T3>(serializer.JsonSerializer);
+            if (args.Count > 2)
+                arg3 = args[2].ToObject<T3>(serializer.JsonSerializer);
             T4 arg4 = default;
-            if (args.Count > 3) arg4 = args[3].ToObject<T4>(serializer.JsonSerializer);
+            if (args.Count > 3)
+                arg4 = args[3].ToObject<T4>(serializer.JsonSerializer);
             T5 arg5 = default;
-            if (args.Count > 4) arg5 = args[4].ToObject<T5>(serializer.JsonSerializer);
+            if (args.Count > 4)
+                arg5 = args[4].ToObject<T5>(serializer.JsonSerializer);
 
             return (arg1!, arg2!, arg3!, arg4!, arg5!);
         }
 
-        private static (T arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6) ExtractArguments<T, T2, T3, T4, T5, T6>(JArray args, ISerializer serializer)
+        private static (T arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6) ExtractArguments<
+            T,
+            T2,
+            T3,
+            T4,
+            T5,
+            T6
+        >(JArray args, ISerializer serializer)
             where T : notnull
             where T2 : notnull
             where T3 : notnull
@@ -490,17 +572,23 @@ namespace OmniSharp.LanguageServerProtocol
         {
             args ??= new JArray();
             T arg1 = default;
-            if (args.Count > 0) arg1 = args[0].ToObject<T>(serializer.JsonSerializer);
+            if (args.Count > 0)
+                arg1 = args[0].ToObject<T>(serializer.JsonSerializer);
             T2 arg2 = default;
-            if (args.Count > 1) arg2 = args[1].ToObject<T2>(serializer.JsonSerializer);
+            if (args.Count > 1)
+                arg2 = args[1].ToObject<T2>(serializer.JsonSerializer);
             T3 arg3 = default;
-            if (args.Count > 2) arg3 = args[2].ToObject<T3>(serializer.JsonSerializer);
+            if (args.Count > 2)
+                arg3 = args[2].ToObject<T3>(serializer.JsonSerializer);
             T4 arg4 = default;
-            if (args.Count > 3) arg4 = args[3].ToObject<T4>(serializer.JsonSerializer);
+            if (args.Count > 3)
+                arg4 = args[3].ToObject<T4>(serializer.JsonSerializer);
             T5 arg5 = default;
-            if (args.Count > 4) arg5 = args[4].ToObject<T5>(serializer.JsonSerializer);
+            if (args.Count > 4)
+                arg5 = args[4].ToObject<T5>(serializer.JsonSerializer);
             T6 arg6 = default;
-            if (args.Count > 5) arg6 = args[5].ToObject<T6>(serializer.JsonSerializer);
+            if (args.Count > 5)
+                arg6 = args[5].ToObject<T6>(serializer.JsonSerializer);
 
             return (arg1!, arg2!, arg3!, arg4!, arg5!, arg6!);
         }

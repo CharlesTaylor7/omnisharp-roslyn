@@ -31,7 +31,8 @@ namespace OmniSharp
             get { return isInitialized; }
             set
             {
-                if (isInitialized == value) return;
+                if (isInitialized == value)
+                    return;
                 isInitialized = value;
                 OnInitialized(isInitialized);
             }
@@ -44,18 +45,30 @@ namespace OmniSharp
 
         private readonly ILogger<OmniSharpWorkspace> _logger;
 
-        private readonly ConcurrentBag<Func<string, Task>> _waitForProjectModelReadyHandlers = new ConcurrentBag<Func<string, Task>>();
-        private readonly ConcurrentDictionary<string, ProjectInfo> miscDocumentsProjectInfos = new ConcurrentDictionary<string, ProjectInfo>();
-        private readonly ConcurrentDictionary<ProjectId, Predicate<string>> documentInclusionRulesPerProject = new ConcurrentDictionary<ProjectId, Predicate<string>>();
+        private readonly ConcurrentBag<Func<string, Task>> _waitForProjectModelReadyHandlers =
+            new ConcurrentBag<Func<string, Task>>();
+        private readonly ConcurrentDictionary<string, ProjectInfo> miscDocumentsProjectInfos =
+            new ConcurrentDictionary<string, ProjectInfo>();
+        private readonly ConcurrentDictionary<
+            ProjectId,
+            Predicate<string>
+        > documentInclusionRulesPerProject =
+            new ConcurrentDictionary<ProjectId, Predicate<string>>();
         private bool isInitialized;
 
         [ImportingConstructor]
-        public OmniSharpWorkspace(HostServicesAggregator aggregator, ILoggerFactory loggerFactory, IFileSystemWatcher fileSystemWatcher)
-            : this(aggregator.CreateHostServices(), loggerFactory, fileSystemWatcher)
-        {
-        }
-        
-        public OmniSharpWorkspace(HostServices hostServices, ILoggerFactory loggerFactory, IFileSystemWatcher fileSystemWatcher)
+        public OmniSharpWorkspace(
+            HostServicesAggregator aggregator,
+            ILoggerFactory loggerFactory,
+            IFileSystemWatcher fileSystemWatcher
+        )
+            : this(aggregator.CreateHostServices(), loggerFactory, fileSystemWatcher) { }
+
+        public OmniSharpWorkspace(
+            HostServices hostServices,
+            ILoggerFactory loggerFactory,
+            IFileSystemWatcher fileSystemWatcher
+        )
             : base(hostServices, "Custom")
         {
             BufferManager = new BufferManager(this, loggerFactory, fileSystemWatcher);
@@ -65,13 +78,18 @@ namespace OmniSharp
 
         public override bool CanOpenDocuments => true;
 
-
         private void OnDirectoryRemoved(string path, FileChangeType changeType)
         {
             if (changeType == FileChangeType.DirectoryDelete)
             {
-                var docs = CurrentSolution.Projects.SelectMany(x => x.Documents)
-                    .Where(x => x.FilePath.StartsWith(path + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase));
+                var docs = CurrentSolution
+                    .Projects.SelectMany(x => x.Documents)
+                    .Where(x =>
+                        x.FilePath.StartsWith(
+                            path + Path.DirectorySeparatorChar,
+                            StringComparison.OrdinalIgnoreCase
+                        )
+                    );
 
                 foreach (var doc in docs)
                 {
@@ -90,7 +108,8 @@ namespace OmniSharp
             var doc = this.CurrentSolution.GetDocument(documentId);
             if (doc != null)
             {
-                var text = doc.GetTextAsync(CancellationToken.None).WaitAndGetResult(CancellationToken.None);
+                var text = doc.GetTextAsync(CancellationToken.None)
+                    .WaitAndGetResult(CancellationToken.None);
                 this.OnDocumentOpened(documentId, text.Container, activate);
             }
         }
@@ -100,8 +119,10 @@ namespace OmniSharp
             var doc = this.CurrentSolution.GetDocument(documentId);
             if (doc != null)
             {
-                var text = doc.GetTextAsync(CancellationToken.None).WaitAndGetResult(CancellationToken.None);
-                var version = doc.GetTextVersionAsync(CancellationToken.None).WaitAndGetResult(CancellationToken.None);
+                var text = doc.GetTextAsync(CancellationToken.None)
+                    .WaitAndGetResult(CancellationToken.None);
+                var version = doc.GetTextVersionAsync(CancellationToken.None)
+                    .WaitAndGetResult(CancellationToken.None);
                 var loader = TextLoader.From(TextAndVersion.Create(text, version, doc.FilePath));
                 this.OnDocumentClosed(documentId, loader);
             }
@@ -112,7 +133,10 @@ namespace OmniSharp
             OnProjectAdded(projectInfo);
         }
 
-        public void AddDocumentInclusionRuleForProject(ProjectId projectId, Predicate<string> documentPathFilter)
+        public void AddDocumentInclusionRuleForProject(
+            ProjectId projectId,
+            Predicate<string> documentPathFilter
+        )
         {
             documentInclusionRulesPerProject[projectId] = documentPathFilter;
         }
@@ -132,17 +156,27 @@ namespace OmniSharp
             OnMetadataReferenceAdded(projectId, metadataReference);
         }
 
-        public void RemoveMetadataReference(ProjectId projectId, MetadataReference metadataReference)
+        public void RemoveMetadataReference(
+            ProjectId projectId,
+            MetadataReference metadataReference
+        )
         {
             OnMetadataReferenceRemoved(projectId, metadataReference);
         }
 
-        public DocumentId TryAddMiscellaneousDocument(string filePath, TextLoader loader, string language)
+        public DocumentId TryAddMiscellaneousDocument(
+            string filePath,
+            TextLoader loader,
+            string language
+        )
         {
             if (GetDocument(filePath) != null)
                 return null; //if the workspace already knows about this document then it is not a miscellaneous document
 
-            var projectInfo = miscDocumentsProjectInfos.GetOrAdd(language, (lang) => CreateMiscFilesProject(lang));
+            var projectInfo = miscDocumentsProjectInfos.GetOrAdd(
+                language,
+                (lang) => CreateMiscFilesProject(lang)
+            );
             var documentId = AddDocument(projectInfo.Id, filePath, loader);
             _logger.LogInformation($"Miscellaneous file: {filePath} added to workspace");
 
@@ -151,7 +185,9 @@ namespace OmniSharp
                 return documentId;
             }
 
-            var analyzerConfigFiles = projectInfo.AnalyzerConfigDocuments.Select(document => document.FilePath);
+            var analyzerConfigFiles = projectInfo.AnalyzerConfigDocuments.Select(document =>
+                document.FilePath
+            );
             var newAnalyzerConfigFiles = EditorConfigFinder
                 .GetEditorConfigPaths(filePath)
                 .Except(analyzerConfigFiles);
@@ -166,7 +202,11 @@ namespace OmniSharp
 
         public DocumentId TryAddMiscellaneousDocument(string filePath, string language)
         {
-            return TryAddMiscellaneousDocument(filePath, new OmniSharpTextLoader(filePath), language);
+            return TryAddMiscellaneousDocument(
+                filePath,
+                new OmniSharpTextLoader(filePath),
+                language
+            );
         }
 
         public bool TryRemoveMiscellaneousDocument(string filePath)
@@ -204,7 +244,8 @@ namespace OmniSharp
                             documentId,
                             document.FilePath,
                             filePath: document.FilePath,
-                            loader: textLoader);
+                            loader: textLoader
+                        );
 
                         // This transitively will remove the document from the misc project.
                         AddDocument(documentInfo);
@@ -213,13 +254,22 @@ namespace OmniSharp
             }
         }
 
-        public void UpdateDiagnosticOptionsForProject(ProjectId projectId, ImmutableDictionary<string, ReportDiagnostic> rules)
+        public void UpdateDiagnosticOptionsForProject(
+            ProjectId projectId,
+            ImmutableDictionary<string, ReportDiagnostic> rules
+        )
         {
             var project = this.CurrentSolution.GetProject(projectId);
-            OnCompilationOptionsChanged(projectId, project.CompilationOptions.WithSpecificDiagnosticOptions(rules));
+            OnCompilationOptionsChanged(
+                projectId,
+                project.CompilationOptions.WithSpecificDiagnosticOptions(rules)
+            );
         }
 
-        public void UpdateCompilationOptionsForProject(ProjectId projectId, CompilationOptions options)
+        public void UpdateCompilationOptionsForProject(
+            ProjectId projectId,
+            CompilationOptions options
+        )
         {
             OnCompilationOptionsChanged(projectId, options);
         }
@@ -227,13 +277,15 @@ namespace OmniSharp
         private ProjectInfo CreateMiscFilesProject(string language)
         {
             var projectInfo = ProjectInfo.Create(
-                   id: ProjectId.CreateNewId(),
-                   version: VersionStamp.Create(),
-                   name: $"{Configuration.OmniSharpMiscProjectName}.csproj",
-                   metadataReferences: DefaultMetadataReferenceHelper.GetDefaultMetadataReferenceLocations()
-                                       .Select(loc => MetadataReference.CreateFromFile(loc)),
-                   assemblyName: Configuration.OmniSharpMiscProjectName,
-                   language: language);
+                id: ProjectId.CreateNewId(),
+                version: VersionStamp.Create(),
+                name: $"{Configuration.OmniSharpMiscProjectName}.csproj",
+                metadataReferences: DefaultMetadataReferenceHelper
+                    .GetDefaultMetadataReferenceLocations()
+                    .Select(loc => MetadataReference.CreateFromFile(loc)),
+                assemblyName: Configuration.OmniSharpMiscProjectName,
+                language: language
+            );
 
             AddProject(projectInfo);
             return projectInfo;
@@ -249,37 +301,73 @@ namespace OmniSharp
             OnDocumentAdded(documentInfo);
         }
 
-        public DocumentId AddDocument(ProjectId projectId, string filePath, SourceCodeKind sourceCodeKind = SourceCodeKind.Regular)
+        public DocumentId AddDocument(
+            ProjectId projectId,
+            string filePath,
+            SourceCodeKind sourceCodeKind = SourceCodeKind.Regular
+        )
         {
             var project = this.CurrentSolution.GetProject(projectId);
             return AddDocument(project, filePath, sourceCodeKind);
         }
 
-        public DocumentId AddDocument(ProjectId projectId, string filePath, TextLoader loader, SourceCodeKind sourceCodeKind = SourceCodeKind.Regular)
+        public DocumentId AddDocument(
+            ProjectId projectId,
+            string filePath,
+            TextLoader loader,
+            SourceCodeKind sourceCodeKind = SourceCodeKind.Regular
+        )
         {
             var documentId = DocumentId.CreateNewId(projectId);
             var project = this.CurrentSolution.GetProject(projectId);
             return AddDocument(documentId, project, filePath, loader, sourceCodeKind);
         }
 
-        public DocumentId AddDocument(Project project, string filePath, SourceCodeKind sourceCodeKind = SourceCodeKind.Regular)
+        public DocumentId AddDocument(
+            Project project,
+            string filePath,
+            SourceCodeKind sourceCodeKind = SourceCodeKind.Regular
+        )
         {
             var documentId = DocumentId.CreateNewId(project.Id);
             return AddDocument(documentId, project, filePath, sourceCodeKind);
         }
 
-        public DocumentId AddDocument(DocumentId documentId, Project project, string filePath, SourceCodeKind sourceCodeKind = SourceCodeKind.Regular)
+        public DocumentId AddDocument(
+            DocumentId documentId,
+            Project project,
+            string filePath,
+            SourceCodeKind sourceCodeKind = SourceCodeKind.Regular
+        )
         {
-            return AddDocument(documentId, project, filePath, new OmniSharpTextLoader(filePath), sourceCodeKind);
+            return AddDocument(
+                documentId,
+                project,
+                filePath,
+                new OmniSharpTextLoader(filePath),
+                sourceCodeKind
+            );
         }
 
-        internal DocumentId AddDocument(DocumentId documentId, ProjectId projectId, string filePath, TextLoader loader, SourceCodeKind sourceCodeKind = SourceCodeKind.Regular)
+        internal DocumentId AddDocument(
+            DocumentId documentId,
+            ProjectId projectId,
+            string filePath,
+            TextLoader loader,
+            SourceCodeKind sourceCodeKind = SourceCodeKind.Regular
+        )
         {
             var project = this.CurrentSolution.GetProject(projectId);
             return AddDocument(documentId, project, filePath, loader, sourceCodeKind);
         }
 
-        internal DocumentId AddDocument(DocumentId documentId, Project project, string filePath, TextLoader loader, SourceCodeKind sourceCodeKind = SourceCodeKind.Regular)
+        internal DocumentId AddDocument(
+            DocumentId documentId,
+            Project project,
+            string filePath,
+            TextLoader loader,
+            SourceCodeKind sourceCodeKind = SourceCodeKind.Regular
+        )
         {
             var basePath = Path.GetDirectoryName(project.FilePath);
             var fullPath = Path.GetDirectoryName(filePath);
@@ -302,10 +390,20 @@ namespace OmniSharp
             }
             catch (Exception ex)
             {
-                _logger.LogWarning(ex, $"An error occurred when computing a relative path from {basePath} to {fullPath}. Document at {filePath} will be processed without folder structure.");
+                _logger.LogWarning(
+                    ex,
+                    $"An error occurred when computing a relative path from {basePath} to {fullPath}. Document at {filePath} will be processed without folder structure."
+                );
             }
 
-            var documentInfo = DocumentInfo.Create(documentId, Path.GetFileName(filePath), folders: folders, filePath: filePath, loader: loader, sourceCodeKind: sourceCodeKind);
+            var documentInfo = DocumentInfo.Create(
+                documentId,
+                Path.GetFileName(filePath),
+                folders: folders,
+                filePath: filePath,
+                loader: loader,
+                sourceCodeKind: sourceCodeKind
+            );
             AddDocument(documentInfo);
 
             return documentId;
@@ -352,7 +450,8 @@ namespace OmniSharp
 
         public Document GetDocument(string filePath)
         {
-            if (string.IsNullOrWhiteSpace(filePath)) return null;
+            if (string.IsNullOrWhiteSpace(filePath))
+                return null;
 
             var documentId = GetDocumentId(filePath);
             if (documentId == null)
@@ -363,7 +462,9 @@ namespace OmniSharp
             return CurrentSolution.GetDocument(documentId);
         }
 
-        public async Task<IEnumerable<Document>> GetDocumentsFromFullProjectModelAsync(string filePath)
+        public async Task<IEnumerable<Document>> GetDocumentsFromFullProjectModelAsync(
+            string filePath
+        )
         {
             await OnWaitForProjectModelReadyAsync(filePath);
             return GetDocuments(filePath);
@@ -382,14 +483,18 @@ namespace OmniSharp
 
         internal bool FileBelongsToProject(string fileName, Project project)
         {
-            if (string.IsNullOrWhiteSpace(project.FilePath) ||
-                string.IsNullOrWhiteSpace(fileName))
+            if (string.IsNullOrWhiteSpace(project.FilePath) || string.IsNullOrWhiteSpace(fileName))
             {
                 return false;
             }
 
             // File path needs to be checked against any rules defined by the specific project system. (e.g. MSBuild default excluded folders)
-            if (documentInclusionRulesPerProject.TryGetValue(project.Id, out Predicate<string> documentInclusionFilter))
+            if (
+                documentInclusionRulesPerProject.TryGetValue(
+                    project.Id,
+                    out Predicate<string> documentInclusionFilter
+                )
+            )
             {
                 return documentInclusionFilter(fileName);
             }
@@ -398,20 +503,31 @@ namespace OmniSharp
             var fileDirectory = new FileInfo(fileName).Directory;
             var projectPath = project.FilePath;
             var projectDirectory = new FileInfo(projectPath).Directory.FullName;
-            var otherProjectDirectories = CurrentSolution.Projects
-                .Where(p => p != project && !string.IsNullOrWhiteSpace(p.FilePath))
+            var otherProjectDirectories = CurrentSolution
+                .Projects.Where(p => p != project && !string.IsNullOrWhiteSpace(p.FilePath))
                 .Select(p => new FileInfo(p.FilePath).Directory.FullName)
                 .ToImmutableArray();
 
             while (fileDirectory != null)
             {
-                if (string.Equals(fileDirectory.FullName, projectDirectory, StringComparison.OrdinalIgnoreCase))
+                if (
+                    string.Equals(
+                        fileDirectory.FullName,
+                        projectDirectory,
+                        StringComparison.OrdinalIgnoreCase
+                    )
+                )
                 {
                     return true;
                 }
 
                 // if any project is closer to the file, file should belong to that project.
-                if (otherProjectDirectories.Contains(fileDirectory.FullName, StringComparer.OrdinalIgnoreCase))
+                if (
+                    otherProjectDirectories.Contains(
+                        fileDirectory.FullName,
+                        StringComparer.OrdinalIgnoreCase
+                    )
+                )
                 {
                     return false;
                 }
@@ -469,7 +585,12 @@ namespace OmniSharp
             }
         }
 
-        private void SaveDocumentText(DocumentId id, string fullPath, SourceText newText, Encoding encoding)
+        private void SaveDocumentText(
+            DocumentId id,
+            string fullPath,
+            SourceText newText,
+            Encoding encoding
+        )
         {
             try
             {
@@ -506,10 +627,14 @@ namespace OmniSharp
 
             public DelegatingTextLoader(Document fromDocument)
             {
-                _fromDocument = fromDocument ?? throw new ArgumentNullException(nameof(fromDocument));
+                _fromDocument =
+                    fromDocument ?? throw new ArgumentNullException(nameof(fromDocument));
             }
 
-            public override async Task<TextAndVersion> LoadTextAndVersionAsync(LoadTextOptions options, CancellationToken cancellationToken)
+            public override async Task<TextAndVersion> LoadTextAndVersionAsync(
+                LoadTextOptions options,
+                CancellationToken cancellationToken
+            )
             {
                 var sourceText = await _fromDocument.GetTextAsync();
                 var version = await _fromDocument.GetTextVersionAsync();
@@ -524,12 +649,19 @@ namespace OmniSharp
             return Task.WhenAll(_waitForProjectModelReadyHandlers.Select(h => h(filePath)));
         }
 
-        public void SetAnalyzerReferences(ProjectId id, ImmutableArray<AnalyzerFileReference> analyzerReferences)
+        public void SetAnalyzerReferences(
+            ProjectId id,
+            ImmutableArray<AnalyzerFileReference> analyzerReferences
+        )
         {
             var project = this.CurrentSolution.GetProject(id);
 
-            var refsToAdd = analyzerReferences.Where(newRef => project.AnalyzerReferences.All(oldRef => oldRef.Display != newRef.Display));
-            var refsToRemove = project.AnalyzerReferences.Where(newRef => analyzerReferences.All(oldRef => oldRef.Display != newRef.Display));
+            var refsToAdd = analyzerReferences.Where(newRef =>
+                project.AnalyzerReferences.All(oldRef => oldRef.Display != newRef.Display)
+            );
+            var refsToRemove = project.AnalyzerReferences.Where(newRef =>
+                analyzerReferences.All(oldRef => oldRef.Display != newRef.Display)
+            );
 
             foreach (var toAdd in refsToAdd)
             {
@@ -553,7 +685,12 @@ namespace OmniSharp
         public void AddAdditionalDocument(ProjectId projectId, string filePath, TextLoader loader)
         {
             var documentId = DocumentId.CreateNewId(projectId);
-            var documentInfo = DocumentInfo.Create(documentId, Path.GetFileName(filePath), filePath: filePath, loader: loader);
+            var documentInfo = DocumentInfo.Create(
+                documentId,
+                Path.GetFileName(filePath),
+                filePath: filePath,
+                loader: loader
+            );
             OnAdditionalDocumentAdded(documentInfo);
         }
 
@@ -561,7 +698,12 @@ namespace OmniSharp
         {
             var documentId = DocumentId.CreateNewId(projectId);
             var loader = new OmniSharpTextLoader(filePath);
-            var documentInfo = DocumentInfo.Create(documentId, Path.GetFileName(filePath), filePath: filePath, loader: loader);
+            var documentInfo = DocumentInfo.Create(
+                documentId,
+                Path.GetFileName(filePath),
+                filePath: filePath,
+                loader: loader
+            );
             OnAnalyzerConfigDocumentAdded(documentInfo);
         }
 
@@ -585,12 +727,26 @@ namespace OmniSharp
         {
             // since Roslyn currently doesn't handle DefaultNamespace changes via ApplyProjectChanges
             // and OnDefaultNamespaceChanged is internal, we use reflection for now
-            if (projectChanges.NewProject.DefaultNamespace != projectChanges.OldProject.DefaultNamespace)
+            if (
+                projectChanges.NewProject.DefaultNamespace
+                != projectChanges.OldProject.DefaultNamespace
+            )
             {
-                var onDefaultNamespaceChanged = this.GetType().GetMethod("OnDefaultNamespaceChanged", BindingFlags.Instance | BindingFlags.NonPublic);
+                var onDefaultNamespaceChanged = this.GetType()
+                    .GetMethod(
+                        "OnDefaultNamespaceChanged",
+                        BindingFlags.Instance | BindingFlags.NonPublic
+                    );
                 if (onDefaultNamespaceChanged != null)
                 {
-                    onDefaultNamespaceChanged.Invoke(this, new object[] { projectChanges.ProjectId, projectChanges.NewProject.DefaultNamespace });
+                    onDefaultNamespaceChanged.Invoke(
+                        this,
+                        new object[]
+                        {
+                            projectChanges.ProjectId,
+                            projectChanges.NewProject.DefaultNamespace,
+                        }
+                    );
                 }
             }
 

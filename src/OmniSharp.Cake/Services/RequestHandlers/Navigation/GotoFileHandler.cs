@@ -11,13 +11,13 @@ namespace OmniSharp.Cake.Services.RequestHandlers.Navigation
     public class GotoFileHandler : CakeRequestHandler<GotoFileRequest, QuickFixResponse>
     {
         [ImportingConstructor]
-        public GotoFileHandler(
-            OmniSharpWorkspace workspace)
-            : base(workspace)
-        {
-        }
+        public GotoFileHandler(OmniSharpWorkspace workspace)
+            : base(workspace) { }
 
-        protected override Task<QuickFixResponse> TranslateResponse(QuickFixResponse response, GotoFileRequest request)
+        protected override Task<QuickFixResponse> TranslateResponse(
+            QuickFixResponse response,
+            GotoFileRequest request
+        )
         {
             return response.TranslateAsync(Workspace, request);
         }

@@ -1,5 +1,5 @@
-﻿using OmniSharp.Models.V2;
-using System;
+﻿using System;
+using OmniSharp.Models.V2;
 
 namespace TestUtility
 {
@@ -16,8 +16,7 @@ namespace TestUtility
             this.Offset = offset;
         }
 
-        public Point ToPoint()
-            => new Point { Line = this.Line, Column = this.Offset };
+        public Point ToPoint() => new Point { Line = this.Line, Column = this.Offset };
 
         public int CompareTo(TextPoint other)
         {
@@ -41,34 +40,29 @@ namespace TestUtility
             return 0;
         }
 
-        public override bool Equals(object obj)
-            => obj is TextPoint && Equals((TextPoint)obj);
+        public override bool Equals(object obj) => obj is TextPoint && Equals((TextPoint)obj);
 
-        public bool Equals(TextPoint other)
-            => this.Line == other.Line && this.Offset == other.Line;
+        public bool Equals(TextPoint other) => this.Line == other.Line && this.Offset == other.Line;
 
-        public override int GetHashCode()
-            => this.Line ^ this.Offset;
+        public override int GetHashCode() => this.Line ^ this.Offset;
 
-        public override string ToString()
-            => $"{{Line={this.Line}, Offset={this.Offset}}}";
+        public override string ToString() => $"{{Line={this.Line}, Offset={this.Offset}}}";
 
-        public static bool operator ==(TextPoint point1, TextPoint point2)
-            => point1.Equals(point2);
+        public static bool operator ==(TextPoint point1, TextPoint point2) => point1.Equals(point2);
 
-        public static bool operator !=(TextPoint point1, TextPoint point2)
-            => !point1.Equals(point2);
+        public static bool operator !=(TextPoint point1, TextPoint point2) =>
+            !point1.Equals(point2);
 
-        public static bool operator <(TextPoint point1, TextPoint point2)
-            => point1.CompareTo(point2) < 0;
+        public static bool operator <(TextPoint point1, TextPoint point2) =>
+            point1.CompareTo(point2) < 0;
 
-        public static bool operator <=(TextPoint point1, TextPoint point2)
-            => point1.CompareTo(point2) <= 0;
+        public static bool operator <=(TextPoint point1, TextPoint point2) =>
+            point1.CompareTo(point2) <= 0;
 
-        public static bool operator >(TextPoint point1, TextPoint point2)
-            => point1.CompareTo(point2) > 0;
+        public static bool operator >(TextPoint point1, TextPoint point2) =>
+            point1.CompareTo(point2) > 0;
 
-        public static bool operator >=(TextPoint point1, TextPoint point2)
-            => point1.CompareTo(point2) >= 0;
+        public static bool operator >=(TextPoint point1, TextPoint point2) =>
+            point1.CompareTo(point2) >= 0;
     }
 }

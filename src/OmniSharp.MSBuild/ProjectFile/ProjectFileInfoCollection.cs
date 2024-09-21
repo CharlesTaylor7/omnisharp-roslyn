@@ -25,7 +25,10 @@ namespace OmniSharp.MSBuild.ProjectFile
 
             if (_itemMap.ContainsKey(fileInfo.FilePath))
             {
-                throw new ArgumentException($"Project file already exists: {fileInfo.FilePath}", nameof(fileInfo));
+                throw new ArgumentException(
+                    $"Project file already exists: {fileInfo.FilePath}",
+                    nameof(fileInfo)
+                );
             }
 
             _items.Add(fileInfo);
@@ -56,10 +59,7 @@ namespace OmniSharp.MSBuild.ProjectFile
 
         public ProjectFileInfo this[string filePath]
         {
-            get
-            {
-                return _itemMap[filePath];
-            }
+            get { return _itemMap[filePath]; }
             set
             {
                 ProjectFileInfo oldFileInfo;

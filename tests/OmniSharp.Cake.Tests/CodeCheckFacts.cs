@@ -17,7 +17,8 @@ namespace OmniSharp.Cake.Tests
     {
         private readonly ILogger _logger;
 
-        public CodeCheckFacts(ITestOutputHelper testOutput) : base(testOutput)
+        public CodeCheckFacts(ITestOutputHelper testOutput)
+            : base(testOutput)
         {
             _logger = LoggerFactory.CreateLogger<CodeCheckFacts>();
         }
@@ -45,7 +46,8 @@ namespace OmniSharp.Cake.Tests
         [Fact]
         public async Task ShouldNotIncludeDiagnosticsFromLoadedFilesIfFileNameIsSpecified()
         {
-            const string input = @"
+            const string input =
+                @"
 #load error.cake
 var target = Argument(""target"", ""Default"");";
 
@@ -53,15 +55,26 @@ var target = Argument(""target"", ""Default"");";
 
             // error.cake file contains code that cause error like:
             // The type or namespace name 'asdf' could not be found (are you missing a using directive or an assembly reference?) (CS0246)
-            Assert.DoesNotContain(diagnostics.QuickFixes.Select(x => x.ToString()), x => x.Contains("CS0246"));
+            Assert.DoesNotContain(
+                diagnostics.QuickFixes.Select(x => x.ToString()),
+                x => x.Contains("CS0246")
+            );
         }
 
         private async Task<QuickFixResponse> FindDiagnostics(string contents, bool includeFileName)
         {
-            using (var testProject = await TestAssets.Instance.GetTestProjectAsync("CakeProject", shadowCopy : false))
+            using (
+                var testProject = await TestAssets.Instance.GetTestProjectAsync(
+                    "CakeProject",
+                    shadowCopy: false
+                )
+            )
             using (var host = CreateOmniSharpHost(testProject.Directory))
             {
-                var testFile = new TestFile(Path.Combine(testProject.Directory, "build.cake"), contents);
+                var testFile = new TestFile(
+                    Path.Combine(testProject.Directory, "build.cake"),
+                    contents
+                );
 
                 var request = new CodeCheckRequest
                 {
@@ -74,7 +87,7 @@ var target = Argument(""target"", ""Default"");";
                     Column = request.Column,
                     FileName = testFile.FileName,
                     Line = request.Line,
-                    FromDisk = false
+                    FromDisk = false,
                 };
 
                 await GetUpdateBufferHandler(host).Handle(updateBufferRequest);

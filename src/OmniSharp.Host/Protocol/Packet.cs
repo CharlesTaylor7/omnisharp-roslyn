@@ -1,4 +1,4 @@
-﻿using Newtonsoft.Json;
+using Newtonsoft.Json;
 
 namespace OmniSharp.Protocol
 {
@@ -15,7 +15,10 @@ namespace OmniSharp.Protocol
 
         public int Seq { get; set; }
 
-        public string Type { get { return _type; } }
+        public string Type
+        {
+            get { return _type; }
+        }
 
         public override string ToString()
         {

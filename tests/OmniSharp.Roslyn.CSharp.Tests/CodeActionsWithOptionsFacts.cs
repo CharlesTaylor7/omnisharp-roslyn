@@ -12,9 +12,7 @@ namespace OmniSharp.Roslyn.CSharp.Tests
     public class CodeActionsWithOptionsFacts : AbstractCodeActionsTestFixture
     {
         public CodeActionsWithOptionsFacts(ITestOutputHelper output)
-            : base(output)
-        {
-        }
+            : base(output) { }
 
         [Fact]
         public async Task Can_extract_base_class()
@@ -39,7 +37,10 @@ namespace OmniSharp.Roslyn.CSharp.Tests
                 }";
 
             var response = await RunRefactoringAsync(code, "Extract base class...");
-            AssertUtils.AssertIgnoringIndent(expected, ((ModifiedFileResponse)response.Changes.First()).Buffer);
+            AssertUtils.AssertIgnoringIndent(
+                expected,
+                ((ModifiedFileResponse)response.Changes.First()).Buffer
+            );
         }
 
         [Fact]
@@ -64,7 +65,10 @@ namespace OmniSharp.Roslyn.CSharp.Tests
                 }";
 
             var response = await RunRefactoringAsync(code, "Extract base class...");
-            AssertUtils.AssertIgnoringIndent(expected, ((ModifiedFileResponse)response.Changes.First()).Buffer);
+            AssertUtils.AssertIgnoringIndent(
+                expected,
+                ((ModifiedFileResponse)response.Changes.First()).Buffer
+            );
         }
 
         [Fact]
@@ -86,7 +90,10 @@ namespace OmniSharp.Roslyn.CSharp.Tests
                     public string PropertyHere { get; set; }
                 }";
             var response = await RunRefactoringAsync(code, "Generate constructor...");
-            AssertUtils.AssertIgnoringIndent(expected, ((ModifiedFileResponse)response.Changes.First()).Buffer);
+            AssertUtils.AssertIgnoringIndent(
+                expected,
+                ((ModifiedFileResponse)response.Changes.First()).Buffer
+            );
         }
 
         [Fact]
@@ -117,7 +124,10 @@ namespace OmniSharp.Roslyn.CSharp.Tests
                 }";
 
             var response = await RunRefactoringAsync(code, "Generate overrides...");
-            AssertUtils.AssertIgnoringIndent(expected, ((ModifiedFileResponse)response.Changes.First()).Buffer);
+            AssertUtils.AssertIgnoringIndent(
+                expected,
+                ((ModifiedFileResponse)response.Changes.First()).Buffer
+            );
         }
 
         [Fact]
@@ -142,7 +152,10 @@ namespace OmniSharp.Roslyn.CSharp.Tests
                 }";
 
             var response = await RunRefactoringAsync(code, "Generate Equals(object)...");
-            AssertUtils.AssertIgnoringIndent(expected, ((ModifiedFileResponse)response.Changes.First()).Buffer);
+            AssertUtils.AssertIgnoringIndent(
+                expected,
+                ((ModifiedFileResponse)response.Changes.First()).Buffer
+            );
         }
 
         [Fact]
@@ -157,8 +170,14 @@ namespace OmniSharp.Roslyn.CSharp.Tests
             var response = await RunRefactoringAsync(code, "Generate Equals and GetHashCode...");
 
             // This doesn't check exact class form because different framework version implement hashcode differently.
-            Assert.Contains("public override int GetHashCode()", ((ModifiedFileResponse)response.Changes.First()).Buffer);
-            Assert.Contains("public override bool Equals(object obj)", ((ModifiedFileResponse)response.Changes.First()).Buffer);
+            Assert.Contains(
+                "public override int GetHashCode()",
+                ((ModifiedFileResponse)response.Changes.First()).Buffer
+            );
+            Assert.Contains(
+                "public override bool Equals(object obj)",
+                ((ModifiedFileResponse)response.Changes.First()).Buffer
+            );
         }
 
         [Fact]
@@ -189,7 +208,13 @@ namespace OmniSharp.Roslyn.CSharp.Tests
 
             var response = await FindRefactoringNamesAsync(code);
 
-            Assert.DoesNotContain(("Generate type 'NonExistentBaseType' -> Generate new type...", CodeActionKind.Refactor), response);
+            Assert.DoesNotContain(
+                (
+                    "Generate type 'NonExistentBaseType' -> Generate new type...",
+                    CodeActionKind.Refactor
+                ),
+                response
+            );
         }
 
         [Fact]
@@ -207,7 +232,10 @@ namespace OmniSharp.Roslyn.CSharp.Tests
 
             var response = await FindRefactoringNamesAsync(code);
 
-            Assert.DoesNotContain(("Pull 'Foo' up -> Pull members up to base type...", CodeActionKind.Refactor), response);
+            Assert.DoesNotContain(
+                ("Pull 'Foo' up -> Pull members up to base type...", CodeActionKind.Refactor),
+                response
+            );
         }
 
         [Fact]
@@ -232,7 +260,10 @@ namespace OmniSharp.Roslyn.CSharp.Tests
 
             var response = await RunRefactoringAsync(code, "Extract interface...");
 
-            AssertUtils.AssertIgnoringIndent(expected, ((ModifiedFileResponse)response.Changes.First()).Buffer);
+            AssertUtils.AssertIgnoringIndent(
+                expected,
+                ((ModifiedFileResponse)response.Changes.First()).Buffer
+            );
         }
 
         [Fact]
@@ -249,7 +280,9 @@ namespace OmniSharp.Roslyn.CSharp.Tests
             // - Fix proxy classes to implement IPickMembersService / IExtractInterfaceOptionsService ... instead of proxy and reflection.
             // - Remove all factories using ExportWorkspaceServiceFactoryWithAssemblyQualifiedName and factory itself.
             // Following issue may have additional information: https://github.com/dotnet/roslyn/issues/33277
-            var pickMemberServiceType = Assembly.Load("Microsoft.CodeAnalysis.Features").GetType("Microsoft.CodeAnalysis.PickMembers.IPickMembersService");
+            var pickMemberServiceType = Assembly
+                .Load("Microsoft.CodeAnalysis.Features")
+                .GetType("Microsoft.CodeAnalysis.PickMembers.IPickMembersService");
             Assert.False(pickMemberServiceType.IsPublic);
         }
     }

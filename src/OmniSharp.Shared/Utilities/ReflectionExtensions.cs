@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Reflection;
 
 namespace OmniSharp.Utilities
@@ -39,14 +39,20 @@ namespace OmniSharp.Utilities
 
                 if (methodInfo == null)
                 {
-                    throw new InvalidOperationException($"Could not get method '{methodName}' on type '{type.FullName}'");
+                    throw new InvalidOperationException(
+                        $"Could not get method '{methodName}' on type '{type.FullName}'"
+                    );
                 }
 
                 return methodInfo;
             });
         }
 
-        public static Lazy<MethodInfo> LazyGetMethod(this Lazy<Type> lazyType, string methodName, BindingFlags bindingFlags)
+        public static Lazy<MethodInfo> LazyGetMethod(
+            this Lazy<Type> lazyType,
+            string methodName,
+            BindingFlags bindingFlags
+        )
         {
             if (lazyType == null)
             {
@@ -60,14 +66,20 @@ namespace OmniSharp.Utilities
 
                 if (methodInfo == null)
                 {
-                    throw new InvalidOperationException($"Could not get method '{methodName}' on type '{type.FullName}'");
+                    throw new InvalidOperationException(
+                        $"Could not get method '{methodName}' on type '{type.FullName}'"
+                    );
                 }
 
                 return methodInfo;
             });
         }
 
-        public static Lazy<MethodInfo> LazyGetProperty(this Lazy<Type> lazyType, string propertyName, bool getMethod)
+        public static Lazy<MethodInfo> LazyGetProperty(
+            this Lazy<Type> lazyType,
+            string propertyName,
+            bool getMethod
+        )
         {
             if (lazyType == null)
             {
@@ -81,7 +93,9 @@ namespace OmniSharp.Utilities
 
                 if (propertyInfo == null)
                 {
-                    throw new InvalidOperationException($"Could not get method '{propertyName}' on type '{type.FullName}'");
+                    throw new InvalidOperationException(
+                        $"Could not get method '{propertyName}' on type '{type.FullName}'"
+                    );
                 }
 
                 return getMethod ? propertyInfo.GetMethod : propertyInfo.SetMethod;
@@ -100,13 +114,19 @@ namespace OmniSharp.Utilities
 
             if (methodInfo == null)
             {
-                throw new InvalidOperationException($"Could not get method '{methodName}' on type '{type.FullName}'");
+                throw new InvalidOperationException(
+                    $"Could not get method '{methodName}' on type '{type.FullName}'"
+                );
             }
 
             return methodInfo;
         }
 
-        public static MethodInfo GetMethod(this Lazy<Type> lazyType, string methodName, BindingFlags bindingFlags)
+        public static MethodInfo GetMethod(
+            this Lazy<Type> lazyType,
+            string methodName,
+            BindingFlags bindingFlags
+        )
         {
             if (lazyType == null)
             {
@@ -118,7 +138,9 @@ namespace OmniSharp.Utilities
 
             if (methodInfo == null)
             {
-                throw new InvalidOperationException($"Could not get method '{methodName}' on type '{type.FullName}'");
+                throw new InvalidOperationException(
+                    $"Could not get method '{methodName}' on type '{type.FullName}'"
+                );
             }
 
             return methodInfo;
@@ -136,22 +158,25 @@ namespace OmniSharp.Utilities
                 BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance,
                 binder: null,
                 args,
-                culture: null);
+                culture: null
+            );
         }
 
-        public static T CreateInstance<T>(this Type type) where T : class
+        public static T CreateInstance<T>(this Type type)
+            where T : class
         {
             try
             {
                 var defaultCtor = type.GetConstructor(new Type[] { });
 
-                return defaultCtor != null
-                    ? (T)Activator.CreateInstance(type)
-                    : null;
+                return defaultCtor != null ? (T)Activator.CreateInstance(type) : null;
             }
             catch (Exception ex)
             {
-                throw new InvalidOperationException($"Failed to create instrance of {type.FullName} in {type.AssemblyQualifiedName}.", ex);
+                throw new InvalidOperationException(
+                    $"Failed to create instrance of {type.FullName} in {type.AssemblyQualifiedName}.",
+                    ex
+                );
             }
         }
 
@@ -221,7 +246,11 @@ namespace OmniSharp.Utilities
             return lazyMethodInfo.Value.InvokeStatic(args);
         }
 
-        public static Lazy<FieldInfo> LazyGetField(this Lazy<Type> lazyType, string fieldName, BindingFlags bindingFlags)
+        public static Lazy<FieldInfo> LazyGetField(
+            this Lazy<Type> lazyType,
+            string fieldName,
+            BindingFlags bindingFlags
+        )
         {
             if (lazyType == null)
             {
@@ -235,7 +264,9 @@ namespace OmniSharp.Utilities
 
                 if (field == null)
                 {
-                    throw new InvalidOperationException($"Could not get method '{fieldName}' on type '{type.FullName}'");
+                    throw new InvalidOperationException(
+                        $"Could not get method '{fieldName}' on type '{type.FullName}'"
+                    );
                 }
 
                 return field;

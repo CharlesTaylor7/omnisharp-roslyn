@@ -11,10 +11,11 @@ namespace OmniSharp.Roslyn.CSharp.Tests
 {
     public class SignatureHelpFacts : AbstractSingleRequestHandlerTestFixture<SignatureHelpService>
     {
-        public SignatureHelpFacts(ITestOutputHelper output, SharedOmniSharpHostFixture sharedOmniSharpHostFixture)
-            : base(output, sharedOmniSharpHostFixture)
-        {
-        }
+        public SignatureHelpFacts(
+            ITestOutputHelper output,
+            SharedOmniSharpHostFixture sharedOmniSharpHostFixture
+        )
+            : base(output, sharedOmniSharpHostFixture) { }
 
         protected override string EndpointName => OmniSharpEndpoints.SignatureHelp;
 
@@ -24,7 +25,7 @@ namespace OmniSharp.Roslyn.CSharp.Tests
         public async Task NoInvocationNoHelp1(string filename)
         {
             const string source =
-@"class Program
+                @"class Program
 {
     public static void Ma$$in(){
         System.Guid.NoSuchMethod();
@@ -40,7 +41,7 @@ namespace OmniSharp.Roslyn.CSharp.Tests
         public async Task NoInvocationNoHelp2(string filename)
         {
             const string source =
-@"class Program
+                @"class Program
 {
     public static void Main(){
         System.Gu$$id.NoSuchMethod();
@@ -56,7 +57,7 @@ namespace OmniSharp.Roslyn.CSharp.Tests
         public async Task NoInvocationNoHelp3(string filename)
         {
             const string source =
-@"class Program
+                @"class Program
 {
     public static void Main(){
         System.Guid.NoSuchMethod()$$;
@@ -72,7 +73,7 @@ namespace OmniSharp.Roslyn.CSharp.Tests
         public async Task NoTypeNoHelp(string filename)
         {
             const string source =
-@"class Program
+                @"class Program
 {
     public static void Main(){
         System.Guid.Foo$$Bar();
@@ -88,7 +89,7 @@ namespace OmniSharp.Roslyn.CSharp.Tests
         public async Task NoMethodNoHelp(string filename)
         {
             const string source =
-@"class Program
+                @"class Program
 {
     public static void Main(){
         System.Gu$$id;
@@ -104,7 +105,7 @@ namespace OmniSharp.Roslyn.CSharp.Tests
         public async Task SimpleSignatureHelp(string filename)
         {
             const string source =
-@"class Program
+                @"class Program
 {
     public static void Main(){
         System.Guid.NewGuid($$);
@@ -125,7 +126,7 @@ namespace OmniSharp.Roslyn.CSharp.Tests
         public async Task TestForParameterLabels(string filename)
         {
             const string source =
-@"class Program
+                @"class Program
 {
     public static void Main(){
         Foo($$);
@@ -154,7 +155,7 @@ namespace OmniSharp.Roslyn.CSharp.Tests
         {
             // 1st position, a
             const string source =
-@"class Program
+                @"class Program
 {
     public static void Main(){
         new Program().Foo(1$$2,
@@ -175,7 +176,7 @@ namespace OmniSharp.Roslyn.CSharp.Tests
         public async Task AttributeCtorSingleParam(string filename)
         {
             const string source =
-@"using System;
+                @"using System;
 [MyTest($$)]
 public class TestClass
 {
@@ -204,7 +205,7 @@ public class MyTestAttribute : Attribute
         public async Task AttributeCtorTestParameterLabels(string filename)
         {
             const string source =
-@"using System;
+                @"using System;
 [MyTest($$)]
 public class TestClass
 {
@@ -236,7 +237,7 @@ public class MyTestAttribute : Attribute
         public async Task AttributeCtorActiveParamBasedOnComma(string filename)
         {
             const string source =
-@"using System;
+                @"using System;
 [MyTest(2,$$)]
 public class TestClass
 {
@@ -261,7 +262,7 @@ public class MyTestAttribute : Attribute
         public async Task AttributeCtorNoParam(string filename)
         {
             const string source =
-@"using System;
+                @"using System;
 [MyTest($$)]
 public class TestClass
 {
@@ -290,7 +291,7 @@ public class MyTestAttribute : Attribute
         {
             // 1st position, b
             const string source =
-@"class Program
+                @"class Program
 {
     public static void Main(){
         new Program().Foo(12 $$)
@@ -312,7 +313,7 @@ public class MyTestAttribute : Attribute
         {
             // 2nd position, a
             const string source =
-@"class Program
+                @"class Program
 {
     public static void Main(){
         new Program().Foo(12, $$
@@ -334,7 +335,7 @@ public class MyTestAttribute : Attribute
         {
             // 2nd position, b
             const string source =
-@"class Program
+                @"class Program
 {
     public static void Main(){
         new Program().Foo(12, 1$$
@@ -356,7 +357,7 @@ public class MyTestAttribute : Attribute
         {
             // 3rd position, a
             const string source =
-@"class Program
+                @"class Program
 {
     public static void Main(){
         new Program().Foo(12, 1, $$
@@ -377,7 +378,7 @@ public class MyTestAttribute : Attribute
         public async Task ActiveSignatureIsBasedOnTypes1(string filename)
         {
             const string source =
-@"class Program
+                @"class Program
 {
     public static void Main(){
         new Program().Foo(12, $$
@@ -400,7 +401,10 @@ public class MyTestAttribute : Attribute
 }";
             var actual = await GetSignatureHelp(filename, source);
             Assert.Equal(3, actual.Signatures.Count());
-            Assert.Contains("foo2", actual.Signatures.ElementAt(actual.ActiveSignature).Documentation);
+            Assert.Contains(
+                "foo2",
+                actual.Signatures.ElementAt(actual.ActiveSignature).Documentation
+            );
         }
 
         [Theory]
@@ -409,7 +413,7 @@ public class MyTestAttribute : Attribute
         public async Task ActiveSignatureIsBasedOnTypes2(string filename)
         {
             const string source =
-@"class Program
+                @"class Program
 {
     public static void Main(){
         new Program().Foo(""d"", $$
@@ -432,7 +436,10 @@ public class MyTestAttribute : Attribute
 }";
             var actual = await GetSignatureHelp(filename, source);
             Assert.Equal(3, actual.Signatures.Count());
-            Assert.Contains("foo3", actual.Signatures.ElementAt(actual.ActiveSignature).Documentation);
+            Assert.Contains(
+                "foo3",
+                actual.Signatures.ElementAt(actual.ActiveSignature).Documentation
+            );
         }
 
         [Theory]
@@ -441,7 +448,7 @@ public class MyTestAttribute : Attribute
         public async Task ActiveSignatureIsBasedOnTypes3(string filename)
         {
             const string source =
-@"class Program
+                @"class Program
 {
     public static void Main(){
         new Program().Foo($$)
@@ -464,7 +471,10 @@ public class MyTestAttribute : Attribute
 }";
             var actual = await GetSignatureHelp(filename, source);
             Assert.Equal(3, actual.Signatures.Count());
-            Assert.Contains("foo1", actual.Signatures.ElementAt(actual.ActiveSignature).Documentation);
+            Assert.Contains(
+                "foo1",
+                actual.Signatures.ElementAt(actual.ActiveSignature).Documentation
+            );
         }
 
         [Theory]
@@ -473,7 +483,7 @@ public class MyTestAttribute : Attribute
         public async Task TestForConstructorHelp(string filename)
         {
             const string source =
-@"class Program
+                @"class Program
 {
     public static void Main()
     {
@@ -500,7 +510,7 @@ public class MyTestAttribute : Attribute
         public async Task TestForImplicitCreationConstructorHelp(string filename)
         {
             const string source =
-@"class Program
+                @"class Program
 {
     public static void Main()
     {
@@ -527,7 +537,7 @@ public class MyTestAttribute : Attribute
         public async Task TestForImplicitCreationCtorWithOverloads(string filename)
         {
             const string source =
-@"class Program
+                @"class Program
 {
     public static void Main()
     {
@@ -547,7 +557,10 @@ public class MyTestAttribute : Attribute
             var actual = await GetSignatureHelp(filename, source);
             Assert.Equal(3, actual.Signatures.Count());
             Assert.Equal(1, actual.ActiveParameter);
-            Assert.Contains("ctor2", actual.Signatures.ElementAt(actual.ActiveSignature).Documentation);
+            Assert.Contains(
+                "ctor2",
+                actual.Signatures.ElementAt(actual.ActiveSignature).Documentation
+            );
         }
 
         [Theory]
@@ -556,7 +569,7 @@ public class MyTestAttribute : Attribute
         public async Task TestForCtorWithOverloads(string filename)
         {
             const string source =
-@"class Program
+                @"class Program
 {
     public static void Main()
     {
@@ -576,7 +589,10 @@ public class MyTestAttribute : Attribute
             var actual = await GetSignatureHelp(filename, source);
             Assert.Equal(3, actual.Signatures.Count());
             Assert.Equal(1, actual.ActiveParameter);
-            Assert.Contains("ctor2", actual.Signatures.ElementAt(actual.ActiveSignature).Documentation);
+            Assert.Contains(
+                "ctor2",
+                actual.Signatures.ElementAt(actual.ActiveSignature).Documentation
+            );
         }
 
         [Theory]
@@ -585,7 +601,7 @@ public class MyTestAttribute : Attribute
         public async Task TestForInheritedMethods(string filename)
         {
             const string source =
-@"public class MyBase
+                @"public class MyBase
 {
     public void MyMethod(int a) { }
     public void MyMethod(int a, int b) { }
@@ -616,7 +632,7 @@ public class Class2
         public async Task InheritedInaccesibleMethods(string filename)
         {
             const string source =
-@"public class MyBase
+                @"public class MyBase
 {
     private void MyMethod(int a) { }
 }
@@ -649,7 +665,7 @@ public class Class2
         public async Task InheritedProtectedMethod(string filename)
         {
             const string source =
-@"class A
+                @"class A
 {
     protected void M1() { }
 }
@@ -671,7 +687,7 @@ class B : A
         public async Task InheritedProtectedMethodWithThis(string filename)
         {
             const string source =
-@"class A
+                @"class A
 {
     protected void M1() { }
 }
@@ -693,7 +709,7 @@ class B : A
         public async Task InheritedProtectedMethodWithBase(string filename)
         {
             const string source =
-@"class A
+                @"class A
 {
     protected void M1() { }
 }
@@ -716,7 +732,7 @@ class B : A
         public async Task StaticContextMethod1(string filename)
         {
             const string source =
-@"class A
+                @"class A
 {
     protected static void M1(int a) { }
     public void M1(double b) { }
@@ -744,7 +760,7 @@ class B : A
         public async Task StaticContextMethod2(string filename)
         {
             const string source =
-@"class A
+                @"class A
 {
     protected static void M1(int a) { }
     public void M1(int a,int b) { }
@@ -771,7 +787,7 @@ class B : A
         public async Task InstanceContextMethod(string filename)
         {
             const string source =
-@"class A
+                @"class A
 {
     protected static void M1(int a) { }
     public void M1(int a, int b) { }
@@ -795,7 +811,7 @@ class B : A
         public async Task LiteralContextMethod(string filename)
         {
             const string source =
-@"class A
+                @"class A
 {
     static void M()
     {
@@ -803,7 +819,10 @@ class B : A
     }
 }";
             var actual = await GetSignatureHelp(filename, source);
-            Assert.Contains(actual.Signatures, signature => signature.Name == "ToString" && signature.Parameters.Count() == 0);
+            Assert.Contains(
+                actual.Signatures,
+                signature => signature.Name == "ToString" && signature.Parameters.Count() == 0
+            );
         }
 
         [Theory]
@@ -812,7 +831,7 @@ class B : A
         public async Task TypeOfContextMethod(string filename)
         {
             const string source =
-@"class A
+                @"class A
 {
     static void M()
     {
@@ -820,14 +839,17 @@ class B : A
     }
 }";
             var actual = await GetSignatureHelp(filename, source);
-            Assert.Contains(actual.Signatures, signature => signature.Name == "GetMembers" && signature.Parameters.Count() == 0);
+            Assert.Contains(
+                actual.Signatures,
+                signature => signature.Name == "GetMembers" && signature.Parameters.Count() == 0
+            );
         }
 
         [Fact]
         public async Task OverloadedExtensionMethods1()
         {
             const string source =
-@"public static class ExtensionMethods
+                @"public static class ExtensionMethods
 {
     public static void MyMethod(this string value, int number)
     {
@@ -858,7 +880,7 @@ class Program
         public async Task OverloadedExtensionMethods1_CsxScript()
         {
             const string source =
-@"public static void MyMethod(this string value, int number)
+                @"public static void MyMethod(this string value, int number)
 {
 }
 
@@ -882,7 +904,7 @@ value.MyMethod($$);
         public async Task OverloadedExtensionMethods2()
         {
             const string source =
-@"public static class ExtensionMethods
+                @"public static class ExtensionMethods
 {
     public static void MyMethod(this string value, int number)
     {
@@ -911,7 +933,7 @@ class Program
         public async Task OverloadedExtensionMethods2_CsxScript()
         {
             const string source =
-@"public static void MyMethod(this string value, int number)
+                @"public static void MyMethod(this string value, int number)
 {
 }
 
@@ -939,7 +961,7 @@ class Program
         public async Task GivesHelpForLocalFunctionsInStaticContext(string filename)
         {
             const string source =
-@"class Program
+                @"class Program
 {
     public static void Main()
     {
@@ -965,7 +987,7 @@ class Program
         public async Task GivesHelpForLocalFunctionsInNonStaticContext(string filename)
         {
             const string source =
-@"class Program
+                @"class Program
 {
     public void Main()
     {
@@ -991,7 +1013,7 @@ class Program
         public async Task ReturnsDocumentationForParameters(string filename)
         {
             const string source =
-@"class Program
+                @"class Program
 {
     public static void Main()
     {
@@ -1023,7 +1045,7 @@ class Program
         public async Task ReturnsDocumentationForParametersNestedTags(string filename)
         {
             const string source =
-@"class Program
+                @"class Program
 {
     public static void Main()
     {
@@ -1043,7 +1065,10 @@ class Program
 
             var signature = actual.Signatures.ElementAt(0);
             Assert.Equal(2, signature.Parameters.Count());
-            Assert.Equal("Name of the tag.It has the default value as null", signature.Parameters.ElementAt(1).Documentation);
+            Assert.Equal(
+                "Name of the tag.It has the default value as null",
+                signature.Parameters.ElementAt(1).Documentation
+            );
         }
 
         [Theory]
@@ -1052,7 +1077,7 @@ class Program
         public async Task ReturnsStructuredDocumentation(string filename)
         {
             const string source =
-@"class Program
+                @"class Program
 {
     public static void Main()
     {
@@ -1071,15 +1096,21 @@ class Program
             Assert.Single(actual.Signatures);
 
             var signature = actual.Signatures.ElementAt(0);
-            Assert.Equal("Checks if object is tagged with the tag.", signature.StructuredDocumentation.SummaryText);
-            Assert.Equal("Returns true if object is tagged with tag.", signature.StructuredDocumentation.ReturnsText);
+            Assert.Equal(
+                "Checks if object is tagged with the tag.",
+                signature.StructuredDocumentation.SummaryText
+            );
+            Assert.Equal(
+                "Returns true if object is tagged with tag.",
+                signature.StructuredDocumentation.ReturnsText
+            );
         }
 
         [Fact]
         public async Task SkipReceiverOfExtensionMethods()
         {
             const string source =
-@"public class Program1
+                @"public class Program1
 {
     public Program1() { }
 }
@@ -1111,7 +1142,7 @@ public class ProgramClass
         public async Task BaseObjectCreationWithoutArguments()
         {
             const string source =
-@"public static class Foo {
+                @"public static class Foo {
     public static string GetClientCredentialsToken() {
         AccessTokenRequest request = new AccessTokenRequest {
             client$$Id = ""foo"",
@@ -1136,7 +1167,7 @@ public class ProgramClass
                 FileName = testFile.FileName,
                 Line = point.Line,
                 Column = point.Offset,
-                Buffer = testFile.Content.Code
+                Buffer = testFile.Content.Code,
             };
 
             var requestHandler = GetRequestHandler(SharedOmniSharpTestHost);

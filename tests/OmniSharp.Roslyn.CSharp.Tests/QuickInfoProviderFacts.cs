@@ -15,14 +15,17 @@ namespace OmniSharp.Roslyn.CSharp.Tests
     {
         protected override string EndpointName => OmniSharpEndpoints.QuickInfo;
 
-        public QuickInfoProviderFacts(ITestOutputHelper output, SharedOmniSharpHostFixture sharedOmniSharpHostFixture)
-            : base(output, sharedOmniSharpHostFixture)
-        { }
+        public QuickInfoProviderFacts(
+            ITestOutputHelper output,
+            SharedOmniSharpHostFixture sharedOmniSharpHostFixture
+        )
+            : base(output, sharedOmniSharpHostFixture) { }
 
         [Fact]
         public async Task ParameterDocumentation()
         {
-            const string source = @"namespace N
+            const string source =
+                @"namespace N
 {
     class C
     {
@@ -38,10 +41,18 @@ namespace OmniSharp.Roslyn.CSharp.Tests
             SharedOmniSharpTestHost.AddFilesToWorkspace(testFile);
             var requestHandler = GetRequestHandler(SharedOmniSharpTestHost);
 
-            var request = new QuickInfoRequest { FileName = testFile.FileName, Line = 7, Column = 17 };
+            var request = new QuickInfoRequest
+            {
+                FileName = testFile.FileName,
+                Line = 7,
+                Column = 17,
+            };
             var response = await requestHandler.Handle(request);
 
-            Assert.Equal("```csharp\n(parameter) int i\n```\n\nSome content `C`", response.Markdown);
+            Assert.Equal(
+                "```csharp\n(parameter) int i\n```\n\nSome content `C`",
+                response.Markdown
+            );
         }
 
         [Fact]
@@ -53,7 +64,14 @@ namespace OmniSharp.Roslyn.CSharp.Tests
             var workspace = TestHelpers.CreateCsxWorkspace(testFile);
 
             var controller = new QuickInfoProvider(workspace, new FormattingOptions(), null);
-            var response = await controller.Handle(new QuickInfoRequest { FileName = testFile.FileName, Line = 0, Column = 7 });
+            var response = await controller.Handle(
+                new QuickInfoRequest
+                {
+                    FileName = testFile.FileName,
+                    Line = 0,
+                    Column = 7,
+                }
+            );
 
             Assert.Equal("```csharp\nclass Foo\n```", response.Markdown);
         }
@@ -61,7 +79,10 @@ namespace OmniSharp.Roslyn.CSharp.Tests
         [Fact]
         public async Task TypesFromInlineAssemlbyReferenceContainDocumentation()
         {
-            var testAssemblyPath = Path.Combine(TestAssets.Instance.TestBinariesFolder, "ClassLibraryWithDocumentation.dll");
+            var testAssemblyPath = Path.Combine(
+                TestAssets.Instance.TestBinariesFolder,
+                "ClassLibraryWithDocumentation.dll"
+            );
             var source =
                 $@"#r ""{testAssemblyPath}""
                 using ClassLibraryWithDocumentation;
@@ -73,15 +94,26 @@ namespace OmniSharp.Roslyn.CSharp.Tests
             var workspace = TestHelpers.CreateCsxWorkspace(testFile);
 
             var controller = new QuickInfoProvider(workspace, new FormattingOptions(), null);
-            var response = await controller.Handle(new QuickInfoRequest { FileName = testFile.FileName, Line = position.Line, Column = position.Offset });
+            var response = await controller.Handle(
+                new QuickInfoRequest
+                {
+                    FileName = testFile.FileName,
+                    Line = position.Line,
+                    Column = position.Offset,
+                }
+            );
 
-            Assert.Equal("```csharp\nclass ClassLibraryWithDocumentation.DocumentedClass\n```\n\nThis class performs an important function\\.", response.Markdown);
+            Assert.Equal(
+                "```csharp\nclass ClassLibraryWithDocumentation.DocumentedClass\n```\n\nThis class performs an important function\\.",
+                response.Markdown
+            );
         }
 
         [Fact]
         public async Task OmitsNamespaceForTypesInGlobalNamespace()
         {
-            const string source = @"namespace Bar {
+            const string source =
+                @"namespace Bar {
             class Foo {}
             }
             class Baz {}";
@@ -90,10 +122,20 @@ namespace OmniSharp.Roslyn.CSharp.Tests
             SharedOmniSharpTestHost.AddFilesToWorkspace(testFile);
             var requestHandler = GetRequestHandler(SharedOmniSharpTestHost);
 
-            var requestInNormalNamespace = new QuickInfoRequest { FileName = testFile.FileName, Line = 1, Column = 19 };
+            var requestInNormalNamespace = new QuickInfoRequest
+            {
+                FileName = testFile.FileName,
+                Line = 1,
+                Column = 19,
+            };
             var responseInNormalNamespace = await requestHandler.Handle(requestInNormalNamespace);
 
-            var requestInGlobalNamespace = new QuickInfoRequest { FileName = testFile.FileName, Line = 3, Column = 19 };
+            var requestInGlobalNamespace = new QuickInfoRequest
+            {
+                FileName = testFile.FileName,
+                Line = 3,
+                Column = 19,
+            };
             var responseInGlobalNamespace = await requestHandler.Handle(requestInGlobalNamespace);
 
             Assert.Equal("```csharp\nclass Bar.Foo\n```", responseInNormalNamespace.Markdown);
@@ -103,7 +145,8 @@ namespace OmniSharp.Roslyn.CSharp.Tests
         [Fact]
         public async Task IncludesNamespaceForRegularCSharpSyntax()
         {
-            const string source = @"namespace Bar {
+            const string source =
+                @"namespace Bar {
             class Foo {}
             }";
 
@@ -111,7 +154,12 @@ namespace OmniSharp.Roslyn.CSharp.Tests
             SharedOmniSharpTestHost.AddFilesToWorkspace(testFile);
             var requestHandler = GetRequestHandler(SharedOmniSharpTestHost);
 
-            var request = new QuickInfoRequest { FileName = testFile.FileName, Line = 1, Column = 19 };
+            var request = new QuickInfoRequest
+            {
+                FileName = testFile.FileName,
+                Line = 1,
+                Column = 19,
+            };
             var response = await requestHandler.Handle(request);
 
             Assert.Equal("```csharp\nclass Bar.Foo\n```", response.Markdown);
@@ -120,7 +168,8 @@ namespace OmniSharp.Roslyn.CSharp.Tests
         [Fact]
         public async Task IncludesContainingTypeFoNestedTypesForRegularCSharpSyntax()
         {
-            var source = @"namespace Bar {
+            var source =
+                @"namespace Bar {
             class Foo {
                     class Xyz {}
                 }
@@ -130,7 +179,12 @@ namespace OmniSharp.Roslyn.CSharp.Tests
             SharedOmniSharpTestHost.AddFilesToWorkspace(testFile);
             var requestHandler = GetRequestHandler(SharedOmniSharpTestHost);
 
-            var request = new QuickInfoRequest { FileName = testFile.FileName, Line = 2, Column = 27 };
+            var request = new QuickInfoRequest
+            {
+                FileName = testFile.FileName,
+                Line = 2,
+                Column = 27,
+            };
             var response = await requestHandler.Handle(request);
 
             Assert.Equal("```csharp\nclass Bar.Foo.Xyz\n```", response.Markdown);
@@ -139,7 +193,8 @@ namespace OmniSharp.Roslyn.CSharp.Tests
         [Fact]
         public async Task IncludesContainingTypeFoNestedTypesForNonRegularCSharpSyntax()
         {
-            var source = @"class Foo {
+            var source =
+                @"class Foo {
                 class Bar {}
             }";
 
@@ -147,13 +202,19 @@ namespace OmniSharp.Roslyn.CSharp.Tests
             var workspace = TestHelpers.CreateCsxWorkspace(testFile);
 
             var controller = new QuickInfoProvider(workspace, new FormattingOptions(), null);
-            var request = new QuickInfoRequest { FileName = testFile.FileName, Line = 1, Column = 23 };
+            var request = new QuickInfoRequest
+            {
+                FileName = testFile.FileName,
+                Line = 1,
+                Column = 23,
+            };
             var response = await controller.Handle(request);
 
             Assert.Equal("```csharp\nclass Foo.Bar\n```", response.Markdown);
         }
 
-        private static TestFile s_testFile = new TestFile("dummy.cs",
+        private static TestFile s_testFile = new TestFile(
+            "dummy.cs",
             @"using System;
             using Bar2;
             using System.Collections.Generic;
@@ -188,7 +249,8 @@ namespace OmniSharp.Roslyn.CSharp.Tests
                     Val2
                 }
             }
-            ");
+            "
+        );
 
         [Fact]
         public async Task DisplayFormatForMethodSymbol_Invocation()
@@ -196,9 +258,15 @@ namespace OmniSharp.Roslyn.CSharp.Tests
             var response = await GetTypeLookUpResponse(line: 6, column: 35);
 
 #if NETCOREAPP
-            Assert.Equal("```csharp\nvoid Console.WriteLine(string? value) (+ 18 overloads)\n```", response.Markdown);
+            Assert.Equal(
+                "```csharp\nvoid Console.WriteLine(string? value) (+ 18 overloads)\n```",
+                response.Markdown
+            );
 #else
-            Assert.Equal("```csharp\nvoid Console.WriteLine(string value) (+ 18 overloads)\n```", response.Markdown);
+            Assert.Equal(
+                "```csharp\nvoid Console.WriteLine(string value) (+ 18 overloads)\n```",
+                response.Markdown
+            );
 #endif
         }
 
@@ -206,7 +274,10 @@ namespace OmniSharp.Roslyn.CSharp.Tests
         public async Task DisplayFormatForMethodSymbol_Declaration()
         {
             var response = await GetTypeLookUpResponse(line: 9, column: 35);
-            Assert.Equal("```csharp\nvoid Foo.MyMethod(string name, Foo foo, Foo2 foo2)\n```", response.Markdown);
+            Assert.Equal(
+                "```csharp\nvoid Foo.MyMethod(string name, Foo foo, Foo2 foo2)\n```",
+                response.Markdown
+            );
         }
 
         [Fact]
@@ -234,7 +305,10 @@ namespace OmniSharp.Roslyn.CSharp.Tests
         public async Task DisplayFormatFor_TypeSymbol_WithGenerics()
         {
             var response = await GetTypeLookUpResponse(line: 15, column: 36);
-            Assert.Equal("```csharp\ninterface System.Collections.Generic.IDictionary<TKey, TValue>\n```\n\n```csharp\nTKey is string\nTValue is IEnumerable<int>\n```", response.Markdown);
+            Assert.Equal(
+                "```csharp\ninterface System.Collections.Generic.IDictionary<TKey, TValue>\n```\n\n```csharp\nTKey is string\nTValue is IEnumerable<int>\n```",
+                response.Markdown
+            );
         }
 
         [Fact]
@@ -296,13 +370,17 @@ namespace OmniSharp.Roslyn.CSharp.Tests
         public async Task DisplayFormatFor_PropertySymbol_WithGenerics()
         {
             var response = await GetTypeLookUpResponse(line: 15, column: 70);
-            Assert.Equal("```csharp\nIDictionary<string, IEnumerable<int>> Foo.SomeDict { get; }\n```", response.Markdown);
+            Assert.Equal(
+                "```csharp\nIDictionary<string, IEnumerable<int>> Foo.SomeDict { get; }\n```",
+                response.Markdown
+            );
         }
 
         [Fact]
         public async Task StructuredDocumentationRemarksText()
         {
-            string content = @"
+            string content =
+                @"
 class testissue
 {
     ///<remarks>You may have some additional information about this class here.</remarks>
@@ -312,13 +390,17 @@ class testissue
     }
 }";
             var response = await GetTypeLookUpResponse(content);
-            Assert.Equal("```csharp\nbool testissue.Compare(int gameObject, string tagName)\n```\n\nYou may have some additional information about this class here\\.", response.Markdown);
+            Assert.Equal(
+                "```csharp\nbool testissue.Compare(int gameObject, string tagName)\n```\n\nYou may have some additional information about this class here\\.",
+                response.Markdown
+            );
         }
 
         [Fact]
         public async Task StructuredDocumentationSummaryText()
         {
-            string content = @"
+            string content =
+                @"
 class testissue
 {
     ///<summary>Checks if object is tagged with the tag.</summary>
@@ -327,13 +409,17 @@ class testissue
     }
 }";
             var response = await GetTypeLookUpResponse(content);
-            Assert.Equal("```csharp\nbool testissue.Compare(int gameObject, string tagName)\n```\n\nChecks if object is tagged with the tag\\.", response.Markdown);
+            Assert.Equal(
+                "```csharp\nbool testissue.Compare(int gameObject, string tagName)\n```\n\nChecks if object is tagged with the tag\\.",
+                response.Markdown
+            );
         }
 
         [Fact]
         public async Task StructuredDocumentationReturnsText()
         {
-            string content = @"
+            string content =
+                @"
 class testissue
 {
     ///<returns>Returns true if object is tagged with tag.</returns>
@@ -342,13 +428,17 @@ class testissue
     }
 }";
             var response = await GetTypeLookUpResponse(content);
-            Assert.Equal("```csharp\nbool testissue.Compare(int gameObject, string tagName)\n```\n\nReturns:\n\n  Returns true if object is tagged with tag\\.", response.Markdown);
+            Assert.Equal(
+                "```csharp\nbool testissue.Compare(int gameObject, string tagName)\n```\n\nReturns:\n\n  Returns true if object is tagged with tag\\.",
+                response.Markdown
+            );
         }
 
         [Fact]
         public async Task StructuredDocumentationExampleText()
         {
-            string content = @"
+            string content =
+                @"
 class testissue
 {
     ///<example>Checks if object is tagged with the tag.</example>
@@ -357,13 +447,17 @@ class testissue
     }
 }";
             var response = await GetTypeLookUpResponse(content);
-            Assert.Equal("```csharp\nbool testissue.Compare(int gameObject, string tagName)\n```", response.Markdown);
+            Assert.Equal(
+                "```csharp\nbool testissue.Compare(int gameObject, string tagName)\n```",
+                response.Markdown
+            );
         }
 
         [Fact]
         public async Task StructuredDocumentationExceptionText()
         {
-            string content = @"
+            string content =
+                @"
 class testissue
 {
     ///<exception cref=""A"">A description</exception>
@@ -373,13 +467,17 @@ class testissue
     }
 }";
             var response = await GetTypeLookUpResponse(content);
-            Assert.Equal("```csharp\nbool testissue.Compare(int gameObject, string tagName)\n```\n\nExceptions:\n\n  A\n\n  B", response.Markdown);
+            Assert.Equal(
+                "```csharp\nbool testissue.Compare(int gameObject, string tagName)\n```\n\nExceptions:\n\n  A\n\n  B",
+                response.Markdown
+            );
         }
 
         [Fact]
         public async Task StructuredDocumentationParameter()
         {
-            string content = @"
+            string content =
+                @"
 class testissue
 {
     /// <param name=""gameObject"">The game object.</param>
@@ -389,13 +487,17 @@ class testissue
     }
 }";
             var response = await GetTypeLookUpResponse(content);
-            Assert.Equal("```csharp\nbool testissue.Compare(int gameObject, string tagName)\n```", response.Markdown);
+            Assert.Equal(
+                "```csharp\nbool testissue.Compare(int gameObject, string tagName)\n```",
+                response.Markdown
+            );
         }
 
         [Fact]
         public async Task StructuredDocumentationTypeParameter()
         {
-            string content = @"
+            string content =
+                @"
 public class TestClass
 {
     /// <summary>
@@ -409,13 +511,17 @@ public class TestClass
     }
 }";
             var response = await GetTypeLookUpResponse(content);
-            Assert.Equal("```csharp\nT[] TestClass.mkArray<T>(int n, List<X> list)\n```\n\nCreates a new array of arbitrary type `T` and adds the elements of incoming list to it if possible", response.Markdown);
+            Assert.Equal(
+                "```csharp\nT[] TestClass.mkArray<T>(int n, List<X> list)\n```\n\nCreates a new array of arbitrary type `T` and adds the elements of incoming list to it if possible",
+                response.Markdown
+            );
         }
 
         [Fact]
         public async Task StructuredDocumentationTypeParameter_TypeParam1()
         {
-            string content = @"
+            string content =
+                @"
 public class TestClass
 {
     /// <summary>
@@ -429,13 +535,17 @@ public class TestClass
     }
 }";
             var response = await GetTypeLookUpResponse(content);
-            Assert.Equal("```csharp\nT in TestClass.mkArray<T>\n```\n\nThe element type of the array", response.Markdown);
+            Assert.Equal(
+                "```csharp\nT in TestClass.mkArray<T>\n```\n\nThe element type of the array",
+                response.Markdown
+            );
         }
 
         [Fact]
         public async Task StructuredDocumentationTypeParameter_TypeParam2()
         {
-            string content = @"
+            string content =
+                @"
 public class TestClass
 {
     /// <summary>
@@ -456,7 +566,7 @@ public class TestClass
         public async Task StructuredDocumentationValueText()
         {
             string content =
-@"public class Employee
+                @"public class Employee
 {
     private string _name;
 
@@ -468,13 +578,17 @@ public class TestClass
 }
 ";
             var response = await GetTypeLookUpResponse(content);
-            Assert.Equal("```csharp\nstring Employee.Name { }\n```\n\nThe Name property represents the employee's name\\.\n\nValue:\n\n  The Name property gets/sets the value of the string field, \\_name\\.", response.Markdown);
+            Assert.Equal(
+                "```csharp\nstring Employee.Name { }\n```\n\nThe Name property represents the employee's name\\.\n\nValue:\n\n  The Name property gets/sets the value of the string field, \\_name\\.",
+                response.Markdown
+            );
         }
 
         [Fact]
         public async Task StructuredDocumentationNestedTagSee()
         {
-            string content = @"
+            string content =
+                @"
 public class TestClass
 {
     /// <summary>DoWork is a method in the TestClass class. <see cref=""System.Console.WriteLine(System.String)""/> for information about output statements.</summary>
@@ -483,13 +597,17 @@ public class TestClass
     }
 }";
             var response = await GetTypeLookUpResponse(content);
-            Assert.Equal("```csharp\nvoid TestClass.DoWork(int Int1)\n```\n\nDoWork is a method in the TestClass class\\. `System.Console.WriteLine(string)` for information about output statements\\.", response.Markdown);
+            Assert.Equal(
+                "```csharp\nvoid TestClass.DoWork(int Int1)\n```\n\nDoWork is a method in the TestClass class\\. `System.Console.WriteLine(string)` for information about output statements\\.",
+                response.Markdown
+            );
         }
 
         [Fact]
         public async Task StructuredDocumentationNestedTagParamRef()
         {
-            string content = @"
+            string content =
+                @"
 public class TestClass
 {
     /// <summary>Creates a new array of arbitrary type <typeparamref name=""T""/></summary>
@@ -500,13 +618,17 @@ public class TestClass
     }
 }";
             var response = await GetTypeLookUpResponse(content);
-            Assert.Equal("```csharp\nT[] TestClass.mkArray<T>(int n)\n```\n\nCreates a new array of arbitrary type `T`", response.Markdown);
+            Assert.Equal(
+                "```csharp\nT[] TestClass.mkArray<T>(int n)\n```\n\nCreates a new array of arbitrary type `T`",
+                response.Markdown
+            );
         }
 
         [Fact]
         public async Task StructuredDocumentationNestedTagCode()
         {
-            string content = @"
+            string content =
+                @"
 public class TestClass
 {
     /// <example>This sample shows how to call the <see cref=""GetZero""/> method.
@@ -532,7 +654,8 @@ public class TestClass
         [Fact]
         public async Task StructuredDocumentationNestedTagPara()
         {
-            string content = @"
+            string content =
+                @"
 public class TestClass
 {
     /// <summary>DoWork is a method in the TestClass class.
@@ -544,13 +667,17 @@ public class TestClass
 }
             ";
             var response = await GetTypeLookUpResponse(content);
-            Assert.Equal("```csharp\nvoid TestClass.DoWork(int Int1)\n```\n\nDoWork is a method in the TestClass class\\.\n\n\n\nHere's how you could make a second paragraph in a description\\.", response.Markdown);
+            Assert.Equal(
+                "```csharp\nvoid TestClass.DoWork(int Int1)\n```\n\nDoWork is a method in the TestClass class\\.\n\n\n\nHere's how you could make a second paragraph in a description\\.",
+                response.Markdown
+            );
         }
 
         [Fact]
         public async Task StructuredDocumentationNestedTagSeeAlso()
         {
-            string content = @"
+            string content =
+                @"
 public class TestClass
 {
     /// <summary>DoWork is a method in the TestClass class.
@@ -565,13 +692,17 @@ public class TestClass
             }
 }";
             var response = await GetTypeLookUpResponse(content);
-            Assert.Equal("```csharp\nvoid TestClass.DoWork(int Int1)\n```\n\nDoWork is a method in the TestClass class\\. `TestClass.Main()`", response.Markdown);
+            Assert.Equal(
+                "```csharp\nvoid TestClass.DoWork(int Int1)\n```\n\nDoWork is a method in the TestClass class\\. `TestClass.Main()`",
+                response.Markdown
+            );
         }
 
         [Fact]
         public async Task StructuredDocumentationSummaryAndParam()
         {
-            string content = @"
+            string content =
+                @"
 class testissue
 {
     ///<summary>Checks if object is tagged with the tag.</summary>
@@ -582,13 +713,17 @@ class testissue
     }
 }";
             var response = await GetTypeLookUpResponse(content);
-            Assert.Equal("```csharp\nbool testissue.Compare(int gameObject, string tagName)\n```\n\nChecks if object is tagged with the tag\\.", response.Markdown);
+            Assert.Equal(
+                "```csharp\nbool testissue.Compare(int gameObject, string tagName)\n```\n\nChecks if object is tagged with the tag\\.",
+                response.Markdown
+            );
         }
 
         [Fact]
         public async Task StructuredDocumentationManyTags()
         {
-            string content = @"
+            string content =
+                @"
 class testissue
 {
     ///<summary>Checks if object is tagged with the tag.</summary>
@@ -605,13 +740,15 @@ class testissue
             var response = await GetTypeLookUpResponse(content);
             Assert.Equal(
                 "```csharp\nT[] testissue.Compare(int gameObject)\n```\n\nChecks if object is tagged with the tag\\.\n\nYou may have some additional information about this class here\\.\n\nReturns:\n\n  Returns an array of type `T`\\.\n\n\n\nExceptions:\n\n```csharp\n  System.Exception\n```",
-                response.Markdown);
+                response.Markdown
+            );
         }
 
         [Fact]
         public async Task StructuredDocumentationSpaceBeforeText()
         {
-            string content = @"
+            string content =
+                @"
 public class TestClass
 {
     /// <summary><c>DoWork</c> is a method in the <c>TestClass</c> class.</summary>
@@ -620,13 +757,17 @@ public class TestClass
     }
 }";
             var response = await GetTypeLookUpResponse(content);
-            Assert.Equal("```csharp\nvoid TestClass.DoWork(int Int1)\n```\n\nDoWork is a method in the TestClass class\\.", response.Markdown);
+            Assert.Equal(
+                "```csharp\nvoid TestClass.DoWork(int Int1)\n```\n\nDoWork is a method in the TestClass class\\.",
+                response.Markdown
+            );
         }
 
         [Fact]
         public async Task StructuredDocumentationForParameters1()
         {
-            string content = @"
+            string content =
+                @"
 class testissue
 {
     /// <param name=""gameObject"">The game object.</param>
@@ -636,13 +777,17 @@ class testissue
     }
 }";
             var response = await GetTypeLookUpResponse(content);
-            Assert.Equal("```csharp\n(parameter) int gameObject\n```\n\nThe game object\\.", response.Markdown);
+            Assert.Equal(
+                "```csharp\n(parameter) int gameObject\n```\n\nThe game object\\.",
+                response.Markdown
+            );
         }
 
         [Fact]
         public async Task StructuredDocumentationForParameters2()
         {
-            string content = @"
+            string content =
+                @"
 class testissue
 {
     /// <param name=""gameObject"">The game object.</param>
@@ -652,13 +797,17 @@ class testissue
     }
 }";
             var response = await GetTypeLookUpResponse(content);
-            Assert.Equal("```csharp\n(parameter) string tagName\n```\n\nName of the tag\\.", response.Markdown);
+            Assert.Equal(
+                "```csharp\n(parameter) string tagName\n```\n\nName of the tag\\.",
+                response.Markdown
+            );
         }
 
         [Fact]
         public async Task AnonymousTypeSubstitution()
         {
-            string content = @"
+            string content =
+                @"
 class C
 {
     void M1<T>(T t) {}
@@ -669,13 +818,17 @@ class C
     }
 }";
             var response = await GetTypeLookUpResponse(content);
-            Assert.Equal("```csharp\nvoid C.M1<'a>('a t)\n```\n\nTypes:\n\n```csharp\n    'a is new { int X, int Y }\n```", response.Markdown);
+            Assert.Equal(
+                "```csharp\nvoid C.M1<'a>('a t)\n```\n\nTypes:\n\n```csharp\n    'a is new { int X, int Y }\n```",
+                response.Markdown
+            );
         }
 
         [Fact]
         public async Task InheritDoc()
         {
-            string content = @"
+            string content =
+                @"
 class Program
 {
 	/// <summary>Hello World</summary>
@@ -697,7 +850,8 @@ class Program
         [Fact]
         public async Task MarkdownInComment()
         {
-            string content = @"
+            string content =
+                @"
 class Program
 {
 	/// <summary>*This should be escaped*</summary>
@@ -710,13 +864,17 @@ class Program
 
 }";
             var response = await GetTypeLookUpResponse(content);
-            Assert.Equal("```csharp\nvoid Program.B()\n```\n\n\\*This should be escaped\\*", response.Markdown);
+            Assert.Equal(
+                "```csharp\nvoid Program.B()\n```\n\n\\*This should be escaped\\*",
+                response.Markdown
+            );
         }
 
         [Fact]
         public async Task NullableIsItalicized()
         {
-            string content = @"
+            string content =
+                @"
 #nullable enable
 class Program
 {
@@ -727,13 +885,17 @@ class Program
 
 }";
             var response = await GetTypeLookUpResponse(content);
-            Assert.Equal("```csharp\n(parameter) string s\n```\n\n_'s' is not null here\\._", response.Markdown);
+            Assert.Equal(
+                "```csharp\n(parameter) string s\n```\n\n_'s' is not null here\\._",
+                response.Markdown
+            );
         }
 
         [Fact]
         public async Task NullableFieldWithComments()
         {
-            string content = @"
+            string content =
+                @"
 #nullable enable
 class Program
 {
@@ -747,7 +909,10 @@ class Program
 
 }";
             var response = await GetTypeLookUpResponse(content);
-            Assert.Equal("```csharp\n(field) string? Program._s\n```\n\nInteresting content\\.\n\n_'\\_s' is not null here\\._", response.Markdown);
+            Assert.Equal(
+                "```csharp\n(field) string? Program._s\n```\n\nInteresting content\\.\n\n_'\\_s' is not null here\\._",
+                response.Markdown
+            );
         }
 
         private async Task<QuickInfoResponse> GetTypeLookUpResponse(string content)
@@ -756,7 +921,12 @@ class Program
             SharedOmniSharpTestHost.AddFilesToWorkspace(testFile);
             var requestHandler = GetRequestHandler(SharedOmniSharpTestHost);
             var point = testFile.Content.GetPointFromPosition();
-            var request = new QuickInfoRequest { FileName = testFile.FileName, Line = point.Line, Column = point.Offset };
+            var request = new QuickInfoRequest
+            {
+                FileName = testFile.FileName,
+                Line = point.Line,
+                Column = point.Offset,
+            };
 
             return await requestHandler.Handle(request);
         }
@@ -765,7 +935,12 @@ class Program
         {
             SharedOmniSharpTestHost.AddFilesToWorkspace(s_testFile);
             var requestHandler = GetRequestHandler(SharedOmniSharpTestHost);
-            var request = new QuickInfoRequest { FileName = s_testFile.FileName, Line = line, Column = column };
+            var request = new QuickInfoRequest
+            {
+                FileName = s_testFile.FileName,
+                Line = line,
+                Column = column,
+            };
 
             return await requestHandler.Handle(request);
         }

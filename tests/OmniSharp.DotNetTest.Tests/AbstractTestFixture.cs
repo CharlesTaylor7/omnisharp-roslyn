@@ -11,9 +11,7 @@ namespace OmniSharp.DotNetTest.Tests
         protected const string MSTestProject = nameof(MSTestProject);
 
         protected AbstractTestFixture(ITestOutputHelper output)
-            : base(output)
-        {
-        }
+            : base(output) { }
 
         public abstract DotNetCliVersion DotNetCliVersion { get; }
     }

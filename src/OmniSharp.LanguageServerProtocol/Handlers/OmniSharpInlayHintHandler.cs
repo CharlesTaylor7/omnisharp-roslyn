@@ -20,8 +20,12 @@ namespace OmniSharp.LanguageServerProtocol.Handlers
     {
         public static IEnumerable<IJsonRpcHandler> Enumerate(RequestHandlers handlers)
         {
-            foreach (var (selector, handler, resolveHandler) in handlers
-                .OfType<Mef.IRequestHandler<InlayHintRequest, InlayHintResponse>, Mef.IRequestHandler<InlayHintResolveRequest, OmniSharpInlayHint>>())
+            foreach (
+                var (selector, handler, resolveHandler) in handlers.OfType<
+                    Mef.IRequestHandler<InlayHintRequest, InlayHintResponse>,
+                    Mef.IRequestHandler<InlayHintResolveRequest, OmniSharpInlayHint>
+                >()
+            )
             {
                 if (handler != null && resolveHandler != null)
                     yield return new OmniSharpInlayHintHandler(handler, resolveHandler, selector);
@@ -29,20 +33,30 @@ namespace OmniSharp.LanguageServerProtocol.Handlers
         }
 
         private readonly Mef.IRequestHandler<InlayHintRequest, InlayHintResponse> _inlayHintHandler;
-        private readonly Mef.IRequestHandler<InlayHintResolveRequest, OmniSharpInlayHint> _inlayHintResolveHandler;
+        private readonly Mef.IRequestHandler<
+            InlayHintResolveRequest,
+            OmniSharpInlayHint
+        > _inlayHintResolveHandler;
         private readonly TextDocumentSelector _documentSelector;
 
         public OmniSharpInlayHintHandler(
             Mef.IRequestHandler<InlayHintRequest, InlayHintResponse> inlayHintHandler,
-            Mef.IRequestHandler<InlayHintResolveRequest, OmniSharpInlayHint> inlayHintResolveHandler,
-            TextDocumentSelector documentSelector)
+            Mef.IRequestHandler<
+                InlayHintResolveRequest,
+                OmniSharpInlayHint
+            > inlayHintResolveHandler,
+            TextDocumentSelector documentSelector
+        )
         {
             _inlayHintHandler = inlayHintHandler;
             _inlayHintResolveHandler = inlayHintResolveHandler;
             _documentSelector = documentSelector;
         }
 
-        public override async Task<InlayHintContainer> Handle(InlayHintParams request, CancellationToken cancellationToken)
+        public override async Task<InlayHintContainer> Handle(
+            InlayHintParams request,
+            CancellationToken cancellationToken
+        )
         {
             var omnisharpRequest = new InlayHintRequest()
             {
@@ -50,7 +64,7 @@ namespace OmniSharp.LanguageServerProtocol.Handlers
                 {
                     FileName = FromUri(request.TextDocument.Uri),
                     Range = FromRange(request.Range),
-                }
+                },
             };
 
             var omnisharpResponse = await _inlayHintHandler.Handle(omnisharpRequest);
@@ -58,11 +72,14 @@ namespace OmniSharp.LanguageServerProtocol.Handlers
             return new InlayHintContainer(omnisharpResponse.InlayHints.Select(ToLSPInlayHint));
         }
 
-        public override async Task<LSPInlayHint> Handle(LSPInlayHint request, CancellationToken cancellationToken)
+        public override async Task<LSPInlayHint> Handle(
+            LSPInlayHint request,
+            CancellationToken cancellationToken
+        )
         {
             var omnisharpRequest = new InlayHintResolveRequest()
             {
-                Hint = FromLSPInlayHint(request)
+                Hint = FromLSPInlayHint(request),
             };
 
             var omnisharpResponse = await _inlayHintResolveHandler.Handle(omnisharpRequest);
@@ -77,7 +94,9 @@ namespace OmniSharp.LanguageServerProtocol.Handlers
             return new LSPInlayHint()
             {
                 Label = trimmedLabel,
-                Kind = hint.Kind.HasValue ? ConvertEnum<OmniSharpInlayHintKind, LSPInlayHintKind>(hint.Kind.Value) : null,
+                Kind = hint.Kind.HasValue
+                    ? ConvertEnum<OmniSharpInlayHintKind, LSPInlayHintKind>(hint.Kind.Value)
+                    : null,
                 Tooltip = hint.Tooltip is not null
                     ? new MarkupContent() { Kind = MarkupKind.Markdown, Value = hint.Tooltip }
                     : null,
@@ -93,8 +112,11 @@ namespace OmniSharp.LanguageServerProtocol.Handlers
         {
             return new OmniSharpInlayHint()
             {
-                Label = $"{(hint.PaddingLeft == true ? " " : "")}{hint.Label.String}{(hint.PaddingRight == true ? " " : "")}",
-                Kind = hint.Kind.HasValue ? ConvertEnum<LSPInlayHintKind, OmniSharpInlayHintKind>(hint.Kind.Value) : null,
+                Label =
+                    $"{(hint.PaddingLeft == true ? " " : "")}{hint.Label.String}{(hint.PaddingRight == true ? " " : "")}",
+                Kind = hint.Kind.HasValue
+                    ? ConvertEnum<LSPInlayHintKind, OmniSharpInlayHintKind>(hint.Kind.Value)
+                    : null,
                 Tooltip = hint.Tooltip is not null
                     ? hint.Tooltip.HasMarkupContent
                         ? hint.Tooltip.MarkupContent.Value
@@ -102,11 +124,14 @@ namespace OmniSharp.LanguageServerProtocol.Handlers
                     : null,
                 Position = FromPosition(hint.Position),
                 TextEdits = hint.TextEdits is null ? null : FromTextEdits(hint.TextEdits),
-                Data = hint.Data.ToObject<(string SolutionVersion, int Position)>()
+                Data = hint.Data.ToObject<(string SolutionVersion, int Position)>(),
             };
         }
 
-        protected override InlayHintRegistrationOptions CreateRegistrationOptions(InlayHintClientCapabilities capability, ClientCapabilities clientCapabilities)
+        protected override InlayHintRegistrationOptions CreateRegistrationOptions(
+            InlayHintClientCapabilities capability,
+            ClientCapabilities clientCapabilities
+        )
         {
             return new InlayHintRegistrationOptions()
             {

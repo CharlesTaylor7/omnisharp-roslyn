@@ -18,12 +18,17 @@ namespace OmniSharp.Roslyn
         private readonly OmniSharpOptions _omnisharpOptions;
 
         [ImportingConstructor]
-        public MetadataExternalSourceService(OmniSharpOptions omnisharpOptions) : base()
+        public MetadataExternalSourceService(OmniSharpOptions omnisharpOptions)
+            : base()
         {
             _omnisharpOptions = omnisharpOptions;
         }
 
-        public async Task<(Document document, string documentPath)> GetAndAddExternalSymbolDocument(Project project, ISymbol symbol, CancellationToken cancellationToken)
+        public async Task<(Document document, string documentPath)> GetAndAddExternalSymbolDocument(
+            Project project,
+            ISymbol symbol,
+            CancellationToken cancellationToken
+        )
         {
             var fileName = symbol.GetFilePathForExternalSymbol(project);
 
@@ -33,10 +38,17 @@ namespace OmniSharp.Roslyn
             // we will use a separate project to hold metadata documents
             if (project.IsSubmission)
             {
-                metadataProject = project.Solution.Projects.FirstOrDefault(x => x.Name == MetadataKey);
+                metadataProject = project.Solution.Projects.FirstOrDefault(x =>
+                    x.Name == MetadataKey
+                );
                 if (metadataProject == null)
                 {
-                    metadataProject = project.Solution.AddProject(MetadataKey, $"{MetadataKey}.dll", LanguageNames.CSharp)
+                    metadataProject = project
+                        .Solution.AddProject(
+                            MetadataKey,
+                            $"{MetadataKey}.dll",
+                            LanguageNames.CSharp
+                        )
                         .WithCompilationOptions(project.CompilationOptions)
                         .WithMetadataReferences(project.MetadataReferences);
                 }
@@ -52,14 +64,18 @@ namespace OmniSharp.Roslyn
                 var topLevelSymbol = symbol.GetTopLevelContainingNamedType();
 
                 var temporaryDocument = metadataProject.AddDocument(fileName, string.Empty);
-                var formattingOptions = await FormattingWorker.GetFormattingOptionsAsync(temporaryDocument, _omnisharpOptions);
+                var formattingOptions = await FormattingWorker.GetFormattingOptionsAsync(
+                    temporaryDocument,
+                    _omnisharpOptions
+                );
 
                 document = await OmniSharpMetadataAsSourceService.AddSourceToAsync(
                     temporaryDocument,
                     await metadataProject.GetCompilationAsync(),
                     topLevelSymbol,
                     formattingOptions,
-                    cancellationToken);
+                    cancellationToken
+                );
 
                 _cache.TryAdd(fileName, document);
             }

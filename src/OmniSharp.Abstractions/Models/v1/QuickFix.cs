@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using Newtonsoft.Json;
 
 namespace OmniSharp.Models
@@ -6,12 +6,16 @@ namespace OmniSharp.Models
     public class QuickFix
     {
         public string FileName { get; set; }
+
         [JsonConverter(typeof(ZeroBasedIndexConverter))]
         public int Line { get; set; }
+
         [JsonConverter(typeof(ZeroBasedIndexConverter))]
         public int Column { get; set; }
+
         [JsonConverter(typeof(ZeroBasedIndexConverter))]
         public int EndLine { get; set; }
+
         [JsonConverter(typeof(ZeroBasedIndexConverter))]
         public int EndColumn { get; set; }
         public string Text { get; set; }
@@ -48,8 +52,7 @@ namespace OmniSharp.Models
             }
         }
 
-        public override string ToString()
-            => $"{Text} ({Line}:{Column}) - ({EndLine}:{EndColumn})";
+        public override string ToString() => $"{Text} ({Line}:{Column}) - ({EndLine}:{EndColumn})";
 
         public bool Contains(int line, int column)
         {

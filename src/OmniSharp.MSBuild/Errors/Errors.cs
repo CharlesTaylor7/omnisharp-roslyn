@@ -6,10 +6,11 @@ namespace OmniSharp.MSBuild
     {
         public static readonly ImmutableHashSet<string> NullableWarnings;
 
-        // sourced from https://github.com/dotnet/roslyn/blob/v4.2.0-3.22151.16/src/Compilers/CSharp/Portable/Errors/ErrorFacts.cs#L27-L82 
+        // sourced from https://github.com/dotnet/roslyn/blob/v4.2.0-3.22151.16/src/Compilers/CSharp/Portable/Errors/ErrorFacts.cs#L27-L82
         static Errors()
         {
-            ImmutableHashSet<string>.Builder nullableWarnings = ImmutableHashSet.CreateBuilder<string>();
+            ImmutableHashSet<string>.Builder nullableWarnings =
+                ImmutableHashSet.CreateBuilder<string>();
 
             nullableWarnings.Add("CS8601"); // WRN_NullReferenceAssignment
             nullableWarnings.Add("CS8602"); // WRN_NullReferenceReceiver
@@ -38,7 +39,6 @@ namespace OmniSharp.MSBuild
             nullableWarnings.Add("CS8607"); // WRN_DisallowNullAttributeForbidsMaybeNullAssignment
             nullableWarnings.Add("CS8762"); // WRN_ParameterConditionallyDisallowsNull
             nullableWarnings.Add("CS8763"); // WRN_ShouldNotReturn
-
 
             nullableWarnings.Add("CS8608"); // WRN_NullabilityMismatchInTypeOnOverride
             nullableWarnings.Add("CS8609"); // WRN_NullabilityMismatchInReturnTypeOnOverride
