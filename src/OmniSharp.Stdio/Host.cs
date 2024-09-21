@@ -149,9 +149,9 @@ namespace OmniSharp.Stdio
                 OmniSharpEndpoints.StopServer,
                 new Lazy<EndpointHandler>(
                     () =>
-                        new GenericEndpointHandler(x =>
+                        new GenericEndpointHandler(async x =>
                         {
-                            _cancellationTokenSource.Cancel();
+                            await _cancellationTokenSource.CancelAsync();
                             return Task.FromResult<object>(null);
                         })
                 )
